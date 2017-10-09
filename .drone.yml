@@ -62,7 +62,6 @@ pipeline:
       - KUBE_NAMESPACE=pt-i-dev
       - ENVIRONMENT=dev
       - VERSION=build-${DRONE_BUILD_NUMBER}
-      - KUBE_SERVER_DEV=https://kube-dev.dsp.notprod.homeoffice.gov.uk
       - KUBE_SERVER=https://kube-dev.dsp.notprod.homeoffice.gov.uk
     commands:
       - cd kube-pttg-ip-audit
