@@ -1,8 +1,8 @@
 FROM quay.io/ukhomeofficedigital/openjdk8:v1.8.0.131
 
 
-ENV USER user_pttg_ip_feedback
-ENV GROUP group_pttg_ip_feedback
+ENV USER user_pttg_ip_audit
+ENV GROUP group_pttg_ip_audit
 ENV NAME pttg-ip-audit
 ENV JAR_PATH build/libs
 
