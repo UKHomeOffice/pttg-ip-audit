@@ -1,18 +1,18 @@
 package uk.gov.digital.ho.pttg;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.ui.Model;
-import uk.gov.digital.ho.pttg.dto.AuditCsvView;
+import uk.gov.digital.ho.pttg.dto.AuditRecord;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.digital.ho.pttg.AuditRepositoryTest.*;
@@ -24,16 +24,11 @@ public class AuditResourceTest {
 
     @Mock
     private AuditRepository mockRepo;
-
-    @Mock
-    private Model mockModel;
-
-    @InjectMocks
     private AuditResource resource;
 
     @Before
     public void setUp() {
-
+        resource = new AuditResource(mockRepo, new ObjectMapper());
     }
 
     @Test
@@ -42,11 +37,11 @@ public class AuditResourceTest {
 
         when(mockRepo.findAllByOrderByTimestampDesc()).thenReturn(buildAuditList());
 
-        resource.allAudit(mockModel);
+        List<AuditRecord> auditRecords = resource.allAudit();
 
         verify(mockRepo).findAllByOrderByTimestampDesc();
 
-        verify(mockModel).addAttribute("audit", buildAuditViewList());
+        assertThat(auditRecords.size()).isEqualTo(2);
     }
 
     private List<Audit> buildAuditList() {
@@ -67,17 +62,4 @@ public class AuditResourceTest {
         );
         return auditEntry;
     }
-
-
-    private List<AuditCsvView> buildAuditViewList() {
-        return ImmutableList.of(createAuditView(NOW), createAuditView(NOW_PLUS_60_MINS));
-    }
-
-    private AuditCsvView createAuditView(LocalDateTime timestamp) {
-        return AuditCsvView.builder().detail(DETAIL)
-                .timestamp(timestamp)
-                .userId(USER_ID)
-                .build();
-    }
-
 }
