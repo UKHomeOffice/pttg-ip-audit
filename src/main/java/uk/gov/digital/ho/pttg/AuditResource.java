@@ -1,29 +1,44 @@
 package uk.gov.digital.ho.pttg;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import uk.gov.digital.ho.pttg.dto.AuditCsvView;
+import org.springframework.web.bind.annotation.RestController;
+import uk.gov.digital.ho.pttg.dto.AuditRecord;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-@Controller
-@Component
+@RestController
 public class AuditResource {
+    final AuditRepository repo;
+    final ObjectMapper objectMapper;
+    private static final TypeReference<Map<String, Object>> detailTypeRef = new TypeReference<Map<String, Object>>() {
+    };
 
     @Autowired
-    AuditRepository repo;
+    public AuditResource(AuditRepository repo, ObjectMapper objectMapper) {
+        this.repo = repo;
+        this.objectMapper = objectMapper;
+    }
 
     @RequestMapping(value = "/audit", method = RequestMethod.GET)
-    public String allAudit(Model model) {
-        List<Audit> records = repo.findAllByOrderByTimestampDesc();
-        final List<AuditCsvView> csvViews = records.stream().map(f -> new AuditCsvView(f.getTimestamp(), f.getUserId(), f.getDetail())).collect(Collectors.toList());
+    public List<AuditRecord> allAudit() {
+        List<Audit> auditList = repo.findAllByOrderByTimestampDesc();
 
-        model.addAttribute("audit", csvViews);
-        return "data";
+        return auditList.stream().map(this::toAuditRecord).collect(Collectors.toList());
+    }
+
+    private AuditRecord toAuditRecord(Audit audit) {
+        try {
+            Map<String, Object> detail = objectMapper.readValue(audit.getDetail(), detailTypeRef);
+            return new AuditRecord(audit.getUuid(), audit.getTimestamp(), audit.getUserId(), audit.getType().name(), detail, (String) detail.get("nino"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
