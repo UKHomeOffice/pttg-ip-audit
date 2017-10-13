@@ -40,7 +40,7 @@ public class AuditResource {
     private AuditRecord toAuditRecord(Audit audit) {
         try {
             Map<String, Object> detail = objectMapper.readValue(audit.getDetail(), detailTypeRef);
-            return new AuditRecord(audit.getUuid(), audit.getTimestamp(), audit.getUserId(), audit.getType().name(), detail, (String) detail.get("nino"));
+            return new AuditRecord(audit.getUuid(), audit.getTimestamp(), audit.getUserId(), audit.getType(), detail, (String) detail.get("nino"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
