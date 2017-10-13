@@ -42,6 +42,8 @@ public class AuditResourceTest {
         verify(mockRepo).findAllByOrderByTimestampDesc();
 
         assertThat(auditRecords.size()).isEqualTo(2);
+        assertThat(auditRecords.get(0).getId()).isEqualTo("correlationId");
+        assertThat(auditRecords.get(1).getId()).isEqualTo("correlationId");
     }
 
     private List<Audit> buildAuditList() {
@@ -53,7 +55,7 @@ public class AuditResourceTest {
                 UUID,
                 timestamp,
                 SESSION_ID,
-                UUID,
+                "correlationId",
                 USER_ID,
                 DEPLOYMENT,
                 NAMESPACE,
