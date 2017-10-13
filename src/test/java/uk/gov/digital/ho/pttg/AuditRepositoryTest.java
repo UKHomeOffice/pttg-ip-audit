@@ -37,6 +37,7 @@ public class AuditRepositoryTest {
 
     @Before
     public void setup() {
+        repository.deleteAll();
         repository.save(createAudit(NOW));
         repository.save(createAudit(NOW_MINUS_60_MINS));
         repository.save(createAudit(NOW_PLUS_60_MINS));
