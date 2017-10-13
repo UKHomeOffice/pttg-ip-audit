@@ -39,7 +39,7 @@ public class AuditResourceIntTest {
                 "bobby.bag@digital.homeoffice.gov.uk",
                 DEPLOYMENT,
                 NAMESPACE,
-                AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST,
+                "INCOME_PROVING_FINANCIAL_STATUS_REQUEST",
                 "{\n" +
                         "      \"forename\": \"Antonio\",\n" +
                         "      \"method\": \"get-financial-status\",\n" +
@@ -58,7 +58,7 @@ public class AuditResourceIntTest {
                 "bobby.bag@digital.homeoffice.gov.uk",
                 DEPLOYMENT,
                 NAMESPACE,
-                AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
+                "INCOME_PROVING_FINANCIAL_STATUS_RESPONSE",
                 "{\n" +
                         "      \"method\": \"get-financial-status\",\n" +
                         "      \"response\": {\n" +

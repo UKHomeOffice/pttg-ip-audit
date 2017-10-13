@@ -70,7 +70,7 @@ public class AuditRepositoryTest {
                 USER_ID,
                 DEPLOYMENT,
                 NAMESPACE,
-                AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
+                "INCOME_PROVING_FINANCIAL_STATUS_RESPONSE",
                 DETAIL
         );
         return auditEntry;
