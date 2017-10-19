@@ -15,15 +15,15 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.digital.ho.pttg.AuditRepositoryTest.*;
+import static uk.gov.digital.ho.pttg.AuditEntryRepositoryTest.*;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class AuditResourceTest {
+public class AuditEntryResourceTest {
 
 
     @Mock
-    private AuditRepository mockRepo;
+    private AuditEntryJpaRepository mockRepo;
     private AuditResource resource;
 
     @Before
@@ -46,12 +46,12 @@ public class AuditResourceTest {
         assertThat(auditRecords.get(1).getId()).isEqualTo("correlationId");
     }
 
-    private List<Audit> buildAuditList() {
+    private List<AuditEntry> buildAuditList() {
         return ImmutableList.of(createAudit(NOW), createAudit(NOW_PLUS_60_MINS));
     }
 
-    private Audit createAudit(LocalDateTime timestamp) {
-        Audit auditEntry = new Audit(
+    private AuditEntry createAudit(LocalDateTime timestamp) {
+        AuditEntry auditEntry = new AuditEntry(
                 UUID,
                 timestamp,
                 SESSION_ID,
