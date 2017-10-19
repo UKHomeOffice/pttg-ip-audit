@@ -1,6 +1,6 @@
 buildscript {
   ext {
-    springBootVersion = '1.5.7.RELEASE'
+    springBootVersion = '1.5.8.RELEASE'
   }
   repositories {
     mavenCentral()
@@ -57,6 +57,7 @@ dependencies {
   compile 'org.postgresql:postgresql:9.4.1211.jre7'
 
   compileOnly 'org.projectlombok:lombok:1.16.12'
+  compileOnly group: 'io.dropwizard.metrics', name: 'metrics-core', version: '3.2.3'
 
   testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test'
   testCompile group: 'junit', name: 'junit', version: '4.12'

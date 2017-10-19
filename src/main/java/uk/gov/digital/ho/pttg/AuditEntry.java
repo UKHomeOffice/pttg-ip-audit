@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Access(AccessType.FIELD)
 @NoArgsConstructor
 @EqualsAndHashCode(of = "uuid")
-public class Audit {
+public class AuditEntry {
 
     @Id
     @Column(name = "id")
@@ -55,7 +55,7 @@ public class Audit {
     @Getter
     private String detail;
 
-    public Audit(String uuid, LocalDateTime timestamp, String sessionId, String correlationId,
+    public AuditEntry(String uuid, LocalDateTime timestamp, String sessionId, String correlationId,
                       String userId, String deployment, String namespace, String type, String detail) {
         this.uuid = uuid;
         this.timestamp = timestamp;

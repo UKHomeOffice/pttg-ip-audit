@@ -18,20 +18,20 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
-public class AuditResourceIntTest {
+public class AuditEntryResourceIntTest {
 
     static final String SESSION_ID = "sessionID";
     static final String DEPLOYMENT = "deployment";
     static final String NAMESPACE = "env";
 
     @Autowired
-    private AuditRepository repository;
+    private AuditEntryJpaRepository repository;
     @Autowired
     private TestRestTemplate restTemplate;
 
     @Before
     public void setup() {
-        repository.save(new Audit(
+        repository.save(new AuditEntry(
                 "3a22c723-ea0f-4962-b97b-f35dce3284b2",
                 LocalDateTime.parse("2017-09-11T14:45:48.094"),
                 SESSION_ID,
@@ -50,7 +50,7 @@ public class AuditResourceIntTest {
                         "      \"nino\": \"NE112233C\"\n" +
                         "    }"
         ));
-        repository.save(new Audit(
+        repository.save(new AuditEntry(
                 "3a22c723-ea0f-4962-b97b-f35dce3284b2",
                 LocalDateTime.parse("2017-09-11T14:45:55.033"),
                 SESSION_ID,

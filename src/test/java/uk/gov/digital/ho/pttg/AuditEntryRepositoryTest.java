@@ -10,7 +10,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 @SpringBootTest
 @Profile("logtoconsole")
-public class AuditRepositoryTest {
+public class AuditEntryRepositoryTest {
 
     static final String SESSION_ID = "sessionID";
     static final String DEPLOYMENT = "deployment";
@@ -33,7 +32,7 @@ public class AuditRepositoryTest {
 
 
     @Autowired
-    private AuditRepository repository;
+    private AuditEntryJpaRepository repository;
 
     @Before
     public void setup() {
@@ -48,22 +47,22 @@ public class AuditRepositoryTest {
     @Test
     public void shouldRetrieveAllAudit() {
 
-        final Iterable<Audit> all = repository.findAll();
+        final Iterable<AuditEntry> all = repository.findAll();
         assertThat(all).size().isEqualTo(3);
     }
 
     @Test
     public void shouldRetrieveAllAuditOrderedByTimestampDesc() {
 
-        final Iterable<Audit> all = repository.findAllByOrderByTimestampDesc();
+        final Iterable<AuditEntry> all = repository.findAllByOrderByTimestampDesc();
         assertThat(all).size().isEqualTo(3);
         assertThat(all).extracting("timestamp").containsExactly(NOW_PLUS_60_MINS, NOW, NOW_MINUS_60_MINS);
 
 
     }
 
-    private Audit createAudit(LocalDateTime timestamp) {
-        Audit auditEntry = new Audit(
+    private AuditEntry createAudit(LocalDateTime timestamp) {
+        AuditEntry auditEntry = new AuditEntry(
                 java.util.UUID.randomUUID().toString(),
                 timestamp,
                 SESSION_ID,
