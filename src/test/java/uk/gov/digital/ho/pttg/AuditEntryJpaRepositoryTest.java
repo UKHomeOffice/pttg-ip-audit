@@ -6,7 +6,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.pttg.alert.CountByUser;
 
 import java.time.LocalDateTime;
@@ -18,6 +20,8 @@ import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STA
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Profile("logtoconsole")
+@Transactional
+@Rollback
 public class AuditEntryJpaRepositoryTest {
 
     private static final String SESSION_ID = "sessionID";
