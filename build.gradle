@@ -53,7 +53,7 @@ dependencies {
   compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.3'
   compile 'org.flywaydb:flyway-core:4.2.0'
   compile 'net.logstash.logback:logstash-logback-encoder:4.8'
-  compile 'org.hsqldb:hsqldb:2.4.0'
+  compile 'org.hsqldb:hsqldb'
   compile 'org.postgresql:postgresql:9.4.1211.jre7'
 
   compileOnly group: 'com.google.collections', name: 'google-collections', version: '1.0-rc2'

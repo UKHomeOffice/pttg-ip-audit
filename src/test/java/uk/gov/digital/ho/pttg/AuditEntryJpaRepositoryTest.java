@@ -44,7 +44,7 @@ public class AuditEntryJpaRepositoryTest {
     @Before
     public void setup() {
 
-//        repository.deleteAll();
+        repository.deleteAll();
 
         repository.save(createAudit(TWO_DAYS_AGO));
         repository.save(createAudit(YESTERDAY));
