@@ -9,6 +9,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
@@ -20,6 +21,7 @@ import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STA
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
+@Profile("logtoconsole")
 public class AuditEntryResourceIntTest {
 
     private static final String SESSION_ID = "sessionID";
@@ -34,7 +36,6 @@ public class AuditEntryResourceIntTest {
 
     @Before
     public void setup() {
-
 
         repository.save(new AuditEntry(
                 "3a22c723-ea0f-4962-b97b-f35dce3284b2",
