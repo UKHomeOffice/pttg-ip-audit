@@ -1,6 +1,6 @@
 package uk.gov.digital.ho.pttg.alert.sysdig;
 
-import com.google.common.collect.ImmutableMap;
+import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
