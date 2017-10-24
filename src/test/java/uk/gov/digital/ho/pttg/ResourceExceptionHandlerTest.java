@@ -3,6 +3,8 @@ package uk.gov.digital.ho.pttg;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.ResponseEntity;
+import uk.gov.digital.ho.pttg.application.AuditException;
+import uk.gov.digital.ho.pttg.application.ResourceExceptionHandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;

@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -14,23 +15,27 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import org.skyscreamer.jsonassert.JSONAssert;
+import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
+import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 public class AuditEntryResourceIntTest {
 
-    static final String SESSION_ID = "sessionID";
-    static final String DEPLOYMENT = "deployment";
-    static final String NAMESPACE = "env";
+    private static final String SESSION_ID = "sessionID";
+    private static final String DEPLOYMENT = "deployment";
+    private static final String NAMESPACE = "env";
 
     @Autowired
     private AuditEntryJpaRepository repository;
+
     @Autowired
     private TestRestTemplate restTemplate;
 
     @Before
     public void setup() {
+
+
         repository.save(new AuditEntry(
                 "3a22c723-ea0f-4962-b97b-f35dce3284b2",
                 LocalDateTime.parse("2017-09-11T14:45:48.094"),
@@ -39,7 +44,7 @@ public class AuditEntryResourceIntTest {
                 "bobby.bag@digital.homeoffice.gov.uk",
                 DEPLOYMENT,
                 NAMESPACE,
-                "INCOME_PROVING_FINANCIAL_STATUS_REQUEST",
+                INCOME_PROVING_FINANCIAL_STATUS_REQUEST,
                 "{\n" +
                         "      \"forename\": \"Antonio\",\n" +
                         "      \"method\": \"get-financial-status\",\n" +
@@ -58,7 +63,7 @@ public class AuditEntryResourceIntTest {
                 "bobby.bag@digital.homeoffice.gov.uk",
                 DEPLOYMENT,
                 NAMESPACE,
-                "INCOME_PROVING_FINANCIAL_STATUS_RESPONSE",
+                INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
                 "{\n" +
                         "      \"method\": \"get-financial-status\",\n" +
                         "      \"response\": {\n" +
@@ -87,8 +92,6 @@ public class AuditEntryResourceIntTest {
                         "    }"
         ));
     }
-
-
 
     @Test
     public void shouldRetrieveAllAudit() throws IOException, JSONException {

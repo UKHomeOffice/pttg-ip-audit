@@ -47,16 +47,17 @@ public class AuditEntry {
     @Getter
     private String namespace;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     @Getter
-    private String type;
+    private AuditEventType type;
 
     @Column(name = "detail", nullable = false)
     @Getter
     private String detail;
 
     public AuditEntry(String uuid, LocalDateTime timestamp, String sessionId, String correlationId,
-                      String userId, String deployment, String namespace, String type, String detail) {
+                      String userId, String deployment, String namespace, AuditEventType type, String detail) {
         this.uuid = uuid;
         this.timestamp = timestamp;
         this.sessionId = sessionId;
