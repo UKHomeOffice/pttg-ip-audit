@@ -1,4 +1,4 @@
-package uk.gov.digital.ho.pttg;
+package uk.gov.digital.ho.pttg.application;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
