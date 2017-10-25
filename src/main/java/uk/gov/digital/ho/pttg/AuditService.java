@@ -1,6 +1,7 @@
 package uk.gov.digital.ho.pttg;
 
 import org.json.JSONObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.pttg.alert.AppropriateUsageChecker;
@@ -33,8 +34,8 @@ public class AuditService {
         appropriateUsageChecker.postcheck(suspectUsage);
     }
 
-    public List<AuditRecord> getAllAuditData() {
-        List<AuditEntry> auditEntries = repository.findAllByOrderByTimestampDesc();
+    public List<AuditRecord> getAllAuditData(Pageable pageable) {
+        List<AuditEntry> auditEntries = repository.findAllByOrderByTimestampDesc(pageable);
 
         return auditEntries.stream()
                             .map(this::transformToAuditRecord)

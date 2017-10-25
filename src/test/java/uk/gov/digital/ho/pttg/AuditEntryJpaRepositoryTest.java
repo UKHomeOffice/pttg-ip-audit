@@ -6,6 +6,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +58,7 @@ public class AuditEntryJpaRepositoryTest {
     }
 
     @Test
-    public void shouldRetrieveAllAudit() {
+    public void shouldRetrieveAllAuditData() {
 
         final Iterable<AuditEntry> all = repository.findAll();
         assertThat(all).size().isEqualTo(7);
@@ -121,9 +123,22 @@ public class AuditEntryJpaRepositoryTest {
     }
 
     @Test
+    public void shouldRetrieveAllAuditDataLimitedByPagination() {
+
+        Pageable pagination = new PageRequest(0, 1);
+
+        final Iterable<AuditEntry> all = repository.findAllByOrderByTimestampDesc(pagination);
+
+        assertThat(all).size().isEqualTo(1);
+        assertThat(all)
+                .extracting("timestamp")
+                .containsExactly(DAY_AFTER_TOMORROW);
+    }
+
+    @Test
     public void shouldRetrieveAllAuditOrderedByTimestampDesc() {
 
-        final Iterable<AuditEntry> all = repository.findAllByOrderByTimestampDesc();
+        final Iterable<AuditEntry> all = repository.findAllByOrderByTimestampDesc(null);
         assertThat(all).size().isEqualTo(7);
         assertThat(all)
                 .extracting("timestamp")

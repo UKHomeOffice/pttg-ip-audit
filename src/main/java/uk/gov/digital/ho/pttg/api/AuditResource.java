@@ -1,6 +1,7 @@
 package uk.gov.digital.ho.pttg.api;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,13 +21,13 @@ public class AuditResource {
     }
 
     @GetMapping("/audit")
-    public List<AuditRecord> retrieveAllAuditData() {
+    public List<AuditRecord> retrieveAllAuditData(Pageable pageable) {
 
-        log.info("Audit records requested");
+        log.info("Audit records requested, {}", pageable);
 
-        List<AuditRecord> auditRecords = auditService.getAllAuditData();
+        List<AuditRecord> auditRecords = auditService.getAllAuditData(pageable);
 
-        log.info(String.format("%d audit records found", auditRecords.size()));
+        log.info("{} audit records found", auditRecords.size());
 
         return auditRecords;
     }
