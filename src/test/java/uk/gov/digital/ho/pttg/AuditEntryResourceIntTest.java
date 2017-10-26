@@ -2,6 +2,7 @@ package uk.gov.digital.ho.pttg;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -90,6 +91,11 @@ public class AuditEntryResourceIntTest {
                         "      }\n" +
                         "    }"
         ));
+    }
+
+    @After
+    public void tearDown() {
+        repository.deleteAll();
     }
 
     @Test
