@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import uk.gov.digital.ho.pttg.alert.EventService;
 import uk.gov.digital.ho.pttg.alert.IndividualVolumeUsage;
 import uk.gov.digital.ho.pttg.alert.MatchingFailureUsage;
 import uk.gov.digital.ho.pttg.alert.TimeOfRequestUsage;
@@ -18,7 +19,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Component
 @Slf4j
-public class SysdigEventService {
+public class SysdigEventService implements EventService {
+
     private final RestTemplate restTemplate;
     private final String sysdigEndpoint;
     private final String sysdigAccessToken;
@@ -29,40 +31,55 @@ public class SysdigEventService {
         @Value("${sysdig.service.endpoint}") String sysdigEndpoint,
         @Value("${sysdig.access.token}") String sysdigAccessToken,
         @Value("${auditing.deployment.namespace}") String namespace) {
+
         this.restTemplate = restTemplate;
         this.sysdigEndpoint = sysdigEndpoint;
         this.sysdigAccessToken = sysdigAccessToken;
         this.namespace = namespace;
     }
 
-
+    @Override
     public void sendUsersExceedUsageThresholdEvent(IndividualVolumeUsage individualVolumeUsage) {
         try {
             log.warn("Excessive usage detected");
-            Message message = new Message(new Event("Proving Things, Income Proving, Excessive Usage", String.format("Excessive usage detected; %s", individualVolumeUsage.getCountsByUser()), severity(), filter(), tags()));
+            Message message = new Message(new Event("Proving Things, Income Proving, Excessive Usage",
+                                                    String.format("Excessive usage detected; %s", individualVolumeUsage.getCountsByUser()),
+                                                    severity(),
+                                                    filter(),
+                                                    tags()));
             restTemplate.exchange(sysdigEndpoint, HttpMethod.POST, toEntity(message), Void.class);
         } catch (Exception e) {
-            log.error("Unable to alert on suspect usage", e);
+            log.error("Unable to produce Sysdig alert on suspect usage", e);
         }
     }
 
+    @Override
     public  void sendRequestsOutsideHoursEvent(TimeOfRequestUsage timeOfRequestUsage) {
         try {
             log.warn("Request made outside usual hours");
-            Message message = new Message(new Event("Proving Things, Income Proving, Out of hours activity", String.format("Activity detected outside usual hours; %d requests made", timeOfRequestUsage.getRequestCount()), severity(), filter(), tags()));
+            Message message = new Message(new Event("Proving Things, Income Proving, Out of hours activity",
+                                                    String.format("Activity detected outside usual hours; %d requests made", timeOfRequestUsage.getRequestCount()),
+                                                    severity(),
+                                                    filter(),
+                                                    tags()));
             restTemplate.exchange(sysdigEndpoint, HttpMethod.POST, toEntity(message), Void.class);
         } catch (Exception e) {
-            log.error("Unable to alert on suspect usage", e);
+            log.error("Unable to produce Sysdig alert on suspect usage", e);
         }
     }
 
+    @Override
     public void sendMatchingFailuresExceedThresholdEvent(MatchingFailureUsage matchingFailureUsage) {
         try {
             log.warn("Excessive number of match failures");
-            Message message = new Message(new Event("Proving Things, Income Proving, Excessive match failures", String.format("Excessive match failures detected; %d match failures", matchingFailureUsage.getCountOfFailures()), severity(), filter(), tags()));
+            Message message = new Message(new Event("Proving Things, Income Proving, Excessive match failures",
+                                                    String.format("Excessive match failures detected; %d match failures", matchingFailureUsage.getCountOfFailures()),
+                                                    severity(),
+                                                    filter(),
+                                                    tags()));
             restTemplate.exchange(sysdigEndpoint, HttpMethod.POST, toEntity(message), Void.class);
         } catch (Exception e) {
-            log.error("Unable to alert on suspect usage", e);
+            log.error("Unable to produce Sysdig alert on suspect usage", e);
         }
     }
 
