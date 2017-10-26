@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.pttg.alert.CountByUser;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -43,11 +44,13 @@ public class AuditEntryJpaRepositoryTest {
     @Autowired
     private AuditEntryJpaRepository repository;
 
+    @PostConstruct
+    public void postConstruct() {
+        repository.deleteAll();
+    }
+
     @Before
     public void setup() {
-
-        repository.deleteAll();
-
         repository.save(createAudit(TWO_DAYS_AGO));
         repository.save(createAudit(YESTERDAY));
         repository.save(createAudit(NOW_MINUS_60_MINS));
