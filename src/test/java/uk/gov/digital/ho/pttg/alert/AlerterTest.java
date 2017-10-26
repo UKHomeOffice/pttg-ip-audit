@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.digital.ho.pttg.alert.sysdig.SuspectUsage;
+import uk.gov.digital.ho.pttg.alert.sysdig.SysdigEventService;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
@@ -17,7 +18,7 @@ public class AlerterTest {
 
     private Alerter alerter;
 
-    @Mock private EventService eventService;
+    @Mock private SysdigEventService eventService;
 
     @Before
     public void before() throws Exception {
@@ -138,7 +139,6 @@ public class AlerterTest {
                 new MatchingFailureUsage(4)
             )
         );
-
 
         verify(eventService).sendUsersExceedUsageThresholdEvent(new IndividualVolumeUsage(ImmutableMap.of("andy", 11L)));
         verify(eventService).sendRequestsOutsideHoursEvent(new TimeOfRequestUsage(4));

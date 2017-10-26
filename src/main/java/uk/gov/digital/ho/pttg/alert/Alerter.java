@@ -2,16 +2,17 @@ package uk.gov.digital.ho.pttg.alert;
 
 import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.pttg.alert.sysdig.SuspectUsage;
+import uk.gov.digital.ho.pttg.alert.sysdig.SysdigEventService;
 
 @Component
 public class Alerter {
-    private final EventService eventService;
+    private final SysdigEventService eventService;
 
-    public Alerter(EventService eventService) {
+    public Alerter(SysdigEventService eventService) {
         this.eventService = eventService;
     }
 
-    public void inappropriateUsage(SuspectUsage previousUsage, SuspectUsage suspectUsage) {
+    void inappropriateUsage(SuspectUsage previousUsage, SuspectUsage suspectUsage) {
         if (suspectUsage.getIndividualVolumeUsage().isSuspect() &&
             suspectUsage.getIndividualVolumeUsage().isWorseThan(previousUsage.getIndividualVolumeUsage())) {
             eventService.sendUsersExceedUsageThresholdEvent(suspectUsage.getIndividualVolumeUsage());

@@ -8,7 +8,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import uk.gov.digital.ho.pttg.alert.EventService;
 import uk.gov.digital.ho.pttg.alert.IndividualVolumeUsage;
 import uk.gov.digital.ho.pttg.alert.MatchingFailureUsage;
 import uk.gov.digital.ho.pttg.alert.TimeOfRequestUsage;
@@ -19,7 +18,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Component
 @Slf4j
-public class SysdigEventService implements EventService {
+public class SysdigEventService {
 
     private final RestTemplate restTemplate;
     private final String sysdigEndpoint;
@@ -38,7 +37,6 @@ public class SysdigEventService implements EventService {
         this.namespace = namespace;
     }
 
-    @Override
     public void sendUsersExceedUsageThresholdEvent(IndividualVolumeUsage individualVolumeUsage) {
         try {
             log.warn("Excessive usage detected");
@@ -53,7 +51,6 @@ public class SysdigEventService implements EventService {
         }
     }
 
-    @Override
     public  void sendRequestsOutsideHoursEvent(TimeOfRequestUsage timeOfRequestUsage) {
         try {
             log.warn("Request made outside usual hours");
@@ -68,7 +65,6 @@ public class SysdigEventService implements EventService {
         }
     }
 
-    @Override
     public void sendMatchingFailuresExceedThresholdEvent(MatchingFailureUsage matchingFailureUsage) {
         try {
             log.warn("Excessive number of match failures");
