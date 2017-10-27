@@ -12,13 +12,15 @@ public class AppropriateUsageChecker {
     private final IndividualVolumeCheck individualVolumeCheck;
     private final TimeOfRequestCheck timeOfRequestCheck;
     private final MatchingFailureCheck matchingFailureCheck;
+    private final boolean alerterStatus;
 
-    public AppropriateUsageChecker(AuditEntryJpaRepository repository, Alerter alerter, IndividualVolumeCheck individualVolumeCheck, TimeOfRequestCheck timeOfRequestCheck, MatchingFailureCheck matchingFailureCheck) {
+    public AppropriateUsageChecker(AuditEntryJpaRepository repository, Alerter alerter, IndividualVolumeCheck individualVolumeCheck, TimeOfRequestCheck timeOfRequestCheck, MatchingFailureCheck matchingFailureCheck, boolean alerterStatus) {
         this.repository = repository;
         this.alerter = alerter;
         this.individualVolumeCheck = individualVolumeCheck;
         this.timeOfRequestCheck = timeOfRequestCheck;
         this.matchingFailureCheck = matchingFailureCheck;
+        this.alerterStatus = alerterStatus;
     }
 
     public SuspectUsage precheck() {
@@ -28,7 +30,9 @@ public class AppropriateUsageChecker {
     public void postcheck(SuspectUsage suspectUsage) {
         SuspectUsage newSuspectUsage = check();
         if (newSuspectUsage.isSuspect() && !newSuspectUsage.equals(suspectUsage)) {
-            alerter.inappropriateUsage(suspectUsage, newSuspectUsage);
+            if (alerterStatus) {
+                alerter.inappropriateUsage(suspectUsage, newSuspectUsage);
+            }
         }
     }
 

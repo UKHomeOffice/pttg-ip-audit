@@ -26,9 +26,10 @@ public class AppropriateUsageCheckerTest {
     @Mock private TimeOfRequestCheck timeOfRequestCheck;
     @Mock private MatchingFailureCheck matchingFailureCheck;
 
+
     @Before
     public void before() throws Exception {
-        appropriateUsageChecker = new AppropriateUsageChecker(repository, alerter, individualVolumeCheck, timeOfRequestCheck, matchingFailureCheck);
+        appropriateUsageChecker = new AppropriateUsageChecker(repository, alerter, individualVolumeCheck, timeOfRequestCheck, matchingFailureCheck, true);
     }
 
     @Test
@@ -68,6 +69,33 @@ public class AppropriateUsageCheckerTest {
         appropriateUsageChecker.postcheck(beforeUsage);
 
         verify(alerter).inappropriateUsage(any(), any());
+    }
+
+    @Test
+    public void shouldAlertInappropriateUsageIfAlerterStatusIsTrue() throws Exception {
+        SuspectUsage beforeUsage = new SuspectUsage(new IndividualVolumeUsage(ImmutableMap.of()), new TimeOfRequestUsage(0), new MatchingFailureUsage(0));
+
+        when(individualVolumeCheck.check(repository)).thenReturn(new IndividualVolumeUsage(Collections.singletonMap("charlie", 6l)));
+        when(timeOfRequestCheck.check(repository)).thenReturn(new TimeOfRequestUsage(0));
+        when(matchingFailureCheck.check(repository)).thenReturn(new MatchingFailureUsage(0));
+
+        appropriateUsageChecker.postcheck(beforeUsage);
+
+        verify(alerter).inappropriateUsage(any(), any());
+    }
+
+    @Test
+    public void shouldNotAlertInappropriateUsageIfAlerterStatusIsFalse() throws Exception {
+        SuspectUsage beforeUsage = new SuspectUsage(new IndividualVolumeUsage(ImmutableMap.of()), new TimeOfRequestUsage(0), new MatchingFailureUsage(0));
+        appropriateUsageChecker = new AppropriateUsageChecker(repository, alerter, individualVolumeCheck, timeOfRequestCheck, matchingFailureCheck, false);
+
+        when(individualVolumeCheck.check(repository)).thenReturn(new IndividualVolumeUsage(Collections.singletonMap("charlie", 6l)));
+        when(timeOfRequestCheck.check(repository)).thenReturn(new TimeOfRequestUsage(0));
+        when(matchingFailureCheck.check(repository)).thenReturn(new MatchingFailureUsage(0));
+
+        appropriateUsageChecker.postcheck(beforeUsage);
+
+        verify(alerter, never()).inappropriateUsage(any(), any());
     }
 
     @Test
