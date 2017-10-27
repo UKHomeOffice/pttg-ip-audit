@@ -26,7 +26,7 @@ public class AppropriateUsageCheckerTest {
 
     @Before
     public void before() throws Exception {
-        appropriateUsageChecker = new AppropriateUsageChecker(alerter, individualVolumeCheck, timeOfRequestCheck, matchingFailureCheck);
+        appropriateUsageChecker = new AppropriateUsageChecker(alerter, individualVolumeCheck, timeOfRequestCheck, matchingFailureCheck, true);
     }
 
     @Test
@@ -66,6 +66,33 @@ public class AppropriateUsageCheckerTest {
         appropriateUsageChecker.postcheck(beforeUsage);
 
         verify(alerter).inappropriateUsage(any(), any());
+    }
+
+    @Test
+    public void shouldAlertInappropriateUsageIfAlerterStatusIsTrue() throws Exception {
+        SuspectUsage beforeUsage = new SuspectUsage(new IndividualVolumeUsage(ImmutableMap.of()), new TimeOfRequestUsage(0), new MatchingFailureUsage(0));
+
+        when(individualVolumeCheck.check()).thenReturn(new IndividualVolumeUsage(Collections.singletonMap("charlie", 6l)));
+        when(timeOfRequestCheck.check()).thenReturn(new TimeOfRequestUsage(0));
+        when(matchingFailureCheck.check()).thenReturn(new MatchingFailureUsage(0));
+
+        appropriateUsageChecker.postcheck(beforeUsage);
+
+        verify(alerter).inappropriateUsage(any(), any());
+    }
+
+    @Test
+    public void shouldNotAlertInappropriateUsageIfAlerterStatusIsFalse() throws Exception {
+        SuspectUsage beforeUsage = new SuspectUsage(new IndividualVolumeUsage(ImmutableMap.of()), new TimeOfRequestUsage(0), new MatchingFailureUsage(0));
+        appropriateUsageChecker = new AppropriateUsageChecker(alerter, individualVolumeCheck, timeOfRequestCheck, matchingFailureCheck, false);
+
+        when(individualVolumeCheck.check()).thenReturn(new IndividualVolumeUsage(Collections.singletonMap("charlie", 6l)));
+        when(timeOfRequestCheck.check()).thenReturn(new TimeOfRequestUsage(0));
+        when(matchingFailureCheck.check()).thenReturn(new MatchingFailureUsage(0));
+
+        appropriateUsageChecker.postcheck(beforeUsage);
+
+        verify(alerter, never()).inappropriateUsage(any(), any());
     }
 
     @Test
