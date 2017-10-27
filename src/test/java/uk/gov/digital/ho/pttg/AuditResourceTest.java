@@ -18,7 +18,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-
 @RunWith(MockitoJUnitRunner.class)
 public class AuditResourceTest {
 
@@ -82,7 +81,7 @@ public class AuditResourceTest {
                 "some deployment name",
                 "some deployment namespace",
                 AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
-                "some data");
+                "{}");
 
         resource.recordAuditEntry(auditableData);
 

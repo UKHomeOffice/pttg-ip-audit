@@ -37,6 +37,7 @@ public class ServiceConfiguration {
 
     @Bean
     public Clock clock() {
+//        return Clock.fixed(Instant.parse("2017-09-11T18:00:00Z"), ZoneId.of("UTC"));
         return Clock.systemDefaultZone();
     }
 }

@@ -22,13 +22,12 @@ import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STA
 
 @RunWith(MockitoJUnitRunner.class)
 public class TimeOfRequestCheckTest {
+
     private TimeOfRequestCheck timeOfRequestCheck;
-    @Mock
-    private AuditEntryJpaRepository repository;
-    @Captor
-    private ArgumentCaptor<LocalDateTime> startTimeCaptor;
-    @Captor
-    private ArgumentCaptor<LocalDateTime> endTimeCaptor;
+
+    @Mock private AuditEntryJpaRepository mockRepository;
+    @Captor private ArgumentCaptor<LocalDateTime> captorStartTime;
+    @Captor private ArgumentCaptor<LocalDateTime> captorEndTime;
 
     private static TimeZone defaultTimeZone;
 
@@ -45,17 +44,17 @@ public class TimeOfRequestCheckTest {
 
     @Before
     public void before() throws Exception {
-        timeOfRequestCheck = new TimeOfRequestCheck("07:23", "19:13", "dev", Clock.fixed(Instant.parse("2017-08-29T08:00:00Z"), ZoneId.of("UTC")));
+        timeOfRequestCheck = new TimeOfRequestCheck(Clock.fixed(Instant.parse("2017-08-29T08:00:00Z"), ZoneId.of("UTC")), mockRepository,"07:23", "19:13", "dev");
     }
 
     @Test
     public void shouldCountRequestsBetweenStartOfDayAndStartOfWorkingDayInUTCWhenInDaylightSavings() throws Exception {
-        timeOfRequestCheck.check(repository);
+        timeOfRequestCheck.check();
 
-        verify(repository, atLeast(2)).countEntriesBetweenDates(startTimeCaptor.capture(), endTimeCaptor.capture(), Mockito.eq(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE), Mockito.eq("dev"));
+        verify(mockRepository, atLeast(2)).countEntriesBetweenDates(captorStartTime.capture(), captorEndTime.capture(), Mockito.eq(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE), Mockito.eq("dev"));
 
-        LocalDateTime startOfDay = startTimeCaptor.getAllValues().get(0);
-        LocalDateTime startOfWorkingDay = endTimeCaptor.getAllValues().get(0);
+        LocalDateTime startOfDay = captorStartTime.getAllValues().get(0);
+        LocalDateTime startOfWorkingDay = captorEndTime.getAllValues().get(0);
 
         assertThat(startOfDay.toLocalDate()).isEqualTo(LocalDate.of(2017, 8, 29));
         assertThat(startOfDay.getHour()).isEqualTo(0);
@@ -66,18 +65,17 @@ public class TimeOfRequestCheckTest {
         assertThat(startOfWorkingDay.getHour()).isEqualTo(6);
         assertThat(startOfWorkingDay.getMinute()).isEqualTo(23);
         assertThat(startOfWorkingDay.getSecond()).isEqualTo(0);
-
     }
 
     @Test
     public void shouldCountRequestsBetweenStartOfDayAndStartOfWorkingDayInUTCWhenNotInDaylightSavings() throws Exception {
-        timeOfRequestCheck = new TimeOfRequestCheck("07:23", "19:13", "dev", Clock.fixed(Instant.parse("2017-12-29T08:00:00Z"), ZoneId.of("UTC")));
-        timeOfRequestCheck.check(repository);
+        timeOfRequestCheck = new TimeOfRequestCheck(Clock.fixed(Instant.parse("2017-12-29T08:00:00Z"), ZoneId.of("UTC")), mockRepository,"07:23", "19:13", "dev");
+        timeOfRequestCheck.check();
 
-        verify(repository, atLeast(2)).countEntriesBetweenDates(startTimeCaptor.capture(), endTimeCaptor.capture(), Mockito.eq(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE), Mockito.eq("dev"));
+        verify(mockRepository, atLeast(2)).countEntriesBetweenDates(captorStartTime.capture(), captorEndTime.capture(), Mockito.eq(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE), Mockito.eq("dev"));
 
-        LocalDateTime startOfDay = startTimeCaptor.getAllValues().get(0);
-        LocalDateTime startOfWorkingDay = endTimeCaptor.getAllValues().get(0);
+        LocalDateTime startOfDay = captorStartTime.getAllValues().get(0);
+        LocalDateTime startOfWorkingDay = captorEndTime.getAllValues().get(0);
 
         assertThat(startOfDay.toLocalDate()).isEqualTo(LocalDate.of(2017, 12, 29));
         assertThat(startOfDay.getHour()).isEqualTo(0);
@@ -93,12 +91,12 @@ public class TimeOfRequestCheckTest {
 
     @Test
     public void shouldCountRequestsBetweenEndOfWorkingDayInUTCAndStartOfTomorrowWhenInDaylightSavings() throws Exception {
-        timeOfRequestCheck.check(repository);
+        timeOfRequestCheck.check();
 
-        verify(repository, atLeast(2)).countEntriesBetweenDates(startTimeCaptor.capture(), endTimeCaptor.capture(), Mockito.eq(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE), Mockito.eq("dev"));
+        verify(mockRepository, atLeast(2)).countEntriesBetweenDates(captorStartTime.capture(), captorEndTime.capture(), Mockito.eq(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE), Mockito.eq("dev"));
 
-        LocalDateTime endOfWorkingDay = startTimeCaptor.getAllValues().get(1);
-        LocalDateTime endOfDay = endTimeCaptor.getAllValues().get(1);
+        LocalDateTime endOfWorkingDay = captorStartTime.getAllValues().get(1);
+        LocalDateTime endOfDay = captorEndTime.getAllValues().get(1);
 
         assertThat(endOfWorkingDay.toLocalDate()).isEqualTo(LocalDate.of(2017, 8, 29));
         assertThat(endOfWorkingDay.getHour()).isEqualTo(18);
@@ -113,13 +111,13 @@ public class TimeOfRequestCheckTest {
 
     @Test
     public void shouldCountRequestsBetweenEndOfWorkingDayInUTCAndStartOfTomorrowWhenNotInDaylightSavings() throws Exception {
-        timeOfRequestCheck = new TimeOfRequestCheck("07:23", "19:13", "dev", Clock.fixed(Instant.parse("2017-12-29T08:00:00Z"), ZoneId.of("UTC")));
-        timeOfRequestCheck.check(repository);
+        timeOfRequestCheck = new TimeOfRequestCheck(Clock.fixed(Instant.parse("2017-12-29T08:00:00Z"), ZoneId.of("UTC")), mockRepository,"07:23", "19:13", "dev");
+        timeOfRequestCheck.check();
 
-        verify(repository, atLeast(2)).countEntriesBetweenDates(startTimeCaptor.capture(), endTimeCaptor.capture(), Mockito.eq(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE), Mockito.eq("dev"));
+        verify(mockRepository, atLeast(2)).countEntriesBetweenDates(captorStartTime.capture(), captorEndTime.capture(), Mockito.eq(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE), Mockito.eq("dev"));
 
-        LocalDateTime endOfWorkingDay = startTimeCaptor.getAllValues().get(1);
-        LocalDateTime endOfDay = endTimeCaptor.getAllValues().get(1);
+        LocalDateTime endOfWorkingDay = captorStartTime.getAllValues().get(1);
+        LocalDateTime endOfDay = captorEndTime.getAllValues().get(1);
 
         assertThat(endOfWorkingDay.toLocalDate()).isEqualTo(LocalDate.of(2017, 12, 29));
         assertThat(endOfWorkingDay.getHour()).isEqualTo(19);
@@ -134,9 +132,9 @@ public class TimeOfRequestCheckTest {
 
     @Test
     public void shouldSumBothCounts() {
-        when(repository.countEntriesBetweenDates(any(), any(), any(), any())).thenReturn(Long.valueOf(3));
+        when(mockRepository.countEntriesBetweenDates(any(), any(), any(), any())).thenReturn(Long.valueOf(3));
 
-        TimeOfRequestUsage timeOfRequestUsage = timeOfRequestCheck.check(repository);
+        TimeOfRequestUsage timeOfRequestUsage = timeOfRequestCheck.check();
 
         assertThat(timeOfRequestUsage.getRequestCount()).isEqualTo(6);
     }

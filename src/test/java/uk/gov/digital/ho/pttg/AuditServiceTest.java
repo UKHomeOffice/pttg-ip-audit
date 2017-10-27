@@ -64,7 +64,7 @@ public class AuditServiceTest {
                 "some deployment name",
                 "some deployment namespace",
                 INCOME_PROVING_FINANCIAL_STATUS_REQUEST,
-                "some data");
+                "{}");
 
         AuditEntry auditEntry = auditService.transformToAuditEntry(auditableData);
 
@@ -76,7 +76,7 @@ public class AuditServiceTest {
         assertThat(auditEntry.getDeployment()).isEqualTo("some deployment name");
         assertThat(auditEntry.getNamespace()).isEqualTo("some deployment namespace");
         assertThat(auditEntry.getType()).isEqualTo(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
-        assertThat(auditEntry.getDetail()).isEqualTo("some data");
+        assertThat(auditEntry.getDetail()).isEqualTo("{}");
     }
 
     @Test

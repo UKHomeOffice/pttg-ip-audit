@@ -24,7 +24,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
         @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "/sql/AuditEntryResourceIntTest/before.sql"),
         @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "/sql/AuditEntryResourceIntTest/after.sql")
 })
-public class AuditEntryResourceIntTest {
+public class AuditResourceIntTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
