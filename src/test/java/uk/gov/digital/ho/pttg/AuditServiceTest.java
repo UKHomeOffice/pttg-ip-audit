@@ -2,9 +2,11 @@ package uk.gov.digital.ho.pttg;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.digital.ho.pttg.alert.AppropriateUsageChecker;
 import uk.gov.digital.ho.pttg.alert.sysdig.SuspectUsage;
 import uk.gov.digital.ho.pttg.api.AuditRecord;
@@ -16,10 +18,10 @@ import java.util.Collections;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
 
+@RunWith(MockitoJUnitRunner.class)
 public class AuditServiceTest {
 
     private LocalDateTime now;
@@ -33,9 +35,6 @@ public class AuditServiceTest {
 
     @Before
     public void setup() {
-
-        initMocks(this);
-
         now = LocalDateTime.now();
         auditService = new AuditService(mockRepository, mockChecker);
     }

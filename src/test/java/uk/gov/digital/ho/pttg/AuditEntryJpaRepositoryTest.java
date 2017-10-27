@@ -14,6 +14,7 @@ import uk.gov.digital.ho.pttg.alert.CountByUser;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
 
@@ -151,7 +152,7 @@ public class AuditEntryJpaRepositoryTest {
 
     private AuditEntry createAudit(LocalDateTime timestamp, String userId) {
         return new AuditEntry(
-                java.util.UUID.randomUUID().toString(),
+                randomUUID().toString(),
                 timestamp,
                 SESSION_ID,
                 UUID,
