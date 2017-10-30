@@ -2,21 +2,22 @@ package uk.gov.digital.ho.pttg.alert;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.gov.digital.ho.pttg.AuditEntryJpaRepository;
 import uk.gov.digital.ho.pttg.alert.sysdig.SuspectUsage;
 
 @Component
 public class AppropriateUsageChecker {
 
-    private final AuditEntryJpaRepository repository;
     private final Alerter alerter;
     private final IndividualVolumeCheck individualVolumeCheck;
     private final TimeOfRequestCheck timeOfRequestCheck;
     private final MatchingFailureCheck matchingFailureCheck;
     private final boolean alerterStatus;
 
-    public AppropriateUsageChecker(AuditEntryJpaRepository repository, Alerter alerter, IndividualVolumeCheck individualVolumeCheck, TimeOfRequestCheck timeOfRequestCheck, MatchingFailureCheck matchingFailureCheck, @Value("${alert.enabled}")boolean alerterStatus) {
-        this.repository = repository;
+    public AppropriateUsageChecker(Alerter alerter,
+                                   IndividualVolumeCheck individualVolumeCheck,
+                                   TimeOfRequestCheck timeOfRequestCheck,
+                                   MatchingFailureCheck matchingFailureCheck,
+                                   @Value("${alert.enabled}")boolean alerterStatus) {
         this.alerter = alerter;
         this.individualVolumeCheck = individualVolumeCheck;
         this.timeOfRequestCheck = timeOfRequestCheck;
@@ -39,9 +40,9 @@ public class AppropriateUsageChecker {
 
     private SuspectUsage check() {
         return new SuspectUsage(
-            individualVolumeCheck.check(repository),
-            timeOfRequestCheck.check(repository),
-            matchingFailureCheck.check(repository)
+            individualVolumeCheck.check(),
+            timeOfRequestCheck.check(),
+            matchingFailureCheck.check()
         );
     }
 }

@@ -18,11 +18,11 @@ public class AlerterTest {
 
     private Alerter alerter;
 
-    @Mock private SysdigEventService sysdigEventService;
+    @Mock private SysdigEventService eventService;
 
     @Before
     public void before() throws Exception {
-        alerter = new Alerter(sysdigEventService);
+        alerter = new Alerter(eventService);
     }
 
     @Test
@@ -33,7 +33,7 @@ public class AlerterTest {
             new MatchingFailureUsage(0)
         ));
 
-        verify(sysdigEventService).sendUsersExceedUsageThresholdEvent(new IndividualVolumeUsage(ImmutableMap.of("andy", 11L)));
+        verify(eventService).sendUsersExceedUsageThresholdEvent(new IndividualVolumeUsage(ImmutableMap.of("andy", 11L)));
     }
 
 
@@ -45,7 +45,7 @@ public class AlerterTest {
             new MatchingFailureUsage(0)
         ));
 
-        verify(sysdigEventService, never()).sendUsersExceedUsageThresholdEvent(any());
+        verify(eventService, never()).sendUsersExceedUsageThresholdEvent(any());
     }
 
     @Test
@@ -56,7 +56,7 @@ public class AlerterTest {
             new MatchingFailureUsage(4)
         ));
 
-        verify(sysdigEventService).sendMatchingFailuresExceedThresholdEvent(new MatchingFailureUsage(4));
+        verify(eventService).sendMatchingFailuresExceedThresholdEvent(new MatchingFailureUsage(4));
     }
 
     @Test
@@ -67,7 +67,7 @@ public class AlerterTest {
             new MatchingFailureUsage(0)
         ));
 
-        verify(sysdigEventService, never()).sendMatchingFailuresExceedThresholdEvent(any());
+        verify(eventService, never()).sendMatchingFailuresExceedThresholdEvent(any());
     }
 
     @Test
@@ -78,7 +78,7 @@ public class AlerterTest {
             new MatchingFailureUsage(0)
         ));
 
-        verify(sysdigEventService).sendRequestsOutsideHoursEvent(new TimeOfRequestUsage(4));
+        verify(eventService).sendRequestsOutsideHoursEvent(new TimeOfRequestUsage(4));
     }
 
     @Test
@@ -89,7 +89,7 @@ public class AlerterTest {
             new MatchingFailureUsage(0)
         ));
 
-        verify(sysdigEventService, never()).sendRequestsOutsideHoursEvent(any());
+        verify(eventService, never()).sendRequestsOutsideHoursEvent(any());
     }
 
     @Test
@@ -100,9 +100,9 @@ public class AlerterTest {
             new MatchingFailureUsage(4)
         ));
 
-        verify(sysdigEventService).sendUsersExceedUsageThresholdEvent(new IndividualVolumeUsage(ImmutableMap.of("andy", 11L)));
-        verify(sysdigEventService).sendRequestsOutsideHoursEvent(new TimeOfRequestUsage(4));
-        verify(sysdigEventService).sendMatchingFailuresExceedThresholdEvent(new MatchingFailureUsage(4));
+        verify(eventService).sendUsersExceedUsageThresholdEvent(new IndividualVolumeUsage(ImmutableMap.of("andy", 11L)));
+        verify(eventService).sendRequestsOutsideHoursEvent(new TimeOfRequestUsage(4));
+        verify(eventService).sendMatchingFailuresExceedThresholdEvent(new MatchingFailureUsage(4));
     }
 
     @Test
@@ -120,9 +120,9 @@ public class AlerterTest {
             )
         );
 
-        verify(sysdigEventService, never()).sendUsersExceedUsageThresholdEvent(any());
-        verify(sysdigEventService, never()).sendMatchingFailuresExceedThresholdEvent(any());
-        verify(sysdigEventService, never()).sendRequestsOutsideHoursEvent(any());
+        verify(eventService, never()).sendUsersExceedUsageThresholdEvent(any());
+        verify(eventService, never()).sendMatchingFailuresExceedThresholdEvent(any());
+        verify(eventService, never()).sendRequestsOutsideHoursEvent(any());
     }
 
     @Test
@@ -140,10 +140,9 @@ public class AlerterTest {
             )
         );
 
-
-        verify(sysdigEventService).sendUsersExceedUsageThresholdEvent(new IndividualVolumeUsage(ImmutableMap.of("andy", 11L)));
-        verify(sysdigEventService).sendRequestsOutsideHoursEvent(new TimeOfRequestUsage(4));
-        verify(sysdigEventService).sendMatchingFailuresExceedThresholdEvent(new MatchingFailureUsage(4));
+        verify(eventService).sendUsersExceedUsageThresholdEvent(new IndividualVolumeUsage(ImmutableMap.of("andy", 11L)));
+        verify(eventService).sendRequestsOutsideHoursEvent(new TimeOfRequestUsage(4));
+        verify(eventService).sendMatchingFailuresExceedThresholdEvent(new MatchingFailureUsage(4));
     }
 
 

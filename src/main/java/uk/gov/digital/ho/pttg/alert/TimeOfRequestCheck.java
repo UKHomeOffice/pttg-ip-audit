@@ -13,25 +13,26 @@ import java.time.ZoneId;
 @Component
 public class TimeOfRequestCheck {
 
+    private final Clock clock;
+    private final AuditEntryJpaRepository repository;
     private final String startTime;
     private final String endTime;
     private final String namespace;
-    private final Clock clock;
 
-
-    public TimeOfRequestCheck(@Value("${alert.acceptable.hours.start}") String startTime,
+    public TimeOfRequestCheck(Clock clock,
+                              AuditEntryJpaRepository repository,
+                              @Value("${alert.acceptable.hours.start}") String startTime,
                                 @Value("${alert.acceptable.hours.end}") String endTime,
-                                @Value("${auditing.deployment.namespace}") String namespace,
-                                Clock clock) {
+                                @Value("${auditing.deployment.namespace}") String namespace) {
 
+        this.clock = clock;
+        this.repository = repository;
         this.startTime = startTime;
         this.endTime = endTime;
         this.namespace = namespace;
-        this.clock = clock;
     }
 
-
-    public TimeOfRequestUsage check(AuditEntryJpaRepository repository) {
+    public TimeOfRequestUsage check() {
 
         Long beforeWorkingHours = repository.countEntriesBetweenDates(
             LocalDate.now(clock).atStartOfDay(),

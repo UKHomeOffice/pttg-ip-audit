@@ -13,7 +13,10 @@ import uk.gov.digital.ho.pttg.AuditEntry;
 import uk.gov.digital.ho.pttg.AuditEntryJpaRepository;
 import uk.gov.digital.ho.pttg.AuditEventType;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +30,7 @@ import static org.mockito.Mockito.when;
 public class MatchingFailureCheckTest {
 
     private MatchingFailureCheck matchingFailureCheck;
+    private Clock clock;
 
     @Mock private AuditEntryJpaRepository mockRepository;
     @Captor private ArgumentCaptor<LocalDateTime> captorStartTimeCaptor;
@@ -34,7 +38,8 @@ public class MatchingFailureCheckTest {
 
     @Before
     public void before() throws Exception {
-        matchingFailureCheck = new MatchingFailureCheck(3, "dev");
+        clock = Clock.fixed(Instant.parse("2017-08-29T08:00:00Z"), ZoneId.of("UTC"));
+        matchingFailureCheck = new MatchingFailureCheck(clock, mockRepository,3, "dev");
     }
 
     @Test
@@ -47,8 +52,8 @@ public class MatchingFailureCheckTest {
 
         );
         when(mockRepository.getEntriesBetweenDates(any(), any(), any(), any())).thenReturn(fourFailures);
-        assertThat(matchingFailureCheck.check(mockRepository).isSuspect()).isTrue();
-        assertThat(matchingFailureCheck.check(mockRepository).getCountOfFailures()).isEqualTo(4);
+        assertThat(matchingFailureCheck.check().isSuspect()).isTrue();
+        assertThat(matchingFailureCheck.check().getCountOfFailures()).isEqualTo(4);
     }
 
     @Test
@@ -60,8 +65,8 @@ public class MatchingFailureCheckTest {
 
         );
         when(mockRepository.getEntriesBetweenDates(any(), any(), any(), any())).thenReturn(fourFailures);
-        assertThat(matchingFailureCheck.check(mockRepository).isSuspect()).isFalse();
-        assertThat(matchingFailureCheck.check(mockRepository).getCountOfFailures()).isEqualTo(0);
+        assertThat(matchingFailureCheck.check().isSuspect()).isFalse();
+        assertThat(matchingFailureCheck.check().getCountOfFailures()).isEqualTo(0);
     }
 
     @Test
@@ -79,13 +84,13 @@ public class MatchingFailureCheckTest {
 
         );
         when(mockRepository.getEntriesBetweenDates(any(), any(), any(), any())).thenReturn(fourFailures);
-        assertThat(matchingFailureCheck.check(mockRepository).isSuspect()).isFalse();
-        assertThat(matchingFailureCheck.check(mockRepository).getCountOfFailures()).isEqualTo(0);
+        assertThat(matchingFailureCheck.check().isSuspect()).isFalse();
+        assertThat(matchingFailureCheck.check().getCountOfFailures()).isEqualTo(0);
     }
 
     @Test
     public void shouldRetrieveEntriesInTheLastHour() throws Exception {
-        matchingFailureCheck.check(mockRepository);
+        matchingFailureCheck.check();
 
         verify(mockRepository).getEntriesBetweenDates(captorStartTimeCaptor.capture(), captorEndTimeCaptor.capture(), Mockito.eq(AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE), Mockito.eq("dev"));
 
@@ -93,15 +98,14 @@ public class MatchingFailureCheckTest {
         LocalDateTime endTime = captorEndTimeCaptor.getValue();
 
         assertThat(startTime.until(endTime, ChronoUnit.MINUTES)).isEqualTo(60);
-        assertThat(endTime.until(LocalDateTime.now(), ChronoUnit.MINUTES)).isEqualTo(0);
-
+        assertThat(endTime.until(LocalDateTime.now(clock), ChronoUnit.MINUTES)).isEqualTo(0);
     }
 
 
     private AuditEntry auditEntryWithDetail(String detail) {
-        AuditEntry auditEntry = new AuditEntry(
+        return new AuditEntry(
             UUID.randomUUID().toString(),
-            LocalDateTime.now(),
+            LocalDateTime.now(clock),
             UUID.randomUUID().toString(),
             UUID.randomUUID().toString(),
             "dave",
@@ -110,7 +114,6 @@ public class MatchingFailureCheckTest {
             AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
             detail
         );
-        return auditEntry;
     }
 
 }

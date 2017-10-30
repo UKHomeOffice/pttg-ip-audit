@@ -5,8 +5,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Profile;
-import org.springframework.test.annotation.Rollback;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.pttg.alert.CountByUser;
@@ -14,14 +14,13 @@ import uk.gov.digital.ho.pttg.alert.CountByUser;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@Profile("logtoconsole")
 @Transactional
-@Rollback
 public class AuditEntryJpaRepositoryTest {
 
     private static final String SESSION_ID = "sessionID";
@@ -43,9 +42,6 @@ public class AuditEntryJpaRepositoryTest {
 
     @Before
     public void setup() {
-
-        repository.deleteAll();
-
         repository.save(createAudit(TWO_DAYS_AGO));
         repository.save(createAudit(YESTERDAY));
         repository.save(createAudit(NOW_MINUS_60_MINS));
@@ -56,7 +52,7 @@ public class AuditEntryJpaRepositoryTest {
     }
 
     @Test
-    public void shouldRetrieveAllAudit() {
+    public void shouldRetrieveAllAuditData() {
 
         final Iterable<AuditEntry> all = repository.findAll();
         assertThat(all).size().isEqualTo(7);
@@ -121,9 +117,22 @@ public class AuditEntryJpaRepositoryTest {
     }
 
     @Test
+    public void shouldRetrieveAllAuditDataLimitedByPagination() {
+
+        Pageable pagination = new PageRequest(0, 1);
+
+        final Iterable<AuditEntry> all = repository.findAllByOrderByTimestampDesc(pagination);
+
+        assertThat(all).size().isEqualTo(1);
+        assertThat(all)
+                .extracting("timestamp")
+                .containsExactly(DAY_AFTER_TOMORROW);
+    }
+
+    @Test
     public void shouldRetrieveAllAuditOrderedByTimestampDesc() {
 
-        final Iterable<AuditEntry> all = repository.findAllByOrderByTimestampDesc();
+        final Iterable<AuditEntry> all = repository.findAllByOrderByTimestampDesc(null);
         assertThat(all).size().isEqualTo(7);
         assertThat(all)
                 .extracting("timestamp")
@@ -143,7 +152,7 @@ public class AuditEntryJpaRepositoryTest {
 
     private AuditEntry createAudit(LocalDateTime timestamp, String userId) {
         return new AuditEntry(
-                java.util.UUID.randomUUID().toString(),
+                randomUUID().toString(),
                 timestamp,
                 SESSION_ID,
                 UUID,

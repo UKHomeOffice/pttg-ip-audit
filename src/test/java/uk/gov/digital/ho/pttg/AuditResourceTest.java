@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.domain.Pageable;
 import uk.gov.digital.ho.pttg.api.AuditRecord;
 import uk.gov.digital.ho.pttg.api.AuditResource;
 import uk.gov.digital.ho.pttg.api.AuditableData;
@@ -15,9 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuditResourceTest {
@@ -42,19 +41,31 @@ public class AuditResourceTest {
     @Test
     public void shouldUseCollaboratorsForRetrieveAllAuditData() {
 
-        when(mockService.getAllAuditData()).thenReturn(Collections.singletonList(AUDIT_RECORD));
+        when(mockService.getAllAuditData(any(Pageable.class))).thenReturn(Collections.singletonList(AUDIT_RECORD));
 
-        resource.retrieveAllAuditData();
+        resource.retrieveAllAuditData(null);
 
-        verify(mockService).getAllAuditData();
+        verify(mockService).getAllAuditData(null);
+    }
+
+    @Test
+    public void shouldUsePaginationObjectForRetrieveAllAuditData() {
+
+        Pageable pageable = mock(Pageable.class);
+
+        when(mockService.getAllAuditData(pageable)).thenReturn(Collections.singletonList(AUDIT_RECORD));
+
+        resource.retrieveAllAuditData(pageable);
+
+        verify(mockService).getAllAuditData(pageable);
     }
 
     @Test
     public void shouldUseReturnAuditRecords() {
 
-        when(mockService.getAllAuditData()).thenReturn(Collections.singletonList(AUDIT_RECORD));
+        when(mockService.getAllAuditData(null)).thenReturn(Collections.singletonList(AUDIT_RECORD));
 
-        List<AuditRecord> auditRecords = resource.retrieveAllAuditData();
+        List<AuditRecord> auditRecords = resource.retrieveAllAuditData(null);
 
         assertThat(auditRecords).containsExactly(AUDIT_RECORD);
     }
@@ -70,7 +81,7 @@ public class AuditResourceTest {
                 "some deployment name",
                 "some deployment namespace",
                 AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
-                "some data");
+                "{}");
 
         resource.recordAuditEntry(auditableData);
 

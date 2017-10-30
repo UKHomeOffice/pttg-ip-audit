@@ -2,9 +2,11 @@ package uk.gov.digital.ho.pttg;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.digital.ho.pttg.alert.AppropriateUsageChecker;
 import uk.gov.digital.ho.pttg.alert.sysdig.SuspectUsage;
 import uk.gov.digital.ho.pttg.api.AuditRecord;
@@ -16,10 +18,10 @@ import java.util.Collections;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
 
+@RunWith(MockitoJUnitRunner.class)
 public class AuditServiceTest {
 
     private LocalDateTime now;
@@ -33,9 +35,6 @@ public class AuditServiceTest {
 
     @Before
     public void setup() {
-
-        initMocks(this);
-
         now = LocalDateTime.now();
         auditService = new AuditService(mockRepository, mockChecker);
     }
@@ -65,7 +64,7 @@ public class AuditServiceTest {
                 "some deployment name",
                 "some deployment namespace",
                 INCOME_PROVING_FINANCIAL_STATUS_REQUEST,
-                "some data");
+                "{}");
 
         AuditEntry auditEntry = auditService.transformToAuditEntry(auditableData);
 
@@ -77,7 +76,7 @@ public class AuditServiceTest {
         assertThat(auditEntry.getDeployment()).isEqualTo("some deployment name");
         assertThat(auditEntry.getNamespace()).isEqualTo("some deployment namespace");
         assertThat(auditEntry.getType()).isEqualTo(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
-        assertThat(auditEntry.getDetail()).isEqualTo("some data");
+        assertThat(auditEntry.getDetail()).isEqualTo("{}");
     }
 
     @Test
@@ -109,7 +108,7 @@ public class AuditServiceTest {
     public void shouldTransformAuditEntryWithNinoToAuditRecord() {
 
         LocalDateTime now = LocalDateTime.now();
-        AuditEntry auditEntryWithoutNino = new AuditEntry("some uuid",
+        AuditEntry auditEntryWithNino = new AuditEntry("some uuid",
                 now,
                 "any session id",
                 "some correlation id",
@@ -117,18 +116,10 @@ public class AuditServiceTest {
                 "any deployment",
                 "any namespace",
                 INCOME_PROVING_FINANCIAL_STATUS_REQUEST,
-                "{\n" +
-                        "      \"forename\": \"Antonio\",\n" +
-                        "      \"method\": \"get-financial-status\",\n" +
-                        "      \"dependants\": 0,\n" +
-                        "      \"surname\": \"Gramsci\",\n" +
-                        "      \"applicationRaisedDate\": \"2017-06-01\",\n" +
-                        "      \"dateOfBirth\": \"1891-01-22\",\n" +
-                        "      \"nino\": \"some NINO\"\n" +
-                        "    }"
+                "{\"nino\": \"some NINO\"}"
         );
 
-        AuditRecord auditRecord = auditService.transformToAuditRecord(auditEntryWithoutNino);
+        AuditRecord auditRecord = auditService.transformToAuditRecord(auditEntryWithNino);
 
         assertThat(auditRecord.getId()).isEqualTo("some correlation id");
         assertThat(auditRecord.getDate()).isEqualTo(now);
