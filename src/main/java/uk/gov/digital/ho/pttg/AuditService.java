@@ -25,12 +25,11 @@ public class AuditService {
 
     @Transactional
     public void add(AuditableData auditableData) {
-        SuspectUsage suspectUsage = appropriateUsageChecker.precheck();
 
         AuditEntry auditEntry = transformToAuditEntry(auditableData);
 
+        SuspectUsage suspectUsage = appropriateUsageChecker.precheck();
         repository.save(auditEntry);
-
         appropriateUsageChecker.postcheck(suspectUsage);
     }
 
