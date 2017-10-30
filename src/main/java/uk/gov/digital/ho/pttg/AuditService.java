@@ -28,9 +28,14 @@ public class AuditService {
 
         AuditEntry auditEntry = transformToAuditEntry(auditableData);
 
-        SuspectUsage suspectUsage = appropriateUsageChecker.precheck();
-        repository.save(auditEntry);
-        appropriateUsageChecker.postcheck(suspectUsage);
+        if (auditEntry.getType().isAlertable()) {
+            SuspectUsage suspectUsage = appropriateUsageChecker.precheck();
+            repository.save(auditEntry);
+            appropriateUsageChecker.postcheck(suspectUsage);
+        } else {
+            repository.save(auditEntry);
+        }
+
     }
 
     public List<AuditRecord> getAllAuditData(Pageable pageable) {
