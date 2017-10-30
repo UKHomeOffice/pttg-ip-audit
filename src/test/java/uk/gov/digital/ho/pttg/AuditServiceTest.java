@@ -17,9 +17,9 @@ import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
-import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
-import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static uk.gov.digital.ho.pttg.AuditEventType.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuditServiceTest {
@@ -37,20 +37,6 @@ public class AuditServiceTest {
     public void setup() {
         now = LocalDateTime.now();
         auditService = new AuditService(mockRepository, mockChecker);
-    }
-
-    @Test
-    public void shouldUseCollaboratorsForAddMethod() {
-        SuspectUsage mockSuspectUsage = mock(SuspectUsage.class);
-        when(mockChecker.precheck()).thenReturn(mockSuspectUsage);
-
-        AuditableData mockAuditableData = mock(AuditableData.class);
-
-        auditService.add(mockAuditableData);
-
-        verify(mockChecker).precheck();
-        verify(mockRepository).save(any(AuditEntry.class));
-        verify(mockChecker).postcheck(mockSuspectUsage);
     }
 
     @Test
@@ -158,5 +144,47 @@ public class AuditServiceTest {
         assertThat(arg.getNamespace()).isEqualTo("some deployment namespace");
         assertThat(arg.getType()).isEqualTo(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
         assertThat(arg.getDetail()).isEqualTo("some json");
+    }
+
+    @Test
+    public void shouldNotAlert() {
+        LocalDateTime now = LocalDateTime.now();
+
+        AuditableData auditableData = new AuditableData("some event id",
+                now,
+                "some session id",
+                "some correlation id",
+                "some user id",
+                "some deployment name",
+                "some deployment namespace",
+                HMRC_INCOME_REQUEST,
+                "some json");
+
+        auditService.add(auditableData);
+
+        verify(mockRepository).save(any(AuditEntry.class));
+        verify(mockChecker, never()).precheck();
+        verify(mockChecker, never()).postcheck(any(SuspectUsage.class));
+    }
+
+    @Test
+    public void shouldAlert() {
+        LocalDateTime now = LocalDateTime.now();
+
+        AuditableData auditableData = new AuditableData("some event id",
+                now,
+                "some session id",
+                "some correlation id",
+                "some user id",
+                "some deployment name",
+                "some deployment namespace",
+                INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
+                "some json");
+
+        auditService.add(auditableData);
+
+        verify(mockRepository).save(any(AuditEntry.class));
+        verify(mockChecker).precheck();
+        verify(mockChecker).postcheck(any(SuspectUsage.class));
     }
 }

@@ -25,13 +25,17 @@ public class AuditService {
 
     @Transactional
     public void add(AuditableData auditableData) {
-        SuspectUsage suspectUsage = appropriateUsageChecker.precheck();
 
         AuditEntry auditEntry = transformToAuditEntry(auditableData);
 
-        repository.save(auditEntry);
+        if (auditEntry.getType().isAlertable()) {
+            SuspectUsage suspectUsage = appropriateUsageChecker.precheck();
+            repository.save(auditEntry);
+            appropriateUsageChecker.postcheck(suspectUsage);
+        } else {
+            repository.save(auditEntry);
+        }
 
-        appropriateUsageChecker.postcheck(suspectUsage);
     }
 
     public List<AuditRecord> getAllAuditData(Pageable pageable) {
