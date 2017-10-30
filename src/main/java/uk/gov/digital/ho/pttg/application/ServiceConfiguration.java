@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.text.SimpleDateFormat;
 import java.time.Clock;
+import java.time.ZoneId;
 
 @Configuration
 public class ServiceConfiguration {
@@ -37,7 +38,6 @@ public class ServiceConfiguration {
 
     @Bean
     public Clock clock() {
-//        return Clock.fixed(Instant.parse("2017-09-11T18:00:00Z"), ZoneId.of("UTC"));
-        return Clock.systemDefaultZone();
+        return Clock.system(ZoneId.of("UTC"));
     }
 }

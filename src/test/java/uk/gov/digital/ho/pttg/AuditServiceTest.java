@@ -108,7 +108,7 @@ public class AuditServiceTest {
     public void shouldTransformAuditEntryWithNinoToAuditRecord() {
 
         LocalDateTime now = LocalDateTime.now();
-        AuditEntry auditEntryWithoutNino = new AuditEntry("some uuid",
+        AuditEntry auditEntryWithNino = new AuditEntry("some uuid",
                 now,
                 "any session id",
                 "some correlation id",
@@ -116,18 +116,10 @@ public class AuditServiceTest {
                 "any deployment",
                 "any namespace",
                 INCOME_PROVING_FINANCIAL_STATUS_REQUEST,
-                "{\n" +
-                        "      \"forename\": \"Antonio\",\n" +
-                        "      \"method\": \"get-financial-status\",\n" +
-                        "      \"dependants\": 0,\n" +
-                        "      \"surname\": \"Gramsci\",\n" +
-                        "      \"applicationRaisedDate\": \"2017-06-01\",\n" +
-                        "      \"dateOfBirth\": \"1891-01-22\",\n" +
-                        "      \"nino\": \"some NINO\"\n" +
-                        "    }"
+                "{\"nino\": \"some NINO\"}"
         );
 
-        AuditRecord auditRecord = auditService.transformToAuditRecord(auditEntryWithoutNino);
+        AuditRecord auditRecord = auditService.transformToAuditRecord(auditEntryWithNino);
 
         assertThat(auditRecord.getId()).isEqualTo("some correlation id");
         assertThat(auditRecord.getDate()).isEqualTo(now);

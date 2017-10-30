@@ -1,5 +1,7 @@
 package uk.gov.digital.ho.pttg;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +14,14 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import uk.gov.digital.ho.pttg.api.AuditResource;
 import uk.gov.digital.ho.pttg.api.AuditableData;
 
+import java.time.LocalDateTime;
+
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(value = AuditResource.class, secure = false)
@@ -27,6 +32,8 @@ public class AuditResourceWebTest {
     @MockBean AuditService auditService;
 
     @Autowired private MockMvc mockMvc;
+
+    @Autowired private ObjectMapper objectMapper;
 
     @Test
     public void shouldReturnHttpOkForGet() throws Exception {
@@ -73,17 +80,18 @@ public class AuditResourceWebTest {
         verify(auditService).add(any(AuditableData.class));
     }
 
-    private String createAuditableData() {
-        return "{      " +
-                "      \"eventId\" : \"some uuid\"," +
-                "      \"timestamp\" : \"2017-09-11T14:45:48.094\"," +
-                "      \"sessionId\" : \"some session id\"," +
-                "      \"correlationId\" : \"3a22c723-ea0f-4962-b97b-f35dce3284b2\"," +
-                "      \"userId\" : \"bobby.bag@digital.homeoffice.gov.uk\"," +
-                "      \"deploymentName\" : \"some deployment\"," +
-                "      \"deploymentNamespace\" : \"some namespace\"," +
-                "      \"eventType\" : \"INCOME_PROVING_FINANCIAL_STATUS_REQUEST\"," +
-                "       \"data\" : \"{}\" " +
-                "}";
+    private String createAuditableData() throws JsonProcessingException {
+
+        AuditableData auditableData = new AuditableData("some uuid",
+                LocalDateTime.of(2017, 9, 11, 14, 45, 48),
+                "some session id",
+                "3a22c723-ea0f-4962-b97b-f35dce3284b2",
+                "bobby.bag@digital.homeoffice.gov.uk",
+                "some deployment",
+                "some namespace",
+                INCOME_PROVING_FINANCIAL_STATUS_REQUEST,
+                "{}");
+
+        return objectMapper.writeValueAsString(auditableData);
     }
 }
