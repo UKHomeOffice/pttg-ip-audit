@@ -10,7 +10,7 @@ public class AuditEventTypeTest {
 
     @Test
     public void shouldBeKnowItems() {
-        assertThat(AuditEventType.values().length).isEqualTo(7);
+        assertThat(AuditEventType.values().length).isEqualTo(8);
     }
 
     @Test
