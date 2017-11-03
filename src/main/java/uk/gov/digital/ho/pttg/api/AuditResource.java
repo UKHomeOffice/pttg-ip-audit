@@ -36,9 +36,9 @@ public class AuditResource {
 
     @PostMapping(value = "/audit", consumes = APPLICATION_JSON_VALUE)
     public void recordAuditEntry(@RequestBody AuditableData auditableData) {
-        log.info("Audit data for correlation id {}", auditableData.getCorrelationId());
+        log.info("Audit {} for correlation id {}", auditableData.getEventType(), auditableData.getCorrelationId());
         auditService.add(auditableData);
-        log.info("Audited data for correlation id {}", auditableData.getCorrelationId());
+        log.info("Audited {} for correlation id {}", auditableData.getEventType(), auditableData.getCorrelationId());
     }
 
 }
