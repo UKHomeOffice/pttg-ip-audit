@@ -1,12 +1,2 @@
-.classpath
-.project
 .idea
-.settings/*
-target
-bin
-build
-*.log
-.gradle/
-version.properties
-classes
-out/
+pttg-ip-audit.iml

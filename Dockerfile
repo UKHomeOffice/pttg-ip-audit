@@ -1,4 +1,4 @@
-FROM quay.io/ukhomeofficedigital/openjdk8:v1.8.0.131
+FROM quay.io/ukhomeofficedigital/openjdk8:v1.8.0.141
 
 
 ENV USER user_pttg_ip_audit
