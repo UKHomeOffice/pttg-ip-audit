@@ -1,2 +1,2 @@
 # pttg-ip-audit
-Audit service for income proving things to government
+Audit service for Proving Things To Government (PTTG) projects
