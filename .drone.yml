@@ -48,7 +48,7 @@ pipeline:
   clone-kube-project:
     image: plugins/git
     commands:
-     - git clone https://github.com/UKHomeOffice/kube-pttg-ip-audit.git
+     - git clone https://github.com/UKHomeOffice/kube-pttg-audit.git
     when:
      event: [push, deployment, tag]
 
