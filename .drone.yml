@@ -62,7 +62,7 @@ pipeline:
     secrets:
       - kube_token
     commands:
-      - cd kube-pttg-ip-audit
+      - cd kube-pttg-audit
       - ./deploy.sh
     when:
       branch: [master]
