@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,8 +18,15 @@ import java.time.ZoneId;
 @Configuration
 public class ServiceConfiguration {
 
+    private final int restTemplateReadTimeoutInMillis;
+    private final int restTemplateConnectTimeoutInMillis;
+
     @Autowired
-    public ServiceConfiguration(ObjectMapper objectMapper) {
+    public ServiceConfiguration(ObjectMapper objectMapper,
+                                @Value("${resttemplate.timeout.read:30000}") int restTemplateReadTimeoutInMillis,
+                                @Value("${resttemplate.timeout.connect:30000}") int restTemplateConnectTimeoutInMillis) {
+        this.restTemplateReadTimeoutInMillis = restTemplateReadTimeoutInMillis;
+        this.restTemplateConnectTimeoutInMillis = restTemplateConnectTimeoutInMillis;
         initialiseObjectMapper(objectMapper);
     }
 
@@ -32,8 +40,11 @@ public class ServiceConfiguration {
     }
 
     @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        return builder.build();
+    public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
+        return restTemplateBuilder
+                .setReadTimeout(restTemplateReadTimeoutInMillis)
+                .setConnectTimeout(restTemplateConnectTimeoutInMillis)
+                .build();
     }
 
     @Bean
