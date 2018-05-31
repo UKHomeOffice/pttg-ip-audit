@@ -1,2 +1,5 @@
 .idea
 pttg-ip-audit.iml
+.gradle/
+out/
+build/
