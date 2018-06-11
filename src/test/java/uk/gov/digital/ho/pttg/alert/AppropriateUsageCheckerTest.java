@@ -1,6 +1,6 @@
 package uk.gov.digital.ho.pttg.alert;
 
-import jersey.repackaged.com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

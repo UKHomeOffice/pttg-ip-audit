@@ -1,6 +1,6 @@
 buildscript {
   ext {
-    springBootVersion = '1.5.8.RELEASE'
+    springBootVersion = '2.0.0.RELEASE'
   }
   repositories {
     mavenCentral()
@@ -23,6 +23,8 @@ if (System.getenv('BUILD_NUMBER')) {
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
 
 jar {
   baseName = 'pttg-ip-audit'
@@ -46,13 +48,19 @@ dependencies {
     exclude module: "spring-boot-starter-tomcat"
   }
 
-  compile 'org.springframework.boot:spring-boot-starter-jetty'
-  compile 'org.springframework.boot:spring-boot-starter-actuator'
-  compile 'org.springframework.boot:spring-boot-starter-data-jpa'
-  compile 'org.springframework.boot:spring-boot-devtools'
-  compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.8.3'
-  compile 'org.flywaydb:flyway-core:4.2.0'
-  compile 'net.logstash.logback:logstash-logback-encoder:4.8'
+  compile group: 'org.springframework.boot',          name: 'spring-boot-starter-jetty'
+  compile group: 'org.springframework.boot',          name: 'spring-boot-starter-actuator'
+  compile group: 'org.springframework.boot',          name: 'spring-boot-starter-data-jpa'
+  compile group: 'org.springframework.boot',          name: 'spring-boot-devtools'
+
+  compile group: 'com.google.guava',                  name: 'guava',                      version: '23.4-jre'
+
+  compile group: 'com.fasterxml.jackson.datatype',    name: 'jackson-datatype-jsr310',    version: '2.8.3'
+
+  compile group: 'org.flywaydb',                      name: 'flyway-core',                version: '5.1.1'
+
+  compile group: 'net.logstash.logback',              name: 'logstash-logback-encoder',   version: '5.0'
+
   compile 'org.hsqldb:hsqldb'
   compile 'org.postgresql:postgresql:9.4.1211.jre7'
 
@@ -62,13 +70,15 @@ dependencies {
   compileOnly 'org.projectlombok:lombok:1.16.12'
   compileOnly group: 'io.dropwizard.metrics', name: 'metrics-core', version: '3.2.3'
 
-  testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test'
-  testCompile group: 'junit', name: 'junit', version: '4.12'
-  testCompile group: 'org.assertj', name: 'assertj-core', version: '3.5.2'
-  testCompile group: 'com.jayway.jsonpath', name: 'json-path'
-  testCompile group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
-  testCompile group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0'
-  testCompile "com.github.tomakehurst:wiremock:2.4.1"
+  testCompile group: 'org.springframework.boot',  name: 'spring-boot-starter-test'
+  testCompile group: 'org.mockito',               name: 'mockito-core',             version: '2.16.0'
+
+  testCompile group: 'junit',                     name: 'junit',                    version: '4.12'
+  testCompile group: 'org.assertj',               name: 'assertj-core',             version: '3.5.2'
+  testCompile group: 'com.jayway.jsonpath',       name: 'json-path'
+  testCompile group: 'org.apache.commons',        name: 'commons-io',               version: '1.3.2'
+  testCompile group: 'org.skyscreamer',           name: 'jsonassert',               version: '1.5.0'
+  testCompile group: 'com.github.tomakehurst',    name: 'wiremock',                 version: '2.4.1'
 
 }
 gradle.startParameter.continueOnFailure = false

@@ -1,11 +1,11 @@
 package uk.gov.digital.ho.pttg;
 
-import jersey.repackaged.com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.Pageable;
 import uk.gov.digital.ho.pttg.api.AuditRecord;
 import uk.gov.digital.ho.pttg.api.AuditResource;
@@ -43,9 +43,11 @@ public class AuditResourceTest {
 
         when(mockService.getAllAuditData(any(Pageable.class))).thenReturn(Collections.singletonList(AUDIT_RECORD));
 
-        resource.retrieveAllAuditData(null);
+        Pageable somePageable = mock(Pageable.class);
 
-        verify(mockService).getAllAuditData(null);
+        resource.retrieveAllAuditData(somePageable);
+
+        verify(mockService).getAllAuditData(somePageable);
     }
 
     @Test
