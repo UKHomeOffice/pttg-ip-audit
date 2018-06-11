@@ -1,15 +1,15 @@
 package uk.gov.digital.ho.pttg.alert;
 
-import jersey.repackaged.com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.pttg.alert.sysdig.SuspectUsage;
 import uk.gov.digital.ho.pttg.alert.sysdig.SysdigEventService;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -21,12 +21,12 @@ public class AlerterTest {
     @Mock private SysdigEventService eventService;
 
     @Before
-    public void before() throws Exception {
+    public void before() {
         alerter = new Alerter(eventService);
     }
 
     @Test
-    public void shouldSendIndividualVolumeCheckExceededEventWhenSuspect() throws Exception {
+    public void shouldSendIndividualVolumeCheckExceededEventWhenSuspect() {
         alerter.inappropriateUsage(noSuspects(), new SuspectUsage(
             new IndividualVolumeUsage(ImmutableMap.of("andy", 11L)),
             new TimeOfRequestUsage(0),
@@ -38,7 +38,7 @@ public class AlerterTest {
 
 
     @Test
-    public void shouldNotSendIndividualVolumeCheckExceededEventWhenNotSuspect() throws Exception {
+    public void shouldNotSendIndividualVolumeCheckExceededEventWhenNotSuspect() {
         alerter.inappropriateUsage(noSuspects(), new SuspectUsage(
             new IndividualVolumeUsage(ImmutableMap.of()),
             new TimeOfRequestUsage(0),
@@ -49,7 +49,7 @@ public class AlerterTest {
     }
 
     @Test
-    public void shouldSendMatchingFailuresExceededEventWhenSuspect() throws Exception {
+    public void shouldSendMatchingFailuresExceededEventWhenSuspect() {
         alerter.inappropriateUsage(noSuspects(), new SuspectUsage(
             new IndividualVolumeUsage(ImmutableMap.of()),
             new TimeOfRequestUsage(0),
@@ -60,7 +60,7 @@ public class AlerterTest {
     }
 
     @Test
-    public void shouldNotSendMatchingFailuresExceededEventWhenNotSuspect() throws Exception {
+    public void shouldNotSendMatchingFailuresExceededEventWhenNotSuspect() {
         alerter.inappropriateUsage(noSuspects(), new SuspectUsage(
             new IndividualVolumeUsage(ImmutableMap.of()),
             new TimeOfRequestUsage(0),
@@ -71,7 +71,7 @@ public class AlerterTest {
     }
 
     @Test
-    public void shouldSendRequestsOutsideHoursEventWhenSuspect() throws Exception {
+    public void shouldSendRequestsOutsideHoursEventWhenSuspect() {
         alerter.inappropriateUsage(noSuspects(), new SuspectUsage(
             new IndividualVolumeUsage(ImmutableMap.of()),
             new TimeOfRequestUsage(4),
@@ -82,7 +82,7 @@ public class AlerterTest {
     }
 
     @Test
-    public void shouldNotSendRequestsOutsideHoursEventWhenNotSuspect() throws Exception {
+    public void shouldNotSendRequestsOutsideHoursEventWhenNotSuspect() {
         alerter.inappropriateUsage(noSuspects(), new SuspectUsage(
             new IndividualVolumeUsage(ImmutableMap.of()),
             new TimeOfRequestUsage(0),

@@ -16,9 +16,10 @@ import uk.gov.digital.ho.pttg.api.AuditableData;
 
 import java.time.LocalDateTime;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.springframework.data.domain.Sort.unsorted;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
@@ -45,7 +46,7 @@ public class AuditResourceWebTest {
     public void shouldCallServiceToRetrieveDataWithDefaultPaging() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get(AUDIT_URL));
 
-        verify(auditService).getAllAuditData(eq(new PageRequest(0, 20, null)));
+        verify(auditService).getAllAuditData(eq(PageRequest.of(0, 20, unsorted())));
     }
 
     @Test
@@ -53,7 +54,7 @@ public class AuditResourceWebTest {
         mockMvc.perform(MockMvcRequestBuilders.get(AUDIT_URL + "?page=10&size=10"))
                 .andExpect(status().isOk());
 
-        verify(auditService).getAllAuditData(eq(new PageRequest(10, 10, null)));
+        verify(auditService).getAllAuditData(eq(PageRequest.of(10, 10, unsorted())));
     }
 
     @Test
