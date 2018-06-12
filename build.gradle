@@ -24,6 +24,8 @@ apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'checkstyle'
+apply plugin: 'findbugs'
 
 
 jar {
@@ -36,6 +38,25 @@ jar {
                'Implementation-Version': version
   }
 }
+
+checkstyle {
+  toolVersion = "5.9"
+  ignoreFailures = false
+}
+findbugs {
+  ignoreFailures = false
+  effort = "min"
+}
+
+gradle.taskGraph.beforeTask { task -> if ( task.name == "checkstyleTest") {task.deleteAllActions()}}
+tasks.withType(FindBugs) {
+  excludeFilter = file('config/findbugs/exclude-filter.xml')
+  reports {
+    xml.enabled false
+    html.enabled true
+  }
+}
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -78,5 +99,7 @@ dependencies {
   testCompile group: 'org.skyscreamer',           name: 'jsonassert',               version: '1.5.0'
   testCompile group: 'com.github.tomakehurst',    name: 'wiremock',                 version: '2.4.1'
 
+  testCompile group: 'com.google.code.findbugs',  name: 'annotations',                version: '3.0.1'
 }
+
 gradle.startParameter.continueOnFailure = false
