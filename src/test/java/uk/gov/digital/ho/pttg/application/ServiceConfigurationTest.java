@@ -1,34 +1,31 @@
 package uk.gov.digital.ho.pttg.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Clock;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_INFERRED")
 @RunWith(MockitoJUnitRunner.class)
 public class ServiceConfigurationTest {
 
     private ServiceConfiguration serviceConfiguration;
 
-    @Mock
-    private RestTemplateBuilder mockRestTemplateBuilder;
-
-    @Mock
-    private RestTemplate mockRestTemplate;
-
-    @Mock
-    private ObjectMapper objectMapper;
+    @Mock private RestTemplateBuilder mockRestTemplateBuilder;
+    @Mock private RestTemplate mockRestTemplate;
+    @Mock private ObjectMapper objectMapper;
 
     @Before
     public void setUp() {
