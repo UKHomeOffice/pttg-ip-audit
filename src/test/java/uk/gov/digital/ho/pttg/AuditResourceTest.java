@@ -1,11 +1,18 @@
 package uk.gov.digital.ho.pttg;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.core.Appender;
 import com.google.common.collect.ImmutableMap;
+import net.logstash.logback.marker.ObjectAppendingMarker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import uk.gov.digital.ho.pttg.api.AuditRecord;
 import uk.gov.digital.ho.pttg.api.AuditResource;
@@ -29,6 +36,7 @@ public class AuditResourceTest {
             "some nino"
     );
 
+    @Mock private Appender<ILoggingEvent> mockAppender;
     @Mock private AuditService mockService;
 
     private AuditResource resource;
@@ -36,6 +44,9 @@ public class AuditResourceTest {
     @Before
     public void setUp() {
         resource = new AuditResource(mockService);
+        Logger rootLogger = (Logger) LoggerFactory.getLogger(AuditResource.class);
+        rootLogger.setLevel(Level.INFO);
+        rootLogger.addAppender(mockAppender);
     }
 
     @Test
@@ -88,6 +99,29 @@ public class AuditResourceTest {
         resource.recordAuditEntry(auditableData);
 
         verify(mockService).add(auditableData);
+    }
+
+    @Test
+    public void shouldLogWhenGetAccessCodeRequestReceived() {
+        when(mockService.getAllAuditData(null)).thenReturn(Collections.singletonList(AUDIT_RECORD));
+        resource.retrieveAllAuditData(null);
+        verify(mockAppender).doAppend(argThat(argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+            return loggingEvent.getFormattedMessage().startsWith("Audit records requested") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id");
+        }));
+    }
+
+    @Test
+    public void shouldLogGetAccessCodeResponseSuccess() {
+        when(mockService.getAllAuditData(null)).thenReturn(Collections.singletonList(AUDIT_RECORD));
+        resource.retrieveAllAuditData(null);
+        verify(mockAppender).doAppend(argThat(argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+
+            return loggingEvent.getFormattedMessage().equals("1 audit records found") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id");
+        }));
     }
 
 }
