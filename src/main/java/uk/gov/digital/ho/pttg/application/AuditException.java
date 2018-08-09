@@ -6,7 +6,4 @@ public class AuditException extends RuntimeException {
         super(message);
     }
 
-    public AuditException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }

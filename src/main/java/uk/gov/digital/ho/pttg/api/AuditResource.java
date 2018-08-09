@@ -10,7 +10,9 @@ import uk.gov.digital.ho.pttg.AuditService;
 
 import java.util.List;
 
+import static net.logstash.logback.argument.StructuredArguments.value;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @RestController
 @Slf4j
@@ -24,21 +26,17 @@ public class AuditResource {
 
     @GetMapping(value = "/audit", produces = APPLICATION_JSON_VALUE)
     public List<AuditRecord> retrieveAllAuditData(Pageable pageable) {
-
-        log.info("Audit records requested, {}", pageable);
-
+        log.info("Audit records requested, {}", pageable, value(EVENT, PTTG_AUDIT_RETRIEVAL_REQUEST_RECEIVED));
         List<AuditRecord> auditRecords = auditService.getAllAuditData(pageable);
-
-        log.info("{} audit records found", auditRecords.size());
-
+        log.info("{} audit records found", auditRecords.size(), value(EVENT, PTTG_AUDIT_RETRIEVAL_RESPONSE_SUCCESS));
         return auditRecords;
     }
 
     @PostMapping(value = "/audit", consumes = APPLICATION_JSON_VALUE)
     public void recordAuditEntry(@RequestBody AuditableData auditableData) {
-        log.info("Audit {} for correlation id {}", auditableData.getEventType(), auditableData.getCorrelationId());
+        log.info("Audit {} for correlation id {}", auditableData.getEventType(), auditableData.getCorrelationId(), value(EVENT, PTTG_AUDIT_REQUEST_RECEIVED));
         auditService.add(auditableData);
-        log.info("Audited {} for correlation id {}", auditableData.getEventType(), auditableData.getCorrelationId());
+        log.info("Audited {} for correlation id {}", auditableData.getEventType(), auditableData.getCorrelationId(), value(EVENT, PTTG_AUDIT_RESPONSE_SUCCESS));
     }
 
 }
