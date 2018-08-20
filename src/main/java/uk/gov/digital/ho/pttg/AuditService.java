@@ -3,7 +3,6 @@ package uk.gov.digital.ho.pttg;
 import org.json.JSONObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.pttg.alert.AppropriateUsageChecker;
 import uk.gov.digital.ho.pttg.alert.sysdig.SuspectUsage;
 import uk.gov.digital.ho.pttg.api.AuditRecord;
@@ -23,7 +22,6 @@ public class AuditService {
         this.appropriateUsageChecker = appropriateUsageChecker;
     }
 
-    @Transactional
     public void add(AuditableData auditableData) {
 
         AuditEntry auditEntry = transformToAuditEntry(auditableData);

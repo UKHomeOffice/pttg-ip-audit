@@ -8,7 +8,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.pttg.AuditEntryJpaRepository;
 import uk.gov.digital.ho.pttg.AuditEventType;
 
@@ -16,7 +16,7 @@ import java.time.*;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,14 +31,13 @@ public class IndividualVolumeCheckTest {
     @Captor private ArgumentCaptor<LocalDateTime> captorEndTimeCaptor;
 
     @Before
-    public void before() throws Exception {
-
+    public void before() {
         clock = Clock.fixed(Instant.parse("2017-08-29T08:00:00Z"), ZoneId.of("UTC"));
         individualVolumeCheck = new IndividualVolumeCheck(clock, mockRepository,10, "dev");
     }
 
     @Test
-    public void shouldRetrieveCountsForToday() throws Exception {
+    public void shouldRetrieveCountsForToday() {
         individualVolumeCheck.check();
 
         verify(mockRepository).countEntriesBetweenDatesGroupedByUser(captorStartTimeCaptor.capture(), captorEndTimeCaptor.capture(), Mockito.eq(AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE), Mockito.eq("dev"));

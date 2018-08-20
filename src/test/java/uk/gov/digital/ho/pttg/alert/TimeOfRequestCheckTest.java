@@ -9,14 +9,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.pttg.AuditEntryJpaRepository;
 
 import java.time.*;
 import java.util.TimeZone;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
 
@@ -43,12 +43,12 @@ public class TimeOfRequestCheckTest {
     }
 
     @Before
-    public void before() throws Exception {
+    public void before() {
         timeOfRequestCheck = new TimeOfRequestCheck(Clock.fixed(Instant.parse("2017-08-29T08:00:00Z"), ZoneId.of("UTC")), mockRepository,"07:23", "19:13", "dev");
     }
 
     @Test
-    public void shouldCountRequestsBetweenStartOfDayAndStartOfWorkingDayInUTCWhenInDaylightSavings() throws Exception {
+    public void shouldCountRequestsBetweenStartOfDayAndStartOfWorkingDayInUTCWhenInDaylightSavings() {
         timeOfRequestCheck.check();
 
         verify(mockRepository, atLeast(2)).countEntriesBetweenDates(captorStartTime.capture(), captorEndTime.capture(), Mockito.eq(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE), Mockito.eq("dev"));
@@ -68,7 +68,7 @@ public class TimeOfRequestCheckTest {
     }
 
     @Test
-    public void shouldCountRequestsBetweenStartOfDayAndStartOfWorkingDayInUTCWhenNotInDaylightSavings() throws Exception {
+    public void shouldCountRequestsBetweenStartOfDayAndStartOfWorkingDayInUTCWhenNotInDaylightSavings() {
         timeOfRequestCheck = new TimeOfRequestCheck(Clock.fixed(Instant.parse("2017-12-29T08:00:00Z"), ZoneId.of("UTC")), mockRepository,"07:23", "19:13", "dev");
         timeOfRequestCheck.check();
 
@@ -90,7 +90,7 @@ public class TimeOfRequestCheckTest {
     }
 
     @Test
-    public void shouldCountRequestsBetweenEndOfWorkingDayInUTCAndStartOfTomorrowWhenInDaylightSavings() throws Exception {
+    public void shouldCountRequestsBetweenEndOfWorkingDayInUTCAndStartOfTomorrowWhenInDaylightSavings() {
         timeOfRequestCheck.check();
 
         verify(mockRepository, atLeast(2)).countEntriesBetweenDates(captorStartTime.capture(), captorEndTime.capture(), Mockito.eq(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE), Mockito.eq("dev"));
@@ -110,7 +110,7 @@ public class TimeOfRequestCheckTest {
     }
 
     @Test
-    public void shouldCountRequestsBetweenEndOfWorkingDayInUTCAndStartOfTomorrowWhenNotInDaylightSavings() throws Exception {
+    public void shouldCountRequestsBetweenEndOfWorkingDayInUTCAndStartOfTomorrowWhenNotInDaylightSavings() {
         timeOfRequestCheck = new TimeOfRequestCheck(Clock.fixed(Instant.parse("2017-12-29T08:00:00Z"), ZoneId.of("UTC")), mockRepository,"07:23", "19:13", "dev");
         timeOfRequestCheck.check();
 

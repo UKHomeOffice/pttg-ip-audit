@@ -119,7 +119,7 @@ public class AuditEntryJpaRepositoryTest {
     @Test
     public void shouldRetrieveAllAuditDataLimitedByPagination() {
 
-        Pageable pagination = new PageRequest(0, 1);
+        Pageable pagination = PageRequest.of(0, 1);
 
         final Iterable<AuditEntry> all = repository.findAllByOrderByTimestampDesc(pagination);
 
