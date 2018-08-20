@@ -8,7 +8,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.pttg.AuditEntry;
 import uk.gov.digital.ho.pttg.AuditEntryJpaRepository;
 import uk.gov.digital.ho.pttg.AuditEventType;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,13 +37,13 @@ public class MatchingFailureCheckTest {
     @Captor private ArgumentCaptor<LocalDateTime> captorEndTimeCaptor;
 
     @Before
-    public void before() throws Exception {
+    public void before() {
         clock = Clock.fixed(Instant.parse("2017-08-29T08:00:00Z"), ZoneId.of("UTC"));
         matchingFailureCheck = new MatchingFailureCheck(clock, mockRepository,3, "dev");
     }
 
     @Test
-    public void shouldBeSuspectIfMoreThanThresholdFailures() throws Exception {
+    public void shouldBeSuspectIfMoreThanThresholdFailures() {
         List<AuditEntry> fourFailures = ImmutableList.of(
             auditEntryWithDetail("Resource not found"),
             auditEntryWithDetail("Resource not found"),
@@ -57,7 +57,7 @@ public class MatchingFailureCheckTest {
     }
 
     @Test
-    public void shouldNotBeSuspectIfSameAsThresholdFailures() throws Exception {
+    public void shouldNotBeSuspectIfSameAsThresholdFailures() {
         List<AuditEntry> fourFailures = ImmutableList.of(
             auditEntryWithDetail("Resource not found"),
             auditEntryWithDetail("Resource not found"),
@@ -70,7 +70,7 @@ public class MatchingFailureCheckTest {
     }
 
     @Test
-    public void shouldNotBeSuspectIfManyEntriesButNotFailures() throws Exception {
+    public void shouldNotBeSuspectIfManyEntriesButNotFailures() {
         List<AuditEntry> fourFailures = ImmutableList.of(
             auditEntryWithDetail("Resource not found"),
             auditEntryWithDetail("Resource not found"),
@@ -89,7 +89,7 @@ public class MatchingFailureCheckTest {
     }
 
     @Test
-    public void shouldRetrieveEntriesInTheLastHour() throws Exception {
+    public void shouldRetrieveEntriesInTheLastHour() {
         matchingFailureCheck.check();
 
         verify(mockRepository).getEntriesBetweenDates(captorStartTimeCaptor.capture(), captorEndTimeCaptor.capture(), Mockito.eq(AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE), Mockito.eq("dev"));

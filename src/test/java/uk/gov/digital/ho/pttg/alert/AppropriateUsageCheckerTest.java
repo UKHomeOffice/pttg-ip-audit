@@ -5,14 +5,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.digital.ho.pttg.alert.sysdig.SuspectUsage;
 
 import java.util.Collections;
 import java.util.HashMap;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class AppropriateUsageCheckerTest {
@@ -25,12 +26,12 @@ public class AppropriateUsageCheckerTest {
     @Mock private MatchingFailureCheck matchingFailureCheck;
 
     @Before
-    public void before() throws Exception {
+    public void before() {
         appropriateUsageChecker = new AppropriateUsageChecker(alerter, individualVolumeCheck, timeOfRequestCheck, matchingFailureCheck);
     }
 
     @Test
-    public void shouldNotAlertWhenSuspectUsageHasNoSuspectsAndUnchanged() throws Exception {
+    public void shouldNotAlertWhenSuspectUsageHasNoSuspectsAndUnchanged() {
         SuspectUsage beforeUsage = new SuspectUsage(new IndividualVolumeUsage(ImmutableMap.of()), new TimeOfRequestUsage(0), new MatchingFailureUsage(0));
 
         when(individualVolumeCheck.check()).thenReturn(new IndividualVolumeUsage(new HashMap<>()));
@@ -43,7 +44,7 @@ public class AppropriateUsageCheckerTest {
     }
 
     @Test
-    public void shouldNotAlertWhenSuspectUsageHasSuspectsButRemainsUnchanged() throws Exception {
+    public void shouldNotAlertWhenSuspectUsageHasSuspectsButRemainsUnchanged() {
         SuspectUsage beforeUsage = new SuspectUsage(new IndividualVolumeUsage(ImmutableMap.of("charlie", 6L)), new TimeOfRequestUsage(0), new MatchingFailureUsage(0));
 
         when(individualVolumeCheck.check()).thenReturn(new IndividualVolumeUsage(Collections.singletonMap("charlie", 6L)));
@@ -56,7 +57,7 @@ public class AppropriateUsageCheckerTest {
     }
 
     @Test
-    public void shouldAlertWhenSuspectUsageHasChangeFromNoSuspectsToHasSuspects() throws Exception {
+    public void shouldAlertWhenSuspectUsageHasChangeFromNoSuspectsToHasSuspects() {
         SuspectUsage beforeUsage = new SuspectUsage(new IndividualVolumeUsage(ImmutableMap.of()), new TimeOfRequestUsage(0), new MatchingFailureUsage(0));
 
         when(individualVolumeCheck.check()).thenReturn(new IndividualVolumeUsage(Collections.singletonMap("charlie", 6L)));
@@ -69,7 +70,7 @@ public class AppropriateUsageCheckerTest {
     }
 
     @Test
-    public void shouldAlertWhenSuspectUsageHasChangeFromSuspectsToHasDifferentSuspects() throws Exception {
+    public void shouldAlertWhenSuspectUsageHasChangeFromSuspectsToHasDifferentSuspects() {
         SuspectUsage beforeUsage = new SuspectUsage(new IndividualVolumeUsage(ImmutableMap.of()), new TimeOfRequestUsage(0), new MatchingFailureUsage(0));
 
         when(individualVolumeCheck.check()).thenReturn(new IndividualVolumeUsage(Collections.singletonMap("charlie", 7L)));
@@ -82,7 +83,7 @@ public class AppropriateUsageCheckerTest {
     }
 
     @Test
-    public void shouldNotAlertWhenSuspectUsageChangedFromSuspectsToNoSuspects() throws Exception {
+    public void shouldNotAlertWhenSuspectUsageChangedFromSuspectsToNoSuspects() {
         SuspectUsage beforeUsage = new SuspectUsage(new IndividualVolumeUsage(ImmutableMap.of("charlie", 7L)), new TimeOfRequestUsage(0), new MatchingFailureUsage(0));
 
         when(individualVolumeCheck.check()).thenReturn(new IndividualVolumeUsage(new HashMap<>()));

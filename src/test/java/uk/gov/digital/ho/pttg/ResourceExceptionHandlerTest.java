@@ -13,17 +13,15 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import uk.gov.digital.ho.pttg.application.AuditException;
 import uk.gov.digital.ho.pttg.application.ResourceExceptionHandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RunWith(MockitoJUnitRunner.class)
 public class ResourceExceptionHandlerTest {
 
@@ -43,7 +41,7 @@ public class ResourceExceptionHandlerTest {
     @Test
     public void shouldHandleAuditException() {
 
-        AuditException exception = new AuditException("some message");
+        Exception exception = new Exception("some message");
 
         ResponseEntity responseEntity = resourceExceptionHandler.handle(exception);
 
@@ -56,7 +54,7 @@ public class ResourceExceptionHandlerTest {
 
     @Test
     public void shouldLogErrorForException() {
-        AuditException mockException = mock(AuditException.class);
+        Exception mockException = mock(Exception.class);
         when(mockException.getMessage()).thenReturn("any message");
 
         resourceExceptionHandler.handle(mockException);
@@ -64,7 +62,7 @@ public class ResourceExceptionHandlerTest {
         verify(mockAppender).doAppend(argThat(argument -> {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
-            return loggingEvent.getFormattedMessage().equals("AuditException: any message") &&
+            return loggingEvent.getFormattedMessage().equals("Audit Exception: any message") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id");
         }));
     }
