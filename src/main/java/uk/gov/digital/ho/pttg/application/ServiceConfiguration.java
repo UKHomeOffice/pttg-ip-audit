@@ -55,7 +55,7 @@ public class ServiceConfiguration {
 
     @Bean
     PageableHandlerMethodArgumentResolverCustomizer maxPageSizeCustomizer() {
-        return p -> p.setMaxPageSize(100000);
+        return p -> p.setMaxPageSize(100_000);
     }
 
 }
