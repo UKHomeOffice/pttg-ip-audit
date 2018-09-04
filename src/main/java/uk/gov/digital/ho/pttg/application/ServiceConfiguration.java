@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.web.config.PageableHandlerMethodArgumentResolverCustomizer;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.SimpleDateFormat;
@@ -51,4 +52,10 @@ public class ServiceConfiguration {
     public Clock clock() {
         return Clock.system(ZoneId.of("UTC"));
     }
+
+    @Bean
+    PageableHandlerMethodArgumentResolverCustomizer maxPageSizeCustomizer() {
+        return p -> p.setMaxPageSize(100_000);
+    }
+
 }
