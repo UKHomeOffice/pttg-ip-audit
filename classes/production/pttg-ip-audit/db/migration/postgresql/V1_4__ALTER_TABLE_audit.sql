@@ -1,0 +1,1 @@
+ALTER TABLE audit ALTER COLUMN detail type JSONB USING detail::JSONB;
