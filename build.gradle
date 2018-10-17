@@ -106,9 +106,3 @@ dependencies {
 }
 
 gradle.startParameter.continueOnFailure = false
-
-release {
-  git {
-    requireBranch = /master|EE-9726\/add-semantic-versioning/
-  }
-}
