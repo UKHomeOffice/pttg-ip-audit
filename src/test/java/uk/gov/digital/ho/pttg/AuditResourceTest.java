@@ -102,6 +102,30 @@ public class AuditResourceTest {
     }
 
     @Test
+    public void shouldLogRecordAuditEntry() {
+        AuditableData auditableData = new AuditableData("some event id",
+                LocalDateTime.of(2017,12, 8, 0, 0),
+                "some session id",
+                "some correlation id",
+                "some user id",
+                "some deployment name",
+                "some deployment namespace",
+                AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
+                "{}");
+
+        resource.recordAuditEntry(auditableData);
+
+        verify(mockAppender).doAppend(argThat(argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+
+            return loggingEvent.getFormattedMessage().equals("Audited INCOME_PROVING_FINANCIAL_STATUS_RESPONSE for correlation id some correlation id") &&
+                    (loggingEvent.getArgumentArray()[1]).equals("some correlation id") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("request_duration");
+        }));
+    }
+
+    @Test
     public void shouldLogWhenGetAccessCodeRequestReceived() {
         when(mockService.getAllAuditData(null)).thenReturn(Collections.singletonList(AUDIT_RECORD));
         resource.retrieveAllAuditData(null);
@@ -120,8 +144,8 @@ public class AuditResourceTest {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
             return loggingEvent.getFormattedMessage().equals("1 audit records found") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration");
         }));
     }
-
 }
