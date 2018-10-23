@@ -16,6 +16,6 @@ public class ServiceRunner {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ServiceRunner.class, args);
-		log.info("HMRC Access Code Service Started", value(EVENT, PTTG_AUDIT_SERVICE_STARTED));
+		log.info("Audit service started", value(EVENT, PTTG_AUDIT_SERVICE_STARTED));
 	}
 }
