@@ -39,7 +39,7 @@ public class AuditResource {
         log.info("{} audit records found",
                 auditRecords.size(),
                 value(EVENT, PTTG_AUDIT_RETRIEVAL_RESPONSE_SUCCESS),
-                value("request_duration", requestDuration));
+                value("request_duration_ms", requestDuration));
 
         return auditRecords;
     }
@@ -62,7 +62,7 @@ public class AuditResource {
                     auditableData.getEventType(),
                     auditableData.getCorrelationId(),
                     value(EVENT, PTTG_AUDIT_RESPONSE_SUCCESS),
-                    value("request_duration", requestDuration));
+                    value("request_duration_ms", requestDuration));
     }
 
     private long getTimestamp() {
