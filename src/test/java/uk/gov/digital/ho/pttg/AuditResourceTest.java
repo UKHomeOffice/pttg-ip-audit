@@ -41,7 +41,6 @@ public class AuditResourceTest {
     @Mock private AuditService mockService;
     @Mock private RequestData mockRequestData;
 
-
     private AuditResource resource;
 
     @Before

@@ -28,7 +28,6 @@ public class ResourceExceptionHandler {
         this.requestData = requestData;
     }
 
-
     @ExceptionHandler
     public ResponseEntity handle(Exception e) {
         log.error("Audit Exception: {}", e.getMessage(),
