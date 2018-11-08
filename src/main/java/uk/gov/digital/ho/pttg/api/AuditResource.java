@@ -47,8 +47,6 @@ public class AuditResource {
     @PostMapping(value = "/audit", consumes = APPLICATION_JSON_VALUE)
     public void recordAuditEntry(@RequestBody AuditableData auditableData) {
 
-        long requestSent = getTimestamp();
-
         log.info("Audit {} for correlation id {}",
                     auditableData.getEventType(),
                     auditableData.getCorrelationId(),
@@ -56,21 +54,10 @@ public class AuditResource {
 
         auditService.add(auditableData);
 
-        long requestDuration = getDuration(requestSent);
-
         log.info("Audited {} for correlation id {}",
                     auditableData.getEventType(),
                     auditableData.getCorrelationId(),
                     value(EVENT, PTTG_AUDIT_RESPONSE_SUCCESS),
-                    value("request_duration_ms", requestDuration));
+                    value(REQUEST_DURATION_MS, requestData.calculateRequestDuration()));
     }
-
-    private long getTimestamp() {
-        return Instant.now().toEpochMilli();
-    }
-
-    private long getDuration(long whenRequestWasSent) {
-        return getTimestamp() - whenRequestWasSent;
-    }
-
 }
