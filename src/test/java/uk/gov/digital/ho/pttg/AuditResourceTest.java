@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import uk.gov.digital.ho.pttg.api.AuditRecord;
 import uk.gov.digital.ho.pttg.api.AuditResource;
 import uk.gov.digital.ho.pttg.api.AuditableData;
+import uk.gov.digital.ho.pttg.api.RequestData;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -38,12 +39,14 @@ public class AuditResourceTest {
 
     @Mock private Appender<ILoggingEvent> mockAppender;
     @Mock private AuditService mockService;
+    @Mock private RequestData mockRequestData;
+
 
     private AuditResource resource;
 
     @Before
     public void setUp() {
-        resource = new AuditResource(mockService);
+        resource = new AuditResource(mockService, mockRequestData);
         Logger rootLogger = (Logger) LoggerFactory.getLogger(AuditResource.class);
         rootLogger.setLevel(Level.INFO);
         rootLogger.addAppender(mockAppender);
