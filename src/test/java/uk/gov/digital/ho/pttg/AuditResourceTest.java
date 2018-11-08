@@ -124,7 +124,7 @@ public class AuditResourceTest {
             return loggingEvent.getFormattedMessage().equals("Audited INCOME_PROVING_FINANCIAL_STATUS_RESPONSE for correlation id some correlation id") &&
                     (loggingEvent.getArgumentArray()[1]).equals("some correlation id") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("request_duration");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("request_duration_ms");
         }));
     }
 
@@ -148,7 +148,7 @@ public class AuditResourceTest {
 
             return loggingEvent.getFormattedMessage().equals("1 audit records found") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration_ms");
         }));
     }
 }
