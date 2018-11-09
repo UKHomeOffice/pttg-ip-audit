@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import uk.gov.digital.ho.pttg.api.AuditRecord;
 import uk.gov.digital.ho.pttg.api.AuditResource;
 import uk.gov.digital.ho.pttg.api.AuditableData;
+import uk.gov.digital.ho.pttg.api.RequestData;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -38,12 +39,13 @@ public class AuditResourceTest {
 
     @Mock private Appender<ILoggingEvent> mockAppender;
     @Mock private AuditService mockService;
+    @Mock private RequestData mockRequestData;
 
     private AuditResource resource;
 
     @Before
     public void setUp() {
-        resource = new AuditResource(mockService);
+        resource = new AuditResource(mockService, mockRequestData);
         Logger rootLogger = (Logger) LoggerFactory.getLogger(AuditResource.class);
         rootLogger.setLevel(Level.INFO);
         rootLogger.addAppender(mockAppender);
@@ -121,7 +123,7 @@ public class AuditResourceTest {
             return loggingEvent.getFormattedMessage().equals("Audited INCOME_PROVING_FINANCIAL_STATUS_RESPONSE for correlation id some correlation id") &&
                     (loggingEvent.getArgumentArray()[1]).equals("some correlation id") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("request_duration");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("request_duration_ms");
         }));
     }
 
@@ -145,7 +147,7 @@ public class AuditResourceTest {
 
             return loggingEvent.getFormattedMessage().equals("1 audit records found") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration");
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration_ms");
         }));
     }
 }

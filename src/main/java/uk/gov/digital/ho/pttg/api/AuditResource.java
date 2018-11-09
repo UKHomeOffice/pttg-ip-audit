@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.digital.ho.pttg.AuditService;
 
-import java.time.Instant;
 import java.util.List;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static uk.gov.digital.ho.pttg.api.RequestData.REQUEST_DURATION_MS;
 import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @RestController
@@ -20,34 +20,30 @@ import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 public class AuditResource {
 
     private final AuditService auditService;
+    private final RequestData requestData;
 
-    public AuditResource(AuditService auditService) {
+    public AuditResource(AuditService auditService, RequestData requestData) {
         this.auditService = auditService;
+        this.requestData = requestData;
     }
 
     @GetMapping(value = "/audit", produces = APPLICATION_JSON_VALUE)
     public List<AuditRecord> retrieveAllAuditData(Pageable pageable) {
 
-        long requestSent = getTimestamp();
-
         log.info("Audit records requested, {}", pageable, value(EVENT, PTTG_AUDIT_RETRIEVAL_REQUEST_RECEIVED));
 
         List<AuditRecord> auditRecords = auditService.getAllAuditData(pageable);
 
-        long requestDuration = getDuration(requestSent);
-
         log.info("{} audit records found",
                 auditRecords.size(),
                 value(EVENT, PTTG_AUDIT_RETRIEVAL_RESPONSE_SUCCESS),
-                value("request_duration", requestDuration));
+                value(REQUEST_DURATION_MS, requestData.calculateRequestDuration()));
 
         return auditRecords;
     }
 
     @PostMapping(value = "/audit", consumes = APPLICATION_JSON_VALUE)
     public void recordAuditEntry(@RequestBody AuditableData auditableData) {
-
-        long requestSent = getTimestamp();
 
         log.info("Audit {} for correlation id {}",
                     auditableData.getEventType(),
@@ -56,21 +52,10 @@ public class AuditResource {
 
         auditService.add(auditableData);
 
-        long requestDuration = getDuration(requestSent);
-
         log.info("Audited {} for correlation id {}",
                     auditableData.getEventType(),
                     auditableData.getCorrelationId(),
                     value(EVENT, PTTG_AUDIT_RESPONSE_SUCCESS),
-                    value("request_duration", requestDuration));
+                    value(REQUEST_DURATION_MS, requestData.calculateRequestDuration()));
     }
-
-    private long getTimestamp() {
-        return Instant.now().toEpochMilli();
-    }
-
-    private long getDuration(long whenRequestWasSent) {
-        return getTimestamp() - whenRequestWasSent;
-    }
-
 }

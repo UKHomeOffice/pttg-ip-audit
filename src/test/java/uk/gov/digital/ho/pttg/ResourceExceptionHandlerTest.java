@@ -14,6 +14,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import uk.gov.digital.ho.pttg.api.RequestData;
 import uk.gov.digital.ho.pttg.application.ResourceExceptionHandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,11 +31,14 @@ public class ResourceExceptionHandlerTest {
     private ResourceExceptionHandler resourceExceptionHandler;
 
     @Mock
+    private RequestData MockrequestData;
+
+    @Mock
     private Appender<ILoggingEvent> mockAppender;
 
     @Before
     public void setup() {
-        resourceExceptionHandler = new ResourceExceptionHandler();
+        resourceExceptionHandler = new ResourceExceptionHandler(MockrequestData);
         Logger rootLogger = (Logger) LoggerFactory.getLogger(ResourceExceptionHandler.class);
         rootLogger.setLevel(Level.INFO);
         rootLogger.addAppender(mockAppender);
@@ -96,6 +100,32 @@ public class ResourceExceptionHandlerTest {
 
             return loggingEvent.getFormattedMessage().equals("Audit Exception: some other message") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id");
+        }));
+    }
+
+    @Test
+    public void shouldLogRequestDurationOnFaultDetection(){
+        Exception mockException = mock(Exception.class);
+
+        resourceExceptionHandler.handle(mockException);
+
+        verify(mockAppender).doAppend(argThat(argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+
+            return ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration_ms");
+        }));
+    }
+
+    @Test
+    public void shouldLogRequestDurationOnHttpMessageNotReadableException(){
+        Exception mockHttpMessageNotReadableException = mock(HttpMessageNotReadableException.class);
+
+        resourceExceptionHandler.handle(mockHttpMessageNotReadableException);
+
+        verify(mockAppender).doAppend(argThat(argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+
+            return ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration_ms");
         }));
     }
 }

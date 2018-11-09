@@ -8,6 +8,7 @@ import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.time.Instant;
 import java.util.UUID;
 
 @Component
@@ -17,6 +18,8 @@ public class RequestData implements HandlerInterceptor {
     public static final String CORRELATION_ID_HEADER = "x-correlation-id";
     public static final String USER_ID_HEADER = "x-auth-userid";
     static final String USER_HOST = "userHost";
+    static final String REQUEST_START_TIMESTAMP = "request-timestamp";
+    public static final String REQUEST_DURATION_MS = "request_duration_ms";
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -27,12 +30,19 @@ public class RequestData implements HandlerInterceptor {
         MDC.put(CORRELATION_ID_HEADER, initialiseCorrelationId(request));
         MDC.put(USER_ID_HEADER, initialiseUserName(request));
         MDC.put(USER_HOST, initialiseRemoteHost(request));
+        MDC.put(REQUEST_START_TIMESTAMP, initialiseRequestStart());
+
 
         response.setHeader(SESSION_ID_HEADER, sessionId());
         response.setHeader(USER_ID_HEADER, userId());
         response.setHeader(CORRELATION_ID_HEADER, correlationId());
 
         return true;
+    }
+
+    private String initialiseRequestStart() {
+        Long requestStart = Instant.now().toEpochMilli();
+        return Long.toString(requestStart);
     }
 
     @Override
@@ -70,5 +80,10 @@ public class RequestData implements HandlerInterceptor {
 
     public String userId() {
         return MDC.get(USER_ID_HEADER);
+    }
+
+    public long calculateRequestDuration() {
+        long timeStamp = Instant.now().toEpochMilli();
+        return timeStamp - Long.parseLong(MDC.get(REQUEST_START_TIMESTAMP));
     }
 }

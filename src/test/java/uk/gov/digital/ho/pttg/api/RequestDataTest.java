@@ -86,4 +86,26 @@ public class RequestDataTest {
         assertThat(requestData.userId()).isEqualTo("a user id");
     }
 
+    @Test
+    public void shouldAddRequestTimestampToMDC() {
+        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+        HttpServletResponse mockResponse = mock(HttpServletResponse.class);
+        Object mockHandler = mock(Object.class);
+
+        requestData.preHandle(mockRequest, mockResponse, mockHandler);
+
+        assertThat(MDC.get("request-timestamp")).isNotNull();
+    }
+
+    @Test
+    public void shouldReturnRequestDuration() {
+        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+        HttpServletResponse mockResponse = mock(HttpServletResponse.class);
+        Object mockHandler = mock(Object.class);
+
+        requestData.preHandle(mockRequest, mockResponse, mockHandler);
+
+        assertThat(requestData.calculateRequestDuration()).isNotNegative();
+    }
+
 }
