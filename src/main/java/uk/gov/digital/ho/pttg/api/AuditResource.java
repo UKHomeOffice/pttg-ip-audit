@@ -8,13 +8,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.digital.ho.pttg.AuditService;
 
-import java.time.Instant;
 import java.util.List;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static uk.gov.digital.ho.pttg.api.RequestData.REQUEST_DURATION_MS;
-import static uk.gov.digital.ho.pttg.api.RequestData.REQUEST_START_TIMESTAMP;
 import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @RestController
