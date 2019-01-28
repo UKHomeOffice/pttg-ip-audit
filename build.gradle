@@ -14,8 +14,6 @@ buildscript {
   }
 }
 
-version = '0.0.1'
-
 if (System.getenv('VERSION')) {
   version = System.getenv('VERSION')
 }
@@ -106,3 +104,17 @@ dependencies {
 }
 
 gradle.startParameter.continueOnFailure = false
+
+task updateChart() {
+  doLast {
+    updateChart_steps()
+  }
+}
+
+void updateChart_steps() {
+  exec {
+    commandLine 'sh', '-c', 'sh update-chart.sh'
+  }
+}
+
+tasks.preTagCommit.dependsOn updateChart
