@@ -246,7 +246,7 @@ public class AuditServiceTest {
 
         String expectedLogMessage = String.format("Auditing Deployment Namespace of AuditEvent = '%s' does not match '%s' so no suspicious behaviour will be detected.",
                 auditEventDeploymentNamespace, deploymentNamespace);
-        
+
         assertThat(loggingEvent.getFormattedMessage())
                 .isEqualTo(expectedLogMessage);
     }
