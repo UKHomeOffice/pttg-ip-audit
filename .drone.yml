@@ -59,6 +59,8 @@ pipeline:
     image: plugins/git
     commands:
       - git clone https://github.com/UKHomeOffice/kube-pttg-ip-audit.git
+      - cd kube-pttg-ip-audit
+      - git checkout EE-13343-add-auditing-deployment-namespace-to-envvars
     when:
       event: [push, tag, deployment]
 
