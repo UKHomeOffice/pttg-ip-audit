@@ -25,7 +25,7 @@ pipeline:
     commands:
       - docker build -t pttg-ip-audit .
     when:
-      branch: [master, refs/tags/*, EE-13343-check-audit-event-deployment-namespace]
+      branch: [master, refs/tags/*]
       event: [push, tag]
 
   install-docker-image:
@@ -39,7 +39,7 @@ pipeline:
       - docker tag pttg-ip-audit quay.io/ukhomeofficedigital/pttg-ip-audit:build-$${DRONE_BUILD_NUMBER}
       - docker push quay.io/ukhomeofficedigital/pttg-ip-audit:build-$${DRONE_BUILD_NUMBER}
     when:
-      branch: [master, EE-13343-check-audit-event-deployment-namespace]
+      branch: master
       event: push
 
   tag-docker-image-with-git-tag:
@@ -59,8 +59,6 @@ pipeline:
     image: plugins/git
     commands:
       - git clone https://github.com/UKHomeOffice/kube-pttg-ip-audit.git
-      - cd kube-pttg-ip-audit
-      - git checkout EE-13343-add-auditing-deployment-namespace-to-envvars
     when:
       event: [push, tag, deployment]
 
@@ -77,7 +75,7 @@ pipeline:
       - cd kube-pttg-ip-audit
       - ./deploy.sh
     when:
-      branch: [master, EE-13343-check-audit-event-deployment-namespace]
+      branch: master
       event: [push, tag]
 
   deployment:
