@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
+import net.logstash.logback.marker.ObjectAppendingMarker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static uk.gov.digital.ho.pttg.AuditEventType.*;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_CONFIG_MISMATCH;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuditServiceTest {
@@ -249,5 +251,8 @@ public class AuditServiceTest {
 
         assertThat(loggingEvent.getFormattedMessage())
                 .isEqualTo(expectedLogMessage);
+
+        assertThat((loggingEvent.getArgumentArray()[2]))
+                .isEqualTo(new ObjectAppendingMarker("event_id", PTTG_AUDIT_CONFIG_MISMATCH));
     }
 }

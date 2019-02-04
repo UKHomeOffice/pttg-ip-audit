@@ -13,6 +13,10 @@ import uk.gov.digital.ho.pttg.api.AuditableData;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static net.logstash.logback.argument.StructuredArguments.value;
+import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_CONFIG_MISMATCH;
+
 @Component
 @Slf4j
 public class AuditService {
@@ -49,7 +53,7 @@ public class AuditService {
 
         if (!eventNamespace.equals(auditingDeploymentNamespace)) {
             log.warn("Auditing Deployment Namespace of AuditEvent = '{}' does not match '{}' so no suspicious behaviour will be detected.",
-                    eventNamespace, auditingDeploymentNamespace);
+                    eventNamespace, auditingDeploymentNamespace, value(EVENT, PTTG_AUDIT_CONFIG_MISMATCH));
         }
     }
 
