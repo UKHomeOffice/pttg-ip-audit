@@ -1,5 +1,10 @@
 package uk.gov.digital.ho.pttg;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import net.logstash.logback.marker.ObjectAppendingMarker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.LoggerFactory;
 import uk.gov.digital.ho.pttg.alert.AppropriateUsageChecker;
 import uk.gov.digital.ho.pttg.alert.sysdig.SuspectUsage;
 import uk.gov.digital.ho.pttg.api.AuditRecord;
@@ -19,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static uk.gov.digital.ho.pttg.AuditEventType.*;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_CONFIG_MISMATCH;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuditServiceTest {
@@ -27,15 +34,19 @@ public class AuditServiceTest {
 
     @Mock private AuditEntryJpaRepository mockRepository;
     @Mock private AppropriateUsageChecker mockChecker;
+    @Mock private Appender<ILoggingEvent> mockAppender;
 
     private AuditService auditService;
 
     @Captor private ArgumentCaptor<AuditEntry> captorAuditEntry;
+    @Captor private ArgumentCaptor<ILoggingEvent> loggingEventArgumentCaptor;
 
     @Before
     public void setup() {
         now = LocalDateTime.now();
-        auditService = new AuditService(mockRepository, mockChecker);
+        auditService = new AuditService(mockRepository, mockChecker, "some deployment namespace");
+        Logger logger = (Logger) LoggerFactory.getLogger(AuditService.class);
+        logger.addAppender(mockAppender);
     }
 
     @Test
@@ -189,5 +200,59 @@ public class AuditServiceTest {
         verify(mockRepository).save(any(AuditEntry.class));
         verify(mockChecker).precheck();
         verify(mockChecker).postcheck(any(SuspectUsage.class));
+    }
+
+    @Test
+    public void add_eventAuditingDeploymentNamespaceMatches_noWarningLog() {
+        String deploymentNamespace = "some namespace";
+        AuditService auditService = new AuditService(mockRepository, mockChecker, deploymentNamespace);
+
+        AuditableData auditableDataSameNamespace = new AuditableData(
+                "some event id",
+                now,
+                "some session id",
+                "some correlation id",
+                "some user id",
+                "some deployment name",
+                deploymentNamespace,
+                INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
+                "some data");
+
+        auditService.add(auditableDataSameNamespace);
+        verify(mockAppender, never()).doAppend(any());
+    }
+
+    @Test
+    public void add_eventAuditingDeploymentNamespaceDoesNotMatch_noWarningLog() {
+        String deploymentNamespace = "some namespace";
+        String auditEventDeploymentNamespace = "another namespace";
+        AuditService auditService = new AuditService(mockRepository, mockChecker, deploymentNamespace);
+
+        AuditableData auditableDataAnotherNamespace = new AuditableData(
+                "some event id",
+                now,
+                "some session id",
+                "some correlation id",
+                "some user id",
+                "some deployment name",
+                auditEventDeploymentNamespace,
+                INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
+                "some data");
+
+        auditService.add(auditableDataAnotherNamespace);
+        verify(mockAppender).doAppend(loggingEventArgumentCaptor.capture());
+
+        ILoggingEvent loggingEvent = loggingEventArgumentCaptor.getValue();
+        assertThat(loggingEvent.getLevel())
+                .isEqualTo(Level.WARN);
+
+        String expectedLogMessage = String.format("Auditing Deployment Namespace of AuditEvent = '%s' does not match '%s' so no suspicious behaviour will be detected.",
+                auditEventDeploymentNamespace, deploymentNamespace);
+
+        assertThat(loggingEvent.getFormattedMessage())
+                .isEqualTo(expectedLogMessage);
+
+        assertThat((loggingEvent.getArgumentArray()[2]))
+                .isEqualTo(new ObjectAppendingMarker("event_id", PTTG_AUDIT_CONFIG_MISMATCH));
     }
 }
