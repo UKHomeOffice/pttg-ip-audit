@@ -61,11 +61,11 @@ public class AuditService {
         List<AuditEntry> auditEntries = repository.findAllByOrderByTimestampDesc(pageable);
 
         return auditEntries.stream()
-                            .map(this::transformToAuditRecord)
+                            .map(AuditService::transformToAuditRecord)
                             .collect(Collectors.toList());
     }
 
-    AuditRecord transformToAuditRecord(AuditEntry auditEntry) {
+    static AuditRecord transformToAuditRecord(AuditEntry auditEntry) {
         JSONObject jsonObject = new JSONObject(auditEntry.getDetail());
 
         return new AuditRecord(auditEntry.getCorrelationId(),
