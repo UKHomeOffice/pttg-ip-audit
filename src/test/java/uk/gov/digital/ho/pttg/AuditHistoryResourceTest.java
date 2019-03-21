@@ -3,8 +3,10 @@ package uk.gov.digital.ho.pttg;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.google.common.collect.ImmutableMap;
+import net.logstash.logback.marker.ObjectAppendingMarker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,9 +19,12 @@ import uk.gov.digital.ho.pttg.api.RequestData;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
@@ -55,10 +60,56 @@ public class AuditHistoryResourceTest {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
         when(mockHistoryService.getAuditHistory(LocalDate.now(), eventTypes)).thenReturn(Arrays.asList(AUDIT_RECORD));
 
-        List<AuditRecord> result = historyResource.retrieveAuditHistory(LocalDate.now(), eventTypes);
+        historyResource.retrieveAuditHistory(LocalDate.now(), eventTypes);
 
         verify(mockHistoryService).getAuditHistory(LocalDate.now(), eventTypes);
     }
+
+    @Test
+    public void retrieveAuditHistory_returnsResultFromAuditHistoryService() {
+        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        when(mockHistoryService.getAuditHistory(LocalDate.now(), eventTypes)).thenReturn(Arrays.asList(AUDIT_RECORD));
+
+        List<AuditRecord> result = historyResource.retrieveAuditHistory(LocalDate.now(), eventTypes);
+
+        assertThat(result).isEqualTo(result);
+    }
+
+    @Test
+    public void retrieveAuditHistory_logsRequestParameters() {
+        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        when(mockHistoryService.getAuditHistory(LocalDate.now(), eventTypes)).thenReturn(Arrays.asList(AUDIT_RECORD));
+
+        historyResource.retrieveAuditHistory(LocalDate.now(), eventTypes);
+
+        verify(mockAppender).doAppend(argThat(argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+
+            String expectedLogMessage = String.format("Requested Audit History for events [%s, %s] up to end date %s",
+                    INCOME_PROVING_FINANCIAL_STATUS_REQUEST.name(),
+                    INCOME_PROVING_FINANCIAL_STATUS_RESPONSE.name(),
+                    LocalDate.now().format(DateTimeFormatter.ofPattern("yyy-MM-dd")));
+            return loggingEvent.getFormattedMessage().equals(expectedLogMessage) &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id");
+        }));
+    }
+
+    @Test
+    public void retrieveAuditHistory_logsResult() {
+        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        when(mockHistoryService.getAuditHistory(LocalDate.now(), eventTypes)).thenReturn(Arrays.asList(AUDIT_RECORD));
+
+        historyResource.retrieveAuditHistory(LocalDate.now(), eventTypes);
+
+        verify(mockAppender).doAppend(argThat(argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+
+            return loggingEvent.getFormattedMessage().equals("Returned 1 audit record(s) for history request") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration_ms");
+        }));
+    }
+
 
 
 }
