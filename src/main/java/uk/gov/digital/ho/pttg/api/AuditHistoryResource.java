@@ -1,6 +1,7 @@
 package uk.gov.digital.ho.pttg.api;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,8 +29,10 @@ public class AuditHistoryResource {
     }
 
     @GetMapping(value = "/history", produces = APPLICATION_JSON_VALUE)
-    public List<AuditRecord> retrieveAuditHistory(@RequestParam LocalDate toDate, @RequestParam List<AuditEventType> eventTypes) {
-
+    public List<AuditRecord> retrieveAuditHistory(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam List<AuditEventType> eventTypes
+    ) {
         log.info("Requested Audit History for events {} up to end date {}",
                 eventTypes,
                 toDate,
