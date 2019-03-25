@@ -70,11 +70,12 @@ public class AuditHistoryResourceTest {
     @Test
     public void retrieveAuditHistory_returnsResultFromAuditHistoryService() {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
-        when(mockHistoryService.getAuditHistory(LocalDate.now(), eventTypes)).thenReturn(Arrays.asList(AUDIT_RECORD));
+        List<AuditRecord> expected = Arrays.asList(AUDIT_RECORD);
+        when(mockHistoryService.getAuditHistory(LocalDate.now(), eventTypes)).thenReturn(expected);
 
         List<AuditRecord> result = historyResource.retrieveAuditHistory(LocalDate.now(), eventTypes);
 
-        assertThat(result).isEqualTo(result);
+        assertThat(result).isEqualTo(expected);
     }
 
     @Test
