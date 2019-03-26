@@ -1,6 +1,7 @@
 package uk.gov.digital.ho.pttg;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -146,11 +147,38 @@ public class AuditEntryJpaRepositoryTest {
                                     TWO_DAYS_AGO);
     }
 
+    /**
+     * As this test involves some Postgres specific syntax for the JSONB column, the intention was to run this test
+     * against an in memeory postgres database.  However, I was unable to get such a database working consistently in
+     * conjunction with Spring Boot.
+     *
+     * This test was run manually against postgres 9.6 running in a docker container, and it passed there, so we do at
+     * least know the test passes against a real postgres db.
+     *
+     * To run this test:
+     * - add the class level annotation @ActiveProfiles("postgres,postgresDocker")
+     * - run a docker container with the following command (replacing with the correct version of postgres):
+     *     docker run  --name pg-docker -e POSTGRES_PASSWORD=docker -d -p 5432:5432 postgres:9.6.12
+     * - remove the @Ignore annotation from the test
+     * You should now be able to run the test against the docker container.
+     */
+    @Ignore
+    @Test
+    public void shouldCountByNino() {
+        repository.save(createAudit(LocalDateTime.now().plusDays(10), "some_user", "{\"nino\": \"some_nino\"}"));
+        final Long count = repository.countStuff(LocalDateTime.now().plusDays(9), "some_nino");
+        assertThat(count).isEqualTo(1);
+    }
+
     private AuditEntry createAudit(LocalDateTime timestamp) {
         return createAudit(timestamp, USER_ID);
     }
 
     private AuditEntry createAudit(LocalDateTime timestamp, String userId) {
+        return createAudit(timestamp, userId, DETAIL);
+    }
+
+    private AuditEntry createAudit(LocalDateTime timestamp, String userId, String detail) {
         return new AuditEntry(
                 randomUUID().toString(),
                 timestamp,
@@ -160,7 +188,7 @@ public class AuditEntryJpaRepositoryTest {
                 DEPLOYMENT,
                 NAMESPACE,
                 INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
-                DETAIL
+                detail
         );
     }
 

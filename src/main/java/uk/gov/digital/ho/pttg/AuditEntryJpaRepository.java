@@ -24,6 +24,8 @@ public interface AuditEntryJpaRepository extends PagingAndSortingRepository<Audi
 
     List<AuditEntry> findAllByOrderByTimestampDesc(Pageable pageable);
 
+    @Query(nativeQuery = true, value = "SELECT count(audit) FROM audit WHERE timestamp > :afterDate and detail ->> 'nino' = :nino")
+    Long countStuff(@Param("afterDate") LocalDateTime afterDate, @Param("nino") String nino);
 }
 
 

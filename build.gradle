@@ -83,8 +83,7 @@ dependencies {
 
   compile group: 'net.logstash.logback',              name: 'logstash-logback-encoder',   version: '5.0'
 
-  compile 'org.hsqldb:hsqldb'
-  compile 'org.postgresql:postgresql:9.4.1211.jre7'
+  compile 'org.postgresql:postgresql:42.2.5'
 
   compile group: 'org.json', name: 'json', version: '20170516'
 
@@ -101,6 +100,8 @@ dependencies {
   testCompile group: 'com.github.tomakehurst',    name: 'wiremock',                 version: '2.4.1'
 
   testCompile group: 'com.google.code.findbugs',  name: 'annotations',                version: '3.0.1'
+  
+  testCompile 'org.hsqldb:hsqldb'
 }
 
 gradle.startParameter.continueOnFailure = false
