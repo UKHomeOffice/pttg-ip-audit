@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.pttg.alert.CountByUser;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.util.UUID.randomUUID;
@@ -149,7 +150,7 @@ public class AuditEntryJpaRepositoryTest {
 
     /**
      * As this test involves some Postgres specific syntax for the JSONB column, the intention was to run this test
-     * against an in memeory postgres database.  However, I was unable to get such a database working consistently in
+     * against an in memory postgres database.  However, I was unable to get such a database working consistently in
      * conjunction with Spring Boot.
      *
      * This test was run manually against postgres 9.6 running in a docker container, and it passed there, so we do at
@@ -166,8 +167,30 @@ public class AuditEntryJpaRepositoryTest {
     @Test
     public void shouldCountByNino() {
         repository.save(createAudit(LocalDateTime.now().plusDays(10), "some_user", "{\"nino\": \"some_nino\"}"));
-        final Long count = repository.countStuff(LocalDateTime.now().plusDays(9), "some_nino");
+        final Long count = repository.countNinosAfterDate(LocalDateTime.now().plusDays(9), "some_nino");
         assertThat(count).isEqualTo(1);
+    }
+
+    @Test
+    public void shouldDeleteSingleCorrelationId() {
+        repository.deleteAllCorrelationIds(Arrays.asList(UUID));
+        final Iterable<AuditEntry> all = repository.findAll();
+        assertThat(all).size().isEqualTo(0);
+    }
+
+    @Test
+    public void shouldDeleteMultipleCorrelationId() {
+        repository.save(createAuditWithCorrelationId(LocalDateTime.now(), "some_user", "corr id 2"));
+        repository.deleteAllCorrelationIds(Arrays.asList(UUID, "corr id 2"));
+        final Iterable<AuditEntry> all = repository.findAll();
+        assertThat(all).size().isEqualTo(0);
+    }
+
+    @Test
+    public void shouldNotDeleteMissingCorrelationId() {
+        repository.deleteAllCorrelationIds(Arrays.asList("does_not_exist"));
+        final Iterable<AuditEntry> all = repository.findAll();
+        assertThat(all).size().isEqualTo(7);
     }
 
     private AuditEntry createAudit(LocalDateTime timestamp) {
@@ -189,6 +212,20 @@ public class AuditEntryJpaRepositoryTest {
                 NAMESPACE,
                 INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
                 detail
+        );
+    }
+
+    private AuditEntry createAuditWithCorrelationId(LocalDateTime timestamp, String userId, String correlationId) {
+        return new AuditEntry(
+                randomUUID().toString(),
+                timestamp,
+                SESSION_ID,
+                correlationId,
+                userId,
+                DEPLOYMENT,
+                NAMESPACE,
+                INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
+                DETAIL
         );
     }
 

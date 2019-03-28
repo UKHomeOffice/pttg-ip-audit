@@ -1,10 +1,12 @@
 package uk.gov.digital.ho.pttg;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.pttg.alert.CountByUser;
 
 import java.time.LocalDateTime;
@@ -25,7 +27,12 @@ public interface AuditEntryJpaRepository extends PagingAndSortingRepository<Audi
     List<AuditEntry> findAllByOrderByTimestampDesc(Pageable pageable);
 
     @Query(nativeQuery = true, value = "SELECT count(audit) FROM audit WHERE timestamp > :afterDate and detail ->> 'nino' = :nino")
-    Long countStuff(@Param("afterDate") LocalDateTime afterDate, @Param("nino") String nino);
+    Long countNinosAfterDate(@Param("afterDate") LocalDateTime afterDate, @Param("nino") String nino);
+
+    @Transactional
+    @Modifying
+    @Query("DELETE from AuditEntry audit where audit.correlationId in :correlationIds")
+    void deleteAllCorrelationIds(@Param("correlationIds") List<String> correlationIds);
 }
 
 
