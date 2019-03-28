@@ -12,6 +12,15 @@
                 <Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
             </layout>
         </appender>
+
+        <appender name="thirdPartyErrorAppender" class="ch.qos.logback.core.ConsoleAppender">
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
+            </layout>
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>ERROR</level>
+            </filter>
+        </appender>
     </springProfile>
 
     <springProfile name="!logtoconsole">
@@ -31,30 +40,51 @@
                 </provider>
             </encoder>
         </appender>
+
+        <appender name="thirdPartyErrorAppender" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeCallerInfo>true</includeCallerInfo>
+                <provider class="net.logstash.logback.composite.loggingevent.LoggingEventPatternJsonProvider">
+                    <pattern>
+                        {
+                        "timestamp" : "%date{\"yyyy-MM-dd'T'HH:mm:ss,SSSXXX\", UTC}",
+                        "thread" : "%thread",
+                        "subsystem" : "${appName}",
+                        "logger" : "%logger{50}",
+                        "exception" : "%exception",
+                        "event_id": "THIRD_PARTY_ERROR"
+                        }
+                    </pattern>
+                </provider>
+            </encoder>
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>ERROR</level>
+            </filter>
+        </appender>
     </springProfile>
     
     <logger name="uk.gov" additivity="false" level="INFO">
         <appender-ref ref="consoleAppender"/>
     </logger>
 
-    <logger name="com.github.tomakehurst.wiremock" additivity="false" level="INFO">
-        <appender-ref ref="consoleAppender"/>
-    </logger>
-
     <logger name="org.eclipse.jetty" additivity="false" level="WARN">
         <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="thirdPartyErrorAppender"/>
     </logger>
 
     <logger name="org.springframework" additivity="false" level="WARN">
         <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="thirdPartyErrorAppender"/>
     </logger>
 
     <logger name="org.flywaydb" additivity="false" level="WARN">
         <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="thirdPartyErrorAppender"/>
     </logger>
 
     <logger name="com.zaxxer.hikari" additivity="false" level="WARN">
         <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="thirdPartyErrorAppender"/>
     </logger>
 
 
@@ -64,6 +94,7 @@
 
     <root level="INFO">
         <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="thirdPartyErrorAppender"/>
     </root>
 
 </configuration>
