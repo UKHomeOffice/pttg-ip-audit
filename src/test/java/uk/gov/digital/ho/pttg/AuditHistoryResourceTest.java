@@ -32,6 +32,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_HISTORY_REQUEST_RECEIVED;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_HISTORY_RESPONSE_SUCCESS;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuditHistoryResourceTest {
@@ -98,7 +100,7 @@ public class AuditHistoryResourceTest {
                     LocalDate.now().format(DateTimeFormatter.ofPattern("yyy-MM-dd")),
                     SOME_PAGEABLE);
             return loggingEvent.getFormattedMessage().equals(expectedLogMessage) &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("event_id");
+                    loggingEvent.getArgumentArray()[3].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_HISTORY_REQUEST_RECEIVED));
         }));
     }
 
@@ -113,7 +115,7 @@ public class AuditHistoryResourceTest {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
             return loggingEvent.getFormattedMessage().equals("Returned 1 audit record(s) for history request") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id") &&
+                    loggingEvent.getArgumentArray()[1].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_HISTORY_RESPONSE_SUCCESS)) &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration_ms");
         }));
     }
@@ -139,7 +141,7 @@ public class AuditHistoryResourceTest {
             String expectedLogMessage = String.format("Requested Audit History for events [%s, %s] up to end date %s with pageable of %s",
                     INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE, null, SOME_PAGEABLE);
             return loggingEvent.getFormattedMessage().equals(expectedLogMessage) &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("event_id");
+                    loggingEvent.getArgumentArray()[3].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_HISTORY_REQUEST_RECEIVED));
         }));
     }
 }
