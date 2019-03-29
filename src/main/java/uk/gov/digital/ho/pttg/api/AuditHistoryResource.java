@@ -31,9 +31,9 @@ public class AuditHistoryResource {
 
     @GetMapping(value = "/history", produces = APPLICATION_JSON_VALUE)
     public List<AuditRecord> retrieveAuditHistory(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
             @RequestParam List<AuditEventType> eventTypes,
-            @RequestParam Pageable pageable
+            Pageable pageable
     ) {
 
         log.info("Requested Audit History for events {} up to end date {} with pageable of {}",
