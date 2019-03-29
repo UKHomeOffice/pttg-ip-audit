@@ -1,11 +1,11 @@
 package uk.gov.digital.ho.pttg;
 
-import org.apache.http.entity.ContentType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.digital.ho.pttg.api.AuditHistoryResource;
@@ -56,7 +56,7 @@ public class AuditHistoryWebTest {
                     .param("eventTypes", EVENT_TYPES_PARAM)
                 );
 
-        verify(mockAuditHistoryService).getAuditHistory(REQ_DATE, EVENT_TYPES);
+        verify(mockAuditHistoryService).getAuditHistory(REQ_DATE, EVENT_TYPES, Pageable.unpaged());
     }
 
     @Test

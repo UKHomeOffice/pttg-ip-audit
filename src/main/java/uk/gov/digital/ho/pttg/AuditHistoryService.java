@@ -18,9 +18,9 @@ public class AuditHistoryService {
         this.repository = repository;
     }
 
-    public List<AuditRecord> getAuditHistory(LocalDate toDate, List<AuditEventType> eventTypes) {
+    public List<AuditRecord> getAuditHistory(LocalDate toDate, List<AuditEventType> eventTypes, Pageable pageable) {
         LocalDateTime toDateEod = toDate.atTime(23, 59, 59, 999);
-        List<AuditEntry> entries = repository.findAuditHistory(toDateEod, eventTypes, Pageable.unpaged());
+        List<AuditEntry> entries = repository.findAuditHistory(toDateEod, eventTypes, pageable);
         return entries.stream()
                 .map(AuditService::transformToAuditRecord)
                 .collect(Collectors.toList());

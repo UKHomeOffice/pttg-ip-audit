@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import uk.gov.digital.ho.pttg.api.AuditRecord;
 
@@ -31,25 +32,28 @@ public class AuditHistoryServiceTest {
     @Test
     public void getAuditHistory_callsAuditRepo() {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
-        auditHistoryService.getAuditHistory(LocalDate.now(), eventTypes);
+        Pageable pageable = PageRequest.of(3, 5);
+        auditHistoryService.getAuditHistory(LocalDate.now(), eventTypes, pageable);
 
-        verify(repository).findAuditHistory(any(LocalDateTime.class), eq(eventTypes), eq(Pageable.unpaged()));
+        verify(repository).findAuditHistory(any(LocalDateTime.class), eq(eventTypes), eq(pageable));
     }
 
     @Test
     public void getAuditHistory_queriesWithEndOfDay() {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
-        auditHistoryService.getAuditHistory(LocalDate.now(), eventTypes);
+        Pageable somePageable = Pageable.unpaged();
+        auditHistoryService.getAuditHistory(LocalDate.now(), eventTypes, somePageable);
 
-        verify(repository).findAuditHistory(LocalDateTime.now().withHour(23).withMinute(59).withSecond(59).withNano(999), eventTypes, Pageable.unpaged());
+        verify(repository).findAuditHistory(LocalDateTime.now().withHour(23).withMinute(59).withSecond(59).withNano(999), eventTypes, somePageable);
     }
 
     @Test
     public void getAuditHistory_returnsAuditRecords() {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
-        when(repository.findAuditHistory(any(LocalDateTime.class), anyList(), eq(Pageable.unpaged()))).thenReturn(Arrays.asList(getAuditEntry()));
+        Pageable somePageable = Pageable.unpaged();
+        when(repository.findAuditHistory(any(LocalDateTime.class), anyList(), eq(somePageable))).thenReturn(Arrays.asList(getAuditEntry()));
 
-        List<AuditRecord> auditRecords = auditHistoryService.getAuditHistory(LocalDate.now(), eventTypes);
+        List<AuditRecord> auditRecords = auditHistoryService.getAuditHistory(LocalDate.now(), eventTypes, somePageable);
 
         assertThat(auditRecords).size().isEqualTo(1);
         AuditRecord auditRecord = auditRecords.get(0);
