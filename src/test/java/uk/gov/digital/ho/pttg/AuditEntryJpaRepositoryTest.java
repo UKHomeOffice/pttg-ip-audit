@@ -18,6 +18,7 @@ import java.util.List;
 
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
 
 @RunWith(SpringRunner.class)
@@ -146,6 +147,39 @@ public class AuditEntryJpaRepositoryTest {
                                     NOW_MINUS_60_MINS,
                                     YESTERDAY,
                                     TWO_DAYS_AGO);
+    }
+
+    @Test
+    public void findAuditHistory_filtersByDate() {
+        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        final Iterable<AuditEntry> all = repository.findAuditHistory(YESTERDAY, eventTypes);
+
+        assertThat(all)
+                .extracting("timestamp")
+                .containsExactly(TWO_DAYS_AGO, YESTERDAY);
+
+    }
+
+    @Test
+    public void findAuditHistory_ordersByDateAscending() {
+        repository.save(createAudit(TWO_DAYS_AGO));
+        repository.save(createAudit(NOW));
+        repository.save(createAudit(TWO_DAYS_AGO));
+
+        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        final Iterable<AuditEntry> all = repository.findAuditHistory(YESTERDAY, eventTypes);
+
+        assertThat(all)
+                .extracting("timestamp")
+                .containsExactly(TWO_DAYS_AGO, TWO_DAYS_AGO, TWO_DAYS_AGO, YESTERDAY);
+    }
+
+    @Test
+    public void findAuditHistory_filtersByEventType() {
+        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
+        final Iterable<AuditEntry> all = repository.findAuditHistory(YESTERDAY, eventTypes);
+
+        assertThat(all).size().isEqualTo(0);
     }
 
     /**

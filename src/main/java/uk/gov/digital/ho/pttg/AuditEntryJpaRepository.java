@@ -26,6 +26,9 @@ public interface AuditEntryJpaRepository extends PagingAndSortingRepository<Audi
 
     List<AuditEntry> findAllByOrderByTimestampDesc(Pageable pageable);
 
+    @Query("SELECT audit FROM AuditEntry audit WHERE audit.timestamp <= :toDate AND audit.type in (:eventTypes) ORDER BY audit.timestamp")
+    List<AuditEntry> findAuditHistory(@Param("toDate") LocalDateTime toDate, @Param("eventTypes") List<AuditEventType> eventTypes);
+
     @Query(nativeQuery = true, value = "SELECT count(audit) FROM audit WHERE timestamp > :afterDate and detail ->> 'nino' = :nino")
     Long countNinosAfterDate(@Param("afterDate") LocalDateTime afterDate, @Param("nino") String nino);
 

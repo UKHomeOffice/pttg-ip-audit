@@ -5,8 +5,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import uk.gov.digital.ho.pttg.api.RequestData;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
@@ -30,22 +32,29 @@ public class ResourceExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity handle(Exception e) {
-        log.error("Audit Exception: {}", e.getMessage(),
-                value(EVENT, PTTG_AUDIT_FAILURE),
-                value(REQUEST_DURATION_MS, requestData.calculateRequestDuration()));
-        return errorResponse(e.getMessage(), INTERNAL_SERVER_ERROR);
+        return processError(e.getMessage(), INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler
     public ResponseEntity handle(HttpMessageNotReadableException e) {
-        log.error("Audit Exception: {}", e.getMessage(),
-                value(EVENT, PTTG_AUDIT_FAILURE),
-                value(REQUEST_DURATION_MS, requestData.calculateRequestDuration()));
-        return errorResponse(e.getMessage(), BAD_REQUEST);
+        return processError(e.getMessage(), BAD_REQUEST);
     }
 
-    private ResponseEntity<String> errorResponse(String message, HttpStatus httpStatus) {
-        return new ResponseEntity<>(message, httpHeaders(), httpStatus);
+    @ExceptionHandler
+    public ResponseEntity handle(MethodArgumentTypeMismatchException e) {
+        return processError(e.getMessage(), BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity handle(MissingServletRequestParameterException e) {
+        return processError(e.getMessage(), BAD_REQUEST);
+    }
+
+    private ResponseEntity processError(String message, HttpStatus badRequest) {
+        log.error("Audit Exception: {}", message,
+                value(EVENT, PTTG_AUDIT_FAILURE),
+                value(REQUEST_DURATION_MS, requestData.calculateRequestDuration()));
+        return new ResponseEntity<>(message, httpHeaders(), badRequest);
     }
 
     private HttpHeaders httpHeaders() {

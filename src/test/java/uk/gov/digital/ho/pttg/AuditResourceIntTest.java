@@ -36,5 +36,4 @@ public class AuditResourceIntTest {
 
         JSONAssert.assertEquals(auditRecords, expectedRecords, false);
     }
-
 }

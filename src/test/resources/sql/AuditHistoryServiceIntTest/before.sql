@@ -1,22 +1,24 @@
+-- noinspection SqlNoDataSourceInspectionForFile
+
 INSERT INTO audit
     VALUES (
       '1',
       'some uuid',
       '2017-09-11 14:45:48.094',
       'some session id',
-      '3a22c723-ea0f-4962-b97b-f35dce3284b2',
-      'bobby.bag@digital.homeoffice.gov.uk',
+      'some corr id',
+      'some email',
       'some deployment',
       'some namespace',
       'INCOME_PROVING_FINANCIAL_STATUS_REQUEST',
        '{
-        "forename": "Antonio",
+        "forename": "some forename",
         "method": "get-financial-status",
         "dependants": 0,
-        "surname": "Gramsci",
+        "surname": "some surname",
         "applicationRaisedDate": "2017-06-01",
         "dateOfBirth": "1891-01-22",
-        "nino": "NE112233C"
+        "nino": "some nino"
         }'
     );
 
@@ -26,8 +28,8 @@ VALUES (
         'some uuid',
         '2017-09-11 14:45:55.033',
         'some session id',
-        '3a22c723-ea0f-4962-b97b-f35dce3284b2',
-        'bobby.bag@digital.homeoffice.gov.uk',
+        'some corr id',
+        'some email',
         'some deployment',
         'some namespace',
         'INCOME_PROVING_FINANCIAL_STATUS_RESPONSE',
@@ -40,9 +42,9 @@ VALUES (
             },
             "individual": {
               "title": "",
-              "forename": "Antonio",
-              "surname": "Gramsci",
-              "nino": "NE112233C"
+              "forename": "some forename",
+              "surname": "some surname",
+              "nino": "some nino"
             },
             "categoryCheck": {
               "category": "A",
