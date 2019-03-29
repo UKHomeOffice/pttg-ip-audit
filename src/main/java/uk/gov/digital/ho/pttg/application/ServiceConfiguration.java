@@ -31,13 +31,15 @@ public class ServiceConfiguration {
         initialiseObjectMapper(objectMapper);
     }
 
-    private static void initialiseObjectMapper(final ObjectMapper m) {
+    private ObjectMapper initialiseObjectMapper(final ObjectMapper m) {
         m.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
 
         m.registerModule(new JavaTimeModule());
         m.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         m.enable(SerializationFeature.INDENT_OUTPUT);
         m.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        return m;
     }
 
     @Bean
