@@ -119,31 +119,6 @@ public class AuditHistoryResourceTest {
     }
 
     @Test
-    public void retrieveAuditHistory_nullPageable_useUnpaged() {
-        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
-
-        historyResource.retrieveAuditHistory(LocalDate.now(), eventTypes, null);
-
-        verify(mockHistoryService).getAuditHistory(LocalDate.now(), eventTypes, Pageable.unpaged());
-    }
-
-    @Test
-    public void retrieveAuditHistory_nullPageable_logUnpaged() {
-        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
-
-        historyResource.retrieveAuditHistory(LocalDate.now(), eventTypes, null);
-
-        verify(mockAppender).doAppend(argThat(argument -> {
-            LoggingEvent loggingEvent = (LoggingEvent) argument;
-
-            String expectedLogMessage = String.format("Requested Audit History for events [%s, %s] up to end date %s with pageable of %s",
-                    INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE, LocalDate.now(), null);
-            return loggingEvent.getFormattedMessage().equals(expectedLogMessage) &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("event_id");
-        }));
-    }
-
-    @Test
     public void retrieveAuditHistory_nullToDate_useToday() {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
 

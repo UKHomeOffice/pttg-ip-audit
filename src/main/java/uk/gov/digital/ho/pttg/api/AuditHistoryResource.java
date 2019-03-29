@@ -41,8 +41,6 @@ public class AuditHistoryResource {
                 toDate,
                 pageable,
                 value(EVENT, PTTG_AUDIT_HISTORY_REQUEST_RECEIVED));
-
-        pageable = useDefaultIfNull(pageable);
         toDate = useDefaultIfNull(toDate);
 
         List<AuditRecord> result = auditHistoryService.getAuditHistory(toDate, eventTypes, pageable);
@@ -58,9 +56,5 @@ public class AuditHistoryResource {
 
     private LocalDate useDefaultIfNull(LocalDate toDate) {
         return toDate != null ? toDate : LocalDate.now();
-    }
-
-    private Pageable useDefaultIfNull(Pageable pageable) {
-        return pageable != null ? pageable : Pageable.unpaged();
     }
 }
