@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Pageable;
 import uk.gov.digital.ho.pttg.api.AuditRecord;
 
 import java.time.LocalDate;
@@ -32,7 +33,7 @@ public class AuditHistoryServiceTest {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
         auditHistoryService.getAuditHistory(LocalDate.now(), eventTypes);
 
-        verify(repository).findAuditHistory(any(LocalDateTime.class), eq(eventTypes));
+        verify(repository).findAuditHistory(any(LocalDateTime.class), eq(eventTypes), eq(Pageable.unpaged()));
     }
 
     @Test
@@ -40,13 +41,13 @@ public class AuditHistoryServiceTest {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
         auditHistoryService.getAuditHistory(LocalDate.now(), eventTypes);
 
-        verify(repository).findAuditHistory(LocalDateTime.now().withHour(23).withMinute(59).withSecond(59).withNano(999), eventTypes);
+        verify(repository).findAuditHistory(LocalDateTime.now().withHour(23).withMinute(59).withSecond(59).withNano(999), eventTypes, Pageable.unpaged());
     }
 
     @Test
     public void getAuditHistory_returnsAuditRecords() {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
-        when(repository.findAuditHistory(any(LocalDateTime.class), anyList())).thenReturn(Arrays.asList(getAuditEntry()));
+        when(repository.findAuditHistory(any(LocalDateTime.class), anyList(), eq(Pageable.unpaged()))).thenReturn(Arrays.asList(getAuditEntry()));
 
         List<AuditRecord> auditRecords = auditHistoryService.getAuditHistory(LocalDate.now(), eventTypes);
 

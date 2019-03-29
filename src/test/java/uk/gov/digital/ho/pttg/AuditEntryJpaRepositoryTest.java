@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
@@ -151,7 +152,7 @@ public class AuditEntryJpaRepositoryTest {
     @Test
     public void findAuditHistory_filtersByDate() {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
-        final Iterable<AuditEntry> all = repository.findAuditHistory(YESTERDAY, eventTypes);
+        final Iterable<AuditEntry> all = repository.findAuditHistory(YESTERDAY, eventTypes, Pageable.unpaged());
 
         assertThat(all)
                 .extracting("timestamp")
@@ -166,7 +167,7 @@ public class AuditEntryJpaRepositoryTest {
         repository.save(createAudit(TWO_DAYS_AGO));
 
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
-        final Iterable<AuditEntry> all = repository.findAuditHistory(YESTERDAY, eventTypes);
+        final Iterable<AuditEntry> all = repository.findAuditHistory(YESTERDAY, eventTypes, Pageable.unpaged());
 
         assertThat(all)
                 .extracting("timestamp")
@@ -176,7 +177,49 @@ public class AuditEntryJpaRepositoryTest {
     @Test
     public void findAuditHistory_filtersByEventType() {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
-        final Iterable<AuditEntry> all = repository.findAuditHistory(YESTERDAY, eventTypes);
+        final Iterable<AuditEntry> all = repository.findAuditHistory(YESTERDAY, eventTypes, Pageable.unpaged());
+
+        assertThat(all).size().isEqualTo(0);
+    }
+
+    @Test
+    public void findAuditHistory_pageable_isPaged() {
+        List<AuditEventType> eventTypes = singletonList(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        Pageable pagination = PageRequest.of(0, 2);
+
+        Iterable<AuditEntry> firstPage = repository.findAuditHistory(DAY_AFTER_TOMORROW, eventTypes, pagination);
+
+        assertThat(firstPage)
+                .extracting("timestamp")
+                .containsExactly(TWO_DAYS_AGO, YESTERDAY);
+
+        pagination = pagination.next();
+        Iterable<AuditEntry> secondPage = repository.findAuditHistory(DAY_AFTER_TOMORROW, eventTypes, pagination);
+        assertThat(secondPage)
+                .extracting("timestamp")
+                .containsExactly(NOW_MINUS_60_MINS, NOW);
+
+        pagination = pagination.next();
+        Iterable<AuditEntry> thirdPage = repository.findAuditHistory(DAY_AFTER_TOMORROW, eventTypes, pagination);
+        assertThat(thirdPage)
+                .extracting("timestamp")
+                .containsExactly(NOW_PLUS_60_MINS, TOMORROW);
+
+        pagination = pagination.next();
+        Iterable<AuditEntry> fourthPage = repository.findAuditHistory(DAY_AFTER_TOMORROW, eventTypes, pagination);
+        assertThat(fourthPage)
+                .extracting("timestamp")
+                .containsExactly(DAY_AFTER_TOMORROW);
+
+        assertThat(repository.findAuditHistory(DAY_AFTER_TOMORROW, eventTypes, pagination.next()))
+                .isEmpty();
+    }
+
+    @Test
+    public void findAuditHistoryPageable_filtersByEventType() {
+        List<AuditEventType> eventTypes = singletonList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
+        final Iterable<AuditEntry> all = repository.findAuditHistory(DAY_AFTER_TOMORROW, eventTypes,
+                PageRequest.of(0, Integer.MAX_VALUE));
 
         assertThat(all).size().isEqualTo(0);
     }
