@@ -16,7 +16,9 @@ public enum AuditEventType {
     RESIDENCE_PROVING_BENEFITS_REQUEST(false),
     RESIDENCE_PROVING_BENEFITS_RESPONSE(false),
 
-    DWP_BENEFIT_REQUEST(false);
+    DWP_BENEFIT_REQUEST(false),
+
+    ARCHIVED_RESULTS(false);
 
     private boolean alertable;
 

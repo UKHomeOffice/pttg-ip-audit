@@ -1,7 +1,6 @@
 package uk.gov.digital.ho.pttg;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,14 +11,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.pttg.alert.CountByUser;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
-import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
+import static uk.gov.digital.ho.pttg.AuditEventType.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -204,6 +203,37 @@ public class AuditEntryJpaRepositoryTest {
         assertThat(all).size().isEqualTo(7);
     }
 
+    @Test
+    public void findArchivedResults_noResults_nothing() {
+        List<AuditEntry> results = repository.findArchivedResults(LocalDate.now().atStartOfDay(), LocalDate.now().plusDays(1).atStartOfDay());
+
+        assertThat(results).isEmpty();
+    }
+
+    @Test
+    public void findArchivedResults_singleResult_isReturned() {
+        AuditEntry archivedResult = createArchivedResult(LocalDate.now());
+        repository.save(archivedResult);
+
+        List<AuditEntry> results = repository.findArchivedResults(LocalDate.now().atStartOfDay(), LocalDate.now().plusDays(1).atStartOfDay());
+
+        assertThat(results).containsExactly(archivedResult);
+    }
+
+    @Test
+    public void findArchivedResults_multipleResults_correctDatesReturned() {
+        AuditEntry archivedResult1 = createArchivedResult(LocalDate.now());
+        AuditEntry archivedResult2 = createArchivedResult(LocalDate.now().minusDays(1));
+        AuditEntry archivedResult3 = createArchivedResult(LocalDate.now().minusDays(2));
+        repository.save(archivedResult1);
+        repository.save(archivedResult2);
+        repository.save(archivedResult3);
+
+        List<AuditEntry> results = repository.findArchivedResults(LocalDate.now().minusDays(1).atStartOfDay(), LocalDate.now().atStartOfDay());
+
+        assertThat(results).containsExactly(archivedResult2);
+    }
+
     private AuditEntry createAudit(LocalDateTime timestamp) {
         return createAudit(timestamp, USER_ID);
     }
@@ -237,6 +267,20 @@ public class AuditEntryJpaRepositoryTest {
                 NAMESPACE,
                 INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
                 DETAIL
+        );
+    }
+
+    private AuditEntry createArchivedResult(LocalDate date) {
+        return new AuditEntry(
+                randomUUID().toString(),
+                date.atStartOfDay(),
+                "",
+                randomUUID().toString(),
+                "Audit Service",
+                "",
+                "",
+                ARCHIVED_RESULTS,
+                "{\"results\": {\"PASS\": 1}}"
         );
     }
 

@@ -36,6 +36,11 @@ public class ResourceExceptionHandler {
     }
 
     @ExceptionHandler
+    public ResponseEntity handle(ArchiveException e) {
+        return processError(e.getMessage(), INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler
     public ResponseEntity handle(HttpMessageNotReadableException e) {
         return processError(e.getMessage(), BAD_REQUEST);
     }

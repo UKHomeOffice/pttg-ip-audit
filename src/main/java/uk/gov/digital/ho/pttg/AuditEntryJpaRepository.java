@@ -36,6 +36,12 @@ public interface AuditEntryJpaRepository extends PagingAndSortingRepository<Audi
     @Modifying
     @Query("DELETE from AuditEntry audit where audit.correlationId in :correlationIds")
     void deleteAllCorrelationIds(@Param("correlationIds") List<String> correlationIds);
+
+    @Query("SELECT audit from AuditEntry audit WHERE audit.timestamp >= :fromDate AND audit.timestamp < :toDate AND audit.type = 'ARCHIVED_RESULTS'")
+    List<AuditEntry> findArchivedResults(@Param("fromDate") LocalDateTime fromDate, @Param("toDate") LocalDateTime toDate);
+
+
+
 }
 
 
