@@ -38,7 +38,9 @@ public class ArchiveResourceTest {
     private Appender<ILoggingEvent> mockLogAppender;
 
     private ArchiveResource archiveResource;
+
     private static final LocalDate SOME_DATE = LocalDate.now();
+    private static final ArchivedResult SOME_ARCHIVED_RESULT = new ArchivedResult(ImmutableMap.of("PASS", 5));
 
     @Before
     public void setUp() {
@@ -66,7 +68,7 @@ public class ArchiveResourceTest {
 
     @Test
     public void getArchivedResults_resultsReturnedFromService_returnedByResource() {
-        List<ArchivedResult> archivedResults = singletonList(new ArchivedResult(ImmutableMap.of("PASS", 5)));
+        List<ArchivedResult> archivedResults = singletonList(SOME_ARCHIVED_RESULT);
         when(mockArchiveService.getArchivedResults(SOME_DATE, SOME_DATE))
                 .thenReturn(archivedResults);
 
@@ -88,9 +90,9 @@ public class ArchiveResourceTest {
     public void getArchivedResults_givenResponse_logResponse() {
         when(mockArchiveService.getArchivedResults(SOME_DATE, SOME_DATE))
                 .thenReturn(asList(
-                        new ArchivedResult(ImmutableMap.of("PASS", 5)),
-                        new ArchivedResult(ImmutableMap.of("PASS", 5)),
-                        new ArchivedResult(ImmutableMap.of("PASS", 5))
+                        SOME_ARCHIVED_RESULT,
+                        SOME_ARCHIVED_RESULT,
+                        SOME_ARCHIVED_RESULT
                 ));
 
         archiveResource.getArchivedResults(SOME_DATE, SOME_DATE);

@@ -141,5 +141,4 @@ public class ArchiveService {
         log.error(errorMessage, exception, value(EVENT, PTTG_AUDIT_ARCHIVE_FAILURE));
         throw new ArchiveException(errorMessage, exception);
     }
-
 }
