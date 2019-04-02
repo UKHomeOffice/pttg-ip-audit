@@ -116,7 +116,6 @@ public class ArchiveServiceTest {
             // not testing the exception handling here
         }
 
-
         verify(mockAppender).doAppend(loggingEventArgumentCaptor.capture());
         ILoggingEvent loggingEvent = loggingEventArgumentCaptor.getValue();
         assertThat((loggingEvent.getArgumentArray()[0]))
