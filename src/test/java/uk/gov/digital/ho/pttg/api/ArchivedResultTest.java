@@ -28,7 +28,7 @@ public class ArchivedResultTest {
     }
 
     @Test
-    public void archivedResultMapper_singleResult_isDeserialized() throws IOException {
+    public void archivedResultMapper_singleResult_isSerialized() throws IOException {
         String expectedJson = IOUtils.toString(getClass().getResourceAsStream("/api/ArchivedResultTest/single-result.json"));
 
         Map<String, Integer> results = new HashMap<>();
@@ -39,7 +39,7 @@ public class ArchivedResultTest {
     }
 
     @Test
-    public void archivedResultMapper_multipleResults_isDeserialized() throws IOException {
+    public void archivedResultMapper_multipleResults_isSerialized() throws IOException {
         String expectedJson = IOUtils.toString(getClass().getResourceAsStream("/api/ArchivedResultTest/multiple-results.json"));
 
         Map<String, Integer> results = new HashMap<>();
@@ -51,7 +51,7 @@ public class ArchivedResultTest {
     }
 
     @Test
-    public void archivedResultMapper_singleResult_isSerialized() throws IOException {
+    public void archivedResultMapper_singleResult_isDeserialized() throws IOException {
         String actualJson = IOUtils.toString(getClass().getResourceAsStream("/api/ArchivedResultTest/single-result.json"));
         ArchivedResult actual = objectMapper.readValue(actualJson, ArchivedResult.class);
 
@@ -63,7 +63,7 @@ public class ArchivedResultTest {
     }
 
     @Test
-    public void archivedResultMapper_multipleResults_isSerialized() throws IOException {
+    public void archivedResultMapper_multipleResults_isDeserialized() throws IOException {
         String actualJson = IOUtils.toString(getClass().getResourceAsStream("/api/ArchivedResultTest/multiple-results.json"));
         ArchivedResult actual = objectMapper.readValue(actualJson, ArchivedResult.class);
 
