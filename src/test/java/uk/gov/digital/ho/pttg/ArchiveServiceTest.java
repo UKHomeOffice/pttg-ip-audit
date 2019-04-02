@@ -20,15 +20,19 @@ import uk.gov.digital.ho.pttg.application.ServiceConfiguration;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.digital.ho.pttg.AuditEventType.ARCHIVED_RESULTS;
 import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_ARCHIVE_FAILURE;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_CONFIG_MISMATCH;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ArchiveServiceTest {
@@ -181,7 +185,7 @@ public class ArchiveServiceTest {
     @Test
     public void archiveResult_multipleArchivesFoundForDate_exceptionThrown() {
         AuditEntry existingArchive = auditEntry(LocalDate.now(), "{\"results\": { \"PASS\": 1}}");
-        when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(Arrays.asList(existingArchive, existingArchive));
+        when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(asList(existingArchive, existingArchive));
 
         assertThatThrownBy(() -> archiveService.archiveResult(LocalDate.now(), "PASS"))
                 .isInstanceOf(ArchiveException.class)
@@ -191,7 +195,7 @@ public class ArchiveServiceTest {
     @Test
     public void archiveResult_multipleArchivesFoundForDate_errorLogged() {
         AuditEntry existingArchive = auditEntry(LocalDate.now(), "{\"results\": { \"PASS\": 1}}");
-        when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(Arrays.asList(existingArchive, existingArchive));
+        when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(asList(existingArchive, existingArchive));
 
         try {
             archiveService.archiveResult(LocalDate.now(), "PASS");
@@ -203,6 +207,41 @@ public class ArchiveServiceTest {
         ILoggingEvent loggingEvent = loggingEventArgumentCaptor.getValue();
         assertThat((loggingEvent.getArgumentArray()[0]))
                 .isEqualTo(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_FAILURE));
+    }
+
+    @Test
+    public void getArchivedResults_givenFromDate_getFromStartOfDay() {
+        LocalDate fromDate = LocalDate.now().minusDays(1);
+        LocalDate someDate = LocalDate.now();
+
+        archiveService.getArchivedResults(fromDate, someDate);
+        verify(mockRepository).findArchivedResults(eq(fromDate.atStartOfDay()), any(LocalDateTime.class));
+    }
+
+    @Test
+    public void getArchivedResults_givenToDate_getFromStartOfNextDay() {
+        LocalDate toDate = LocalDate.now();
+        LocalDate someDate = LocalDate.now().minusDays(1);
+
+        LocalDateTime startOfNextDay = toDate.plusDays(1).atStartOfDay();
+        archiveService.getArchivedResults(someDate, toDate);
+        verify(mockRepository).findArchivedResults(any(LocalDateTime.class), eq(startOfNextDay));
+    }
+
+    @Test
+    public void getArchivedResults_givenDataFromDatabase_returnedToCaller() {
+        LocalDate fromDate = LocalDate.now().minusDays(3);
+        LocalDate toDate = LocalDate.now();
+        List<AuditEntry> dbQueryResult = asList(
+                auditEntry(fromDate, "{\"results\": { \"PASS\": 1}}"),
+                auditEntry(fromDate.plusDays(1), "{\"results\": { \"ERROR\": 3}}")
+        );
+
+        when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(dbQueryResult);
+
+        assertThat(archiveService.getArchivedResults(fromDate, toDate))
+                .isEqualTo(dbQueryResult);
     }
 
     private AuditEntry auditEntry(LocalDate date, String detail) {

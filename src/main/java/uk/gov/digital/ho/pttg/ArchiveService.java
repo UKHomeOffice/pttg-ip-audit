@@ -37,6 +37,10 @@ public class ArchiveService {
         repository.save(newResult);
     }
 
+    List<AuditEntry> getArchivedResults(LocalDate fromDate, LocalDate toDate) {
+        return repository.findArchivedResults(fromDate.atStartOfDay(), toDate.plusDays(1).atStartOfDay());
+    }
+
     private AuditEntry addResult(LocalDate date, String result, List<AuditEntry> existingResults) {
         AuditEntry newResult = null;
         if (existingResults.size() == 0) {
@@ -132,6 +136,5 @@ public class ArchiveService {
         log.error(errorMessage, exception, value(EVENT, PTTG_AUDIT_ARCHIVE_FAILURE));
         throw new ArchiveException(errorMessage, exception);
     }
-
 
 }
