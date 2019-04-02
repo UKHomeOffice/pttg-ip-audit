@@ -1,4 +1,4 @@
-package uk.gov.digital.ho.pttg;
+package uk.gov.digital.ho.pttg.api;
 
 import org.apache.http.entity.ContentType;
 import org.junit.Test;
@@ -8,6 +8,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.digital.ho.pttg.AuditEventType;
+import uk.gov.digital.ho.pttg.AuditHistoryService;
 import uk.gov.digital.ho.pttg.api.AuditHistoryResource;
 
 import java.time.LocalDate;

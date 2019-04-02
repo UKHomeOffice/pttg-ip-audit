@@ -1,4 +1,4 @@
-package uk.gov.digital.ho.pttg;
+package uk.gov.digital.ho.pttg.api;
 
 import com.jayway.jsonpath.JsonPath;
 import org.apache.commons.io.IOUtils;

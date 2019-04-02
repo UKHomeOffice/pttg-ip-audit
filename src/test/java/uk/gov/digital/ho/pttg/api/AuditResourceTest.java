@@ -1,4 +1,4 @@
-package uk.gov.digital.ho.pttg;
+package uk.gov.digital.ho.pttg.api;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
+import uk.gov.digital.ho.pttg.AuditEventType;
+import uk.gov.digital.ho.pttg.AuditService;
 import uk.gov.digital.ho.pttg.api.AuditRecord;
 import uk.gov.digital.ho.pttg.api.AuditResource;
 import uk.gov.digital.ho.pttg.api.AuditableData;
