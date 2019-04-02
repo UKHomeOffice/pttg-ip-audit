@@ -1,6 +1,7 @@
 package uk.gov.digital.ho.pttg;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -181,16 +182,56 @@ public class AuditEntryJpaRepositoryTest {
         assertThat(all).size().isEqualTo(0);
     }
 
+    @Test
+    public void shouldDeleteSingleCorrelationId() {
+        repository.deleteAllCorrelationIds(Arrays.asList(UUID));
+        final Iterable<AuditEntry> all = repository.findAll();
+        assertThat(all).size().isEqualTo(0);
+    }
+
+    @Test
+    public void shouldDeleteMultipleCorrelationId() {
+        repository.save(createAuditWithCorrelationId(LocalDateTime.now(), "some_user", "corr id 2"));
+        repository.deleteAllCorrelationIds(Arrays.asList(UUID, "corr id 2"));
+        final Iterable<AuditEntry> all = repository.findAll();
+        assertThat(all).size().isEqualTo(0);
+    }
+
+    @Test
+    public void shouldNotDeleteMissingCorrelationId() {
+        repository.deleteAllCorrelationIds(Arrays.asList("does_not_exist"));
+        final Iterable<AuditEntry> all = repository.findAll();
+        assertThat(all).size().isEqualTo(7);
+    }
+
     private AuditEntry createAudit(LocalDateTime timestamp) {
         return createAudit(timestamp, USER_ID);
     }
 
     private AuditEntry createAudit(LocalDateTime timestamp, String userId) {
+        return createAudit(timestamp, userId, DETAIL);
+    }
+
+    private AuditEntry createAudit(LocalDateTime timestamp, String userId, String detail) {
         return new AuditEntry(
                 randomUUID().toString(),
                 timestamp,
                 SESSION_ID,
                 UUID,
+                userId,
+                DEPLOYMENT,
+                NAMESPACE,
+                INCOME_PROVING_FINANCIAL_STATUS_RESPONSE,
+                detail
+        );
+    }
+
+    private AuditEntry createAuditWithCorrelationId(LocalDateTime timestamp, String userId, String correlationId) {
+        return new AuditEntry(
+                randomUUID().toString(),
+                timestamp,
+                SESSION_ID,
+                correlationId,
                 userId,
                 DEPLOYMENT,
                 NAMESPACE,
