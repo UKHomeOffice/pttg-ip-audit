@@ -231,7 +231,7 @@ public class AuditEntryJpaRepositoryTest {
 
         List<AuditEntry> results = repository.findArchivedResults(LocalDate.now().minusDays(1).atStartOfDay(), LocalDate.now().atStartOfDay());
 
-        assertThat(results).containsExactly(archivedResult1, archivedResult2);
+        assertThat(results).containsExactly(archivedResult2);
     }
 
     private AuditEntry createAudit(LocalDateTime timestamp) {
