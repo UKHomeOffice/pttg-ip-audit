@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import net.logstash.logback.marker.ObjectAppendingMarker;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +16,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.util.ReflectionTestUtils;
+import uk.gov.digital.ho.pttg.api.ArchivedResult;
 import uk.gov.digital.ho.pttg.application.ArchiveException;
 import uk.gov.digital.ho.pttg.application.ServiceConfiguration;
 
@@ -229,7 +231,7 @@ public class ArchiveServiceTest {
     }
 
     @Test
-    public void getArchivedResults_givenDataFromDatabase_returnedToCaller() {
+    public void getArchivedResults_givenDataFromDatabase_expectedResults() {
         LocalDate fromDate = LocalDate.now().minusDays(3);
         LocalDate toDate = LocalDate.now();
         List<AuditEntry> dbQueryResult = asList(
@@ -240,8 +242,12 @@ public class ArchiveServiceTest {
         when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(dbQueryResult);
 
+        List<ArchivedResult> expectedResults = asList(
+                new ArchivedResult(ImmutableMap.of("PASS", 1)),
+                new ArchivedResult(ImmutableMap.of("ERROR", 3))
+        );
         assertThat(archiveService.getArchivedResults(fromDate, toDate))
-                .isEqualTo(dbQueryResult);
+                .isEqualTo(expectedResults);
     }
 
     private AuditEntry auditEntry(LocalDate date, String detail) {
