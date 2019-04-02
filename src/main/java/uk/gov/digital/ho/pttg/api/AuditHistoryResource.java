@@ -1,6 +1,7 @@
 package uk.gov.digital.ho.pttg.api;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,15 +31,19 @@ public class AuditHistoryResource {
 
     @GetMapping(value = "/history", produces = APPLICATION_JSON_VALUE)
     public List<AuditRecord> retrieveAuditHistory(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
-            @RequestParam List<AuditEventType> eventTypes
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam List<AuditEventType> eventTypes,
+            Pageable pageable
     ) {
-        log.info("Requested Audit History for events {} up to end date {}",
+
+        log.info("Requested Audit History for events {} up to end date {} with pageable of {}",
                 eventTypes,
                 toDate,
+                pageable,
                 value(EVENT, PTTG_AUDIT_HISTORY_REQUEST_RECEIVED));
+        toDate = useDefaultIfNull(toDate);
 
-        List<AuditRecord> result = auditHistoryService.getAuditHistory(toDate, eventTypes);
+        List<AuditRecord> result = auditHistoryService.getAuditHistory(toDate, eventTypes, pageable);
 
         log.info("Returned {} audit record(s) for history request",
                 result.size(),
@@ -47,5 +52,9 @@ public class AuditHistoryResource {
         );
 
         return result;
+    }
+
+    private LocalDate useDefaultIfNull(LocalDate toDate) {
+        return toDate != null ? toDate : LocalDate.now();
     }
 }
