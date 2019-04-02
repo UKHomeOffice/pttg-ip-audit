@@ -22,7 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -76,11 +76,13 @@ public class ArchiveServiceTest {
         JSONAssert.assertEquals(expectedDetail, archivedResult.getDetail(), false);
     }
 
-    @Test(expected = ArchiveException.class)
+    @Test
     public void incrementArchivedResult_malformedExistingResult_throwsException() {
         AuditEntry existingResult = auditEntry(LocalDate.now(), "{\"this_should_never_happen\": 1");
 
-        archiveService.incrementArchivedResult(existingResult, "PASS");
+        assertThatThrownBy(() -> archiveService.incrementArchivedResult(existingResult, "PASS"))
+                .isInstanceOf(ArchiveException.class)
+                .hasMessageContaining("Failed to deserialize archivedResult.detail");
     }
 
     @Test
@@ -99,11 +101,13 @@ public class ArchiveServiceTest {
                 .isEqualTo(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_FAILURE));
     }
 
-    @Test(expected = ArchiveException.class)
+    @Test
     public void incrementArchivedResult_wrongKeyForExistingResult_throwsException() {
         AuditEntry existingResult = auditEntry(LocalDate.now(), "{\"wrong_key\": {\"PASS\": 1, \"FAIL\": 1}}");
 
-        archiveService.incrementArchivedResult(existingResult, "PASS");
+        assertThatThrownBy(() -> archiveService.incrementArchivedResult(existingResult, "PASS"))
+                .isInstanceOf(ArchiveException.class)
+                .hasMessageContaining("Unable to find results");
     }
 
     @Test
@@ -174,12 +178,14 @@ public class ArchiveServiceTest {
         JSONAssert.assertEquals("{\"results\": {\"PASS\": 2}}", actualAuditEntry.getDetail(), false);
     }
 
-    @Test(expected = ArchiveException.class)
+    @Test
     public void archiveResult_multipleArchivesFoundForDate_exceptionThrown() {
         AuditEntry existingArchive = auditEntry(LocalDate.now(), "{\"results\": { \"PASS\": 1}}");
         when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(Arrays.asList(existingArchive, existingArchive));
 
-        archiveService.archiveResult(LocalDate.now(), "PASS");
+        assertThatThrownBy(() -> archiveService.archiveResult(LocalDate.now(), "PASS"))
+                .isInstanceOf(ArchiveException.class)
+                .hasMessageContaining("Found multiple archives");
     }
 
     @Test
