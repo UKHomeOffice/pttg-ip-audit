@@ -70,9 +70,9 @@ public class ArchiveService {
     }
 
     AuditEntry incrementArchivedResult(AuditEntry existingResult, String result) {
-        Map<String, Map<String, Integer>> existingArchive = deserializeArchiveResultDetail(existingResult);
+        ArchivedResult existingArchive = deserializeArchiveResultDetail(existingResult);
 
-        Map<String, Integer> newResult = existingArchive.get("results");
+        Map<String, Integer> newResult = existingArchive.getResults();
         if (newResult == null) {
             handleError(String.format("Unable to find results in archive result detail: %s", existingArchive));
         }
@@ -103,7 +103,7 @@ public class ArchiveService {
         return detailString;
     }
 
-    private String serializeArchiveResultDetail(Map<String, Map<String, Integer>> existingArchive, Map<String, Integer> newResult) {
+    private String serializeArchiveResultDetail(ArchivedResult existingArchive, Map<String, Integer> newResult) {
         String newResultString = "";
         try {
             newResultString = objectMapper.writeValueAsString(existingArchive);
@@ -113,10 +113,10 @@ public class ArchiveService {
         return newResultString;
     }
 
-    private Map<String, Map<String, Integer>> deserializeArchiveResultDetail(AuditEntry existingResult) {
-        Map<String, Map<String, Integer>> existingArchive = new HashMap<>();
+    private ArchivedResult deserializeArchiveResultDetail(AuditEntry existingResult) {
+        ArchivedResult existingArchive = new ArchivedResult(new HashMap<>());
         try {
-            existingArchive = objectMapper.readValue(existingResult.getDetail(), Map.class);
+            existingArchive = objectMapper.readValue(existingResult.getDetail(), ArchivedResult.class);
         } catch (IOException e) {
             handleException(String.format("Failed to deserialize archivedResult.detail %s", existingResult.getDetail()), e);
         }
