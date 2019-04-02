@@ -31,7 +31,7 @@ import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STA
  * - remove the @Ignore annotation from the class
  * - run this test class from your IDE
  */
-//@Ignore
+@Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
