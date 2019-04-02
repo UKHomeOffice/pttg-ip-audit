@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.pttg.alert.CountByUser;
@@ -25,7 +24,6 @@ import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STA
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
-//@ActiveProfiles("postgres,postgresDocker")
 public class AuditEntryJpaRepositoryTest {
 
     private static final String SESSION_ID = "sessionID";
@@ -182,47 +180,6 @@ public class AuditEntryJpaRepositoryTest {
         final Iterable<AuditEntry> all = repository.findAuditHistory(YESTERDAY, eventTypes);
 
         assertThat(all).size().isEqualTo(0);
-    }
-
-    /**
-     * As this test involves some Postgres specific syntax for the JSONB column, the intention was to run this test
-     * against an in memory postgres database.  However, I was unable to get such a database working consistently in
-     * conjunction with Spring Boot.
-     *
-     * This test was run manually against postgres 9.6 running in a docker container, and it passed there, so we do at
-     * least know the test passes against a real postgres db.
-     *
-     * To run this test:
-     * - add the class level annotation @ActiveProfiles("postgres,postgresDocker")
-     * - run a docker container with the following command (replacing with the correct version of postgres):
-     *     docker run  --name pg-docker -e POSTGRES_PASSWORD=docker -d -p 5432:5432 postgres:9.6.12
-     * - remove the @Ignore annotation from the test
-     * You should now be able to run the test against the docker container.
-     */
-    @Ignore
-    @Test
-    public void shouldCountByNino_basic() {
-        repository.save(createAudit(LocalDateTime.now().plusDays(10), "some_user", "{\"nino\": \"some_nino\"}"));
-        final Long count = repository.countNinosAfterDate(LocalDateTime.now().plusDays(9), "some_nino");
-        assertThat(count).isEqualTo(1);
-    }
-
-    @Ignore
-    @Test
-    public void shouldCountByNino_multipleNinos() {
-        repository.save(createAudit(LocalDateTime.now().plusDays(10), "some_user", "{\"nino\": \"some_nino_2\"}"));
-        repository.save(createAudit(LocalDateTime.now().plusDays(10), "some_user", "{\"nino\": \"some_nino_3\"}"));
-        final Long count = repository.countNinosAfterDate(LocalDateTime.now().plusDays(9), "some_nino_2");
-        assertThat(count).isEqualTo(1);
-    }
-
-    @Ignore
-    @Test
-    public void shouldCountByNino_dateFilterIsApplied() {
-        repository.save(createAudit(LocalDateTime.now().plusDays(9), "some_user", "{\"nino\": \"some_nino_4\"}"));
-        repository.save(createAudit(LocalDateTime.now().plusDays(10), "some_user", "{\"nino\": \"some_nino_4\"}"));
-        final Long count = repository.countNinosAfterDate(LocalDateTime.now().plusDays(9), "some_nino_4");
-        assertThat(count).isEqualTo(1);
     }
 
     @Test
