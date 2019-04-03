@@ -14,9 +14,10 @@ import uk.gov.digital.ho.pttg.ArchiveService;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,14 +39,14 @@ public class ArchiveResourceWebTest {
     @Test
     public void archiveNino_basicRequest_returnsOk() throws Exception {
         mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
-                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, Collections.singletonList(ANY_EVENT_ID), ANY_RESULT_DATE))
+                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID), ANY_RESULT_DATE))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void archiveNino_basicRequest_callsService() throws Exception {
-        List<String> eventIds = Collections.singletonList(ANY_EVENT_ID);
+        List<String> eventIds = singletonList(ANY_EVENT_ID);
         mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
                 .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, eventIds, ANY_RESULT_DATE))
                 .contentType(MediaType.APPLICATION_JSON));
@@ -54,9 +55,18 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
+    public void archiveNino_multipleEventIds_returnsOk() throws Exception {
+        List<String> eventIds = asList(ANY_EVENT_ID, ANY_EVENT_ID);
+        mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
+                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, eventIds, ANY_RESULT_DATE))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     public void archiveNino_malformedUrl_clientError() throws Exception {
         mockMvc.perform(post(String.format("/n/%s/a/%s", "", ANY_RESULT))
-                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, Collections.singletonList(ANY_EVENT_ID), ANY_RESULT_DATE))
+                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID), ANY_RESULT_DATE))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
@@ -64,7 +74,7 @@ public class ArchiveResourceWebTest {
     @Test
     public void archiveNino_missingNino_clientError() throws Exception {
         mockMvc.perform(post(String.format("/nino/%s/archive/%s", "", ANY_RESULT))
-                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, Collections.singletonList(ANY_EVENT_ID), ANY_RESULT_DATE))
+                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID), ANY_RESULT_DATE))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
@@ -72,7 +82,7 @@ public class ArchiveResourceWebTest {
     @Test
     public void archiveNino_missingResult_clientError() throws Exception {
         mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ""))
-                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, Collections.singletonList(ANY_EVENT_ID), ANY_RESULT_DATE))
+                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID), ANY_RESULT_DATE))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
@@ -88,7 +98,7 @@ public class ArchiveResourceWebTest {
     public void archiveNino_invalidArchiveDate_clientError() throws Exception {
         String anyResultDate = DateTimeFormatter.ISO_DATE.format(ANY_RESULT_DATE);
         mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
-                .content(loadJsonRequest("2019-55-66", Collections.singletonList(ANY_EVENT_ID).toString(), anyResultDate))
+                .content(loadJsonRequest("2019-55-66", singletonList(ANY_EVENT_ID).toString(), anyResultDate))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
@@ -97,7 +107,23 @@ public class ArchiveResourceWebTest {
     public void archiveNino_invalidResultDate_clientError() throws Exception {
         String anyLastArchiveDate = DateTimeFormatter.ISO_DATE.format(ANY_LAST_ARCHIVE_DATE);
         mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
-                .content(loadJsonRequest(anyLastArchiveDate, Collections.singletonList(ANY_EVENT_ID).toString(), "2019-13-32"))
+                .content(loadJsonRequest(anyLastArchiveDate, singletonList(ANY_EVENT_ID).toString(), "2019-13-32"))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void archiveNino_missingArchiveDate_clientError() throws Exception {
+        mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
+                .content(loadJsonRequest("missing-archive-date.json"))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void archiveNino_missingResultDate_clientError() throws Exception {
+        mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
+                .content(loadJsonRequest("missing-result-date.json"))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
@@ -132,7 +158,7 @@ public class ArchiveResourceWebTest {
             events.append("\"");
             events.append(eventId);
             events.append("\"");
-            if (count < eventIds.size()-1) {
+            if (count++ < eventIds.size()-1) {
                 events.append(",");
             }
         }
