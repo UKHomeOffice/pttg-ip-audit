@@ -22,16 +22,20 @@ public class ArchiveRequest {
     private LocalDate lastArchiveDate;
     @JsonProperty
     private List<String> eventIds;
+    @JsonProperty
+    private String nino;
 
     @JsonCreator
     ArchiveRequest(
             @JsonProperty(value = "result", required = true) @NonNull String result,
             @JsonProperty(value = "lastArchiveDate", required = true) @NonNull LocalDate lastArchiveDate,
-            @JsonProperty(value = "eventIds", required = true) @NonNull List<String> eventIds
+            @JsonProperty(value = "eventIds", required = true) @NonNull List<String> eventIds,
+            @JsonProperty(value = "nino", required = true) @NonNull String nino
     ) {
         this.result = result;
         this.lastArchiveDate = lastArchiveDate;
         this.eventIds = eventIds;
+        this.nino = nino;
 
         validate();
     }
@@ -43,6 +47,10 @@ public class ArchiveRequest {
 
         if (eventIds.isEmpty()) {
             throwApiError("At least one event id is required to be deleted from the audit history");
+        }
+
+        if (nino.isEmpty()) {
+            throwApiError("A nino is required to check for newer requests and prevent archiving");
         }
     }
 

@@ -1,5 +1,6 @@
 {
   "result": null,
   "lastArchiveDate": "2019-06-03",
-  "eventIds": "some-event-id"
+  "eventIds": "some-event-id",
+  "nino": "AA123456A"
 }

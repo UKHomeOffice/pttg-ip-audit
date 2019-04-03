@@ -34,8 +34,9 @@ public class ArchiveResourceTest {
     private static final String ANY_RESULT = "any-result";
     private static final LocalDate ANY_LAST_ARCHIVE_DATE = LocalDate.now();
     private static final LocalDate ANY_RESULT_DATE = LocalDate.now().minusDays(1);
+    private static final String ANY_NINO = "any-nino";
     private static final List<String> ANY_EVENT_IDS = asList("any-event-id1", "any-event-id2");
-    private static final ArchiveRequest ANY_ARCHIVE_REQUEST = new ArchiveRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, ANY_EVENT_IDS);
+    private static final ArchiveRequest ANY_ARCHIVE_REQUEST = new ArchiveRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, ANY_EVENT_IDS, ANY_NINO);
 
     @Before
     public void setUp() {
