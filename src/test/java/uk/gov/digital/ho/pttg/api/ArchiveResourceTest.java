@@ -15,15 +15,11 @@ import org.slf4j.LoggerFactory;
 import uk.gov.digital.ho.pttg.ArchiveService;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static java.util.Arrays.asList;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
-import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
 import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -35,12 +31,11 @@ public class ArchiveResourceTest {
 
     private ArchiveResource archiveResource;
 
-    private static final String ANY_NINO = "any-nino";
     private static final String ANY_RESULT = "any-result";
     private static final LocalDate ANY_LAST_ARCHIVE_DATE = LocalDate.now();
     private static final LocalDate ANY_RESULT_DATE = LocalDate.now().minusDays(1);
     private static final List<String> ANY_EVENT_IDS = asList("any-event-id1", "any-event-id2");
-    private static final ArchiveRequest ANY_ARCHIVE_REQUEST = new ArchiveRequest(ANY_LAST_ARCHIVE_DATE, ANY_EVENT_IDS, ANY_RESULT_DATE);
+    private static final ArchiveRequest ANY_ARCHIVE_REQUEST = new ArchiveRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, ANY_EVENT_IDS);
 
     @Before
     public void setUp() {
@@ -52,21 +47,21 @@ public class ArchiveResourceTest {
 
     @Test
     public void archiveNino_callArchiveService() {
-        archiveResource.archiveNino(ANY_NINO, ANY_RESULT, ANY_ARCHIVE_REQUEST);
+        archiveResource.archiveResult(ANY_RESULT_DATE, ANY_ARCHIVE_REQUEST);
 
-        verify(mockArchiveService).archiveNino(ANY_NINO, ANY_RESULT, ANY_RESULT_DATE, ANY_EVENT_IDS, ANY_LAST_ARCHIVE_DATE);
+        verify(mockArchiveService).archiveResult(ANY_RESULT_DATE, ANY_RESULT, ANY_EVENT_IDS, ANY_LAST_ARCHIVE_DATE);
     }
 
     @Test
     public void archiveNino_logsRequestParameters() {
-        archiveResource.archiveNino(ANY_NINO, ANY_RESULT, ANY_ARCHIVE_REQUEST);
+        archiveResource.archiveResult(ANY_RESULT_DATE, ANY_ARCHIVE_REQUEST);
 
         verify(mockAppender).doAppend(argThat(argument -> {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
-            String expectedLogMessage = String.format("Requested archiveNino for details %s with result %s",
-                    ANY_ARCHIVE_REQUEST,
-                    ANY_RESULT);
+            String expectedLogMessage = String.format("Requested archiveResult for date %s with details %s",
+                    ANY_RESULT_DATE,
+                    ANY_ARCHIVE_REQUEST);
             return loggingEvent.getFormattedMessage().equals(expectedLogMessage) &&
                     loggingEvent.getArgumentArray()[2].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_NINO_REQUEST_RECEIVED));
         }));
@@ -74,12 +69,12 @@ public class ArchiveResourceTest {
 
     @Test
     public void archiveNino_logsSuccess() {
-        archiveResource.archiveNino(ANY_NINO, ANY_RESULT, ANY_ARCHIVE_REQUEST);
+        archiveResource.archiveResult(ANY_RESULT_DATE, ANY_ARCHIVE_REQUEST);
 
         verify(mockAppender).doAppend(argThat(argument -> {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
-            String expectedLogMessage = "ArchiveNino request completed successfully";
+            String expectedLogMessage = "ArchiveResult request completed successfully";
             return loggingEvent.getFormattedMessage().equals(expectedLogMessage) &&
                     loggingEvent.getArgumentArray()[0].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_NINO_RESPONSE_SUCCESS));
         }));

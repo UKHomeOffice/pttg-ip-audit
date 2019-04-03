@@ -31,7 +31,7 @@ public class ArchiveService {
         this.objectMapper = objectMapper;
     }
 
-    public void archiveNino(String nino, String result, LocalDate resultDate, List<String> eventIds, LocalDate lastArchiveDate) {
+    public void archiveResult(LocalDate resultDate, String result, List<String> eventIds, LocalDate lastArchiveDate) {
 
     }
 

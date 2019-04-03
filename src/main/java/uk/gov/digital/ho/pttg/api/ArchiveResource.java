@@ -1,9 +1,12 @@
 package uk.gov.digital.ho.pttg.api;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import uk.gov.digital.ho.pttg.ArchiveService;
+
+import java.time.LocalDate;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static uk.gov.digital.ho.pttg.application.LogEvent.*;
@@ -20,21 +23,20 @@ public class ArchiveResource {
         this.requestData = requestData;
     }
 
-    @PostMapping("/nino/{nino}/archive/{result}")
+    @PostMapping("/archive/{date}")
     @ResponseStatus(value = HttpStatus.OK)
-    public void archiveNino(
-            @PathVariable String nino,
-            @PathVariable String result,
+    public void archiveResult(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestBody ArchiveRequest archiveRequest
     ) {
 
-        log.info("Requested archiveNino for details {} with result {}",
+        log.info("Requested archiveResult for date {} with details {}",
+                date,
                 archiveRequest,
-                result,
                 value(EVENT, PTTG_AUDIT_ARCHIVE_NINO_REQUEST_RECEIVED));
 
-        archiveService.archiveNino(nino, result, archiveRequest.resultDate(), archiveRequest.eventIds(), archiveRequest.lastArchiveDate());
+        archiveService.archiveResult(date, archiveRequest.result(), archiveRequest.eventIds(), archiveRequest.lastArchiveDate());
 
-        log.info("ArchiveNino request completed successfully", value(EVENT, PTTG_AUDIT_ARCHIVE_NINO_RESPONSE_SUCCESS));
+        log.info("ArchiveResult request completed successfully", value(EVENT, PTTG_AUDIT_ARCHIVE_NINO_RESPONSE_SUCCESS));
     }
 }

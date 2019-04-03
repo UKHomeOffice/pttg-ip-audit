@@ -1,5 +1,5 @@
 {
+  "result": "%s",
   "lastArchiveDate": "%s",
-  "eventIds": [%s],
-  "resultDate": "%s"
+  "eventIds": [%s]
 }

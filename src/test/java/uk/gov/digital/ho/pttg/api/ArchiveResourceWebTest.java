@@ -38,8 +38,8 @@ public class ArchiveResourceWebTest {
 
     @Test
     public void archiveNino_basicRequest_returnsOk() throws Exception {
-        mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
-                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID), ANY_RESULT_DATE))
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .content(loadJsonRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID)))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -47,109 +47,155 @@ public class ArchiveResourceWebTest {
     @Test
     public void archiveNino_basicRequest_callsService() throws Exception {
         List<String> eventIds = singletonList(ANY_EVENT_ID);
-        mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
-                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, eventIds, ANY_RESULT_DATE))
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .content(loadJsonRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, eventIds))
                 .contentType(MediaType.APPLICATION_JSON));
 
-        verify(archiveService).archiveNino(ANY_NINO, ANY_RESULT, ANY_RESULT_DATE, eventIds, ANY_LAST_ARCHIVE_DATE);
+        verify(archiveService).archiveResult(ANY_RESULT_DATE, ANY_RESULT, eventIds, ANY_LAST_ARCHIVE_DATE);
     }
 
     @Test
     public void archiveNino_multipleEventIds_returnsOk() throws Exception {
         List<String> eventIds = asList(ANY_EVENT_ID, ANY_EVENT_ID);
-        mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
-                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, eventIds, ANY_RESULT_DATE))
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .content(loadJsonRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, eventIds))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void archiveNino_malformedUrl_clientError() throws Exception {
-        mockMvc.perform(post(String.format("/n/%s/a/%s", "", ANY_RESULT))
-                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID), ANY_RESULT_DATE))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void archiveNino_missingNino_clientError() throws Exception {
-        mockMvc.perform(post(String.format("/nino/%s/archive/%s", "", ANY_RESULT))
-                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID), ANY_RESULT_DATE))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void archiveNino_missingResult_clientError() throws Exception {
-        mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ""))
-                .content(loadJsonRequest(ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID), ANY_RESULT_DATE))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void archiveNino_missingBody_clientError() throws Exception {
-        mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void archiveNino_invalidArchiveDate_clientError() throws Exception {
-        String anyResultDate = DateTimeFormatter.ISO_DATE.format(ANY_RESULT_DATE);
-        mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
-                .content(loadJsonRequest("2019-55-66", singletonList(ANY_EVENT_ID).toString(), anyResultDate))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void archiveNino_invalidResultDate_clientError() throws Exception {
-        String anyLastArchiveDate = DateTimeFormatter.ISO_DATE.format(ANY_LAST_ARCHIVE_DATE);
-        mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
-                .content(loadJsonRequest(anyLastArchiveDate, singletonList(ANY_EVENT_ID).toString(), "2019-13-32"))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void archiveNino_missingArchiveDate_clientError() throws Exception {
-        mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
-                .content(loadJsonRequest("missing-archive-date.json"))
+        mockMvc.perform(post(String.format("/bad/%s", ANY_RESULT_DATE))
+                .content(loadJsonRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID)))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
 
     @Test
     public void archiveNino_missingResultDate_clientError() throws Exception {
-        mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
-                .content(loadJsonRequest("missing-result-date.json"))
+        mockMvc.perform(post(String.format("/archive/%s", ""))
+                .content(loadJsonRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID)))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void archiveNino_malformedResultDate_clientError() throws Exception {
+        mockMvc.perform(post(String.format("/archive/%s", "im_not_a_date"))
+                .content(loadJsonRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID)))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void archiveNino_missingBody_clientError() throws Exception {
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void archiveNino_malformedBody_clientError() throws Exception {
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .content("im_not_valid_json")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void archiveNino_missingResult_clientError() throws Exception {
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .content(loadJsonRequest("missing-result.json"))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void archiveNino_emptyResult_clientError() throws Exception {
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .content(loadJsonRequest("", ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID)))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void archiveNino_nullResultValue_clientError() throws Exception {
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .content(loadJsonRequest("null-result-value.json"))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void archiveNino_missingArchiveDate_clientError() throws Exception {
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .content(loadJsonRequest("missing-archive-date.json"))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void archiveNino_emptyArchiveDate_clientError() throws Exception {
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .content(loadJsonRequest(ANY_RESULT, "", singletonList(ANY_EVENT_ID).toString()))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void archiveNino_nullArchiveDate_clientError() throws Exception {
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .content(loadJsonRequest("null-archive-date-value.json"))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void archiveNino_invalidArchiveDate_clientError() throws Exception {
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .content(loadJsonRequest(ANY_RESULT, "2019-55-66", singletonList(ANY_EVENT_ID).toString()))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
 
     @Test
     public void archiveNino_missingEventIds_clientError() throws Exception {
-        mockMvc.perform(post(String.format("/nino/%s/archive/%s", ANY_NINO, ANY_RESULT))
-                .content(loadJsonRequest("missing-eventids-request.json"))
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .content(loadJsonRequest("missing-eventids.json"))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
 
-    private String loadJsonRequest(LocalDate lastArchiveDate, List<String> eventIds, LocalDate resultDate) throws IOException {
+    @Test
+    public void archiveNino_emptyEventIds_clientError() throws Exception {
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .content(loadJsonRequest("empty-eventids.json"))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void archiveNino_nullEventIds_clientError() throws Exception {
+        mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
+                .content(loadJsonRequest("null-eventids-value.json"))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    private String loadJsonRequest(String result, LocalDate lastArchiveDate, List<String> eventIds) throws IOException {
         DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
         StringBuilder events = new StringBuilder();
         formatEventsIntoJsonArray(eventIds, events);
-        return loadJsonRequest(formatter.format(lastArchiveDate), events.toString(), formatter.format(resultDate));
+        return loadJsonRequest(result, formatter.format(lastArchiveDate), events.toString());
     }
 
-    private String loadJsonRequest(String lastArchiveDate, String events, String resultDate) throws IOException {
+    private String loadJsonRequest(String result, String lastArchiveDate, String events) throws IOException {
         String template = IOUtils.toString(getClass().getResourceAsStream("/api/ArchiveResourceWebTest/basic-request.json"));
-        return String.format(template, lastArchiveDate, events, resultDate);
+        return String.format(template, result, lastArchiveDate, events);
     }
 
     private String loadJsonRequest(String file) throws IOException {
-        return IOUtils.toString(getClass().getResourceAsStream("/api/ArchiveResourceWebTest/missing-eventids-request.json"));
+        return IOUtils.toString(getClass().getResourceAsStream("/api/ArchiveResourceWebTest/" + file));
     }
 
     private void formatEventsIntoJsonArray(List<String> eventIds, StringBuilder events) {
