@@ -13,7 +13,7 @@ import java.util.List;
 @EqualsAndHashCode
 @ToString
 @AllArgsConstructor
-class ArchiveRequest {
+class   ArchiveRequest {
     @JsonProperty(required = true) @NonNull
     private LocalDate lastArchiveDate;
     @JsonProperty(required = true) @NonNull
