@@ -9,6 +9,7 @@ import uk.gov.digital.ho.pttg.ArchiveService;
 import java.time.LocalDate;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
+import static uk.gov.digital.ho.pttg.api.RequestData.REQUEST_DURATION_MS;
 import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @RestController
@@ -37,6 +38,9 @@ public class ArchiveResource {
 
         archiveService.archiveResult(date, archiveRequest.result(), archiveRequest.eventIds(), archiveRequest.lastArchiveDate());
 
-        log.info("ArchiveResult request completed successfully", value(EVENT, PTTG_AUDIT_ARCHIVE_NINO_RESPONSE_SUCCESS));
+        log.info("ArchiveResult request completed successfully",
+                value(EVENT, PTTG_AUDIT_ARCHIVE_NINO_RESPONSE_SUCCESS),
+                value(REQUEST_DURATION_MS, requestData.calculateRequestDuration())
+                );
     }
 }

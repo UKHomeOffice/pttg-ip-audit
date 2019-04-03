@@ -76,7 +76,8 @@ public class ArchiveResourceTest {
 
             String expectedLogMessage = "ArchiveResult request completed successfully";
             return loggingEvent.getFormattedMessage().equals(expectedLogMessage) &&
-                    loggingEvent.getArgumentArray()[0].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_NINO_RESPONSE_SUCCESS));
+                    loggingEvent.getArgumentArray()[0].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_NINO_RESPONSE_SUCCESS)) &&
+                    ((ObjectAppendingMarker)loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration_ms");
         }));
     }
 
