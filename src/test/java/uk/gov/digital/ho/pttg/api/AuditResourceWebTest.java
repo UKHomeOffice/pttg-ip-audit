@@ -1,4 +1,4 @@
-package uk.gov.digital.ho.pttg;
+package uk.gov.digital.ho.pttg.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import uk.gov.digital.ho.pttg.AuditService;
 import uk.gov.digital.ho.pttg.api.AuditResource;
 import uk.gov.digital.ho.pttg.api.AuditableData;
 
@@ -30,7 +31,8 @@ public class AuditResourceWebTest {
 
     private static final String AUDIT_URL = "/audit";
 
-    @MockBean AuditService auditService;
+    @MockBean
+    AuditService auditService;
 
     @Autowired private MockMvc mockMvc;
 

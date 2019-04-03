@@ -1,4 +1,4 @@
-package uk.gov.digital.ho.pttg;
+package uk.gov.digital.ho.pttg.api;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,7 +9,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.digital.ho.pttg.api.AuditHistoryResource;
+import uk.gov.digital.ho.pttg.AuditEventType;
+import uk.gov.digital.ho.pttg.AuditHistoryService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

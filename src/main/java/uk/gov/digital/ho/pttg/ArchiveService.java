@@ -31,6 +31,10 @@ public class ArchiveService {
         this.objectMapper = objectMapper;
     }
 
+    public void archiveResult(LocalDate resultDate, String result, List<String> eventIds, LocalDate lastArchiveDate) {
+
+    }
+
     void archiveResult(LocalDate date, String result) {
         List<AuditEntry> existingResults = repository.findArchivedResults(date.atStartOfDay(), date.plusDays(1).atStartOfDay());
         AuditEntry newResult = addResult(date, result, existingResults);
