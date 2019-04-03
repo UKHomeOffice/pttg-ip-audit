@@ -26,8 +26,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_ARCHIVE_REQUEST_RECEIVED;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_ARCHIVE_RESPONSE_SUCCESS;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_GET_ARCHIVED_RESULTS_REQUEST_RECEIVED;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_GET_ARCHIVED_RESULTS_RESPONSE_SUCCESS;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ArchiveResourceTest {
@@ -83,7 +83,7 @@ public class ArchiveResourceTest {
 
         archiveResource.getArchivedResults(fromDate, toDate);
 
-        assertInfoLog("Request received for archived results between 2018-12-01 and 2018-12-31", PTTG_AUDIT_ARCHIVE_REQUEST_RECEIVED);
+        assertInfoLog("Request received for archived results between 2018-12-01 and 2018-12-31", PTTG_AUDIT_GET_ARCHIVED_RESULTS_REQUEST_RECEIVED);
     }
 
     @Test
@@ -97,7 +97,7 @@ public class ArchiveResourceTest {
 
         archiveResource.getArchivedResults(SOME_DATE, SOME_DATE);
 
-        assertInfoLog("Returned response with 3 archived results", PTTG_AUDIT_ARCHIVE_RESPONSE_SUCCESS);
+        assertInfoLog("Returned response with 3 archived results", PTTG_AUDIT_GET_ARCHIVED_RESULTS_RESPONSE_SUCCESS);
     }
 
     public void assertInfoLog(String expectedMessage, LogEvent logEvent) {

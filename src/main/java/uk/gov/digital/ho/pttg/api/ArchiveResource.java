@@ -30,12 +30,12 @@ public class ArchiveResource {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
     ) {
         log.info("Request received for archived results between {} and {}", fromDate, toDate,
-                value(EVENT, PTTG_AUDIT_ARCHIVE_REQUEST_RECEIVED));
+                value(EVENT, PTTG_AUDIT_GET_ARCHIVED_RESULTS_REQUEST_RECEIVED));
 
         List<ArchivedResult> archivedResults = archiveService.getArchivedResults(fromDate, toDate);
 
         log.info("Returned response with {} archived results", archivedResults.size(),
-                value(EVENT, PTTG_AUDIT_ARCHIVE_RESPONSE_SUCCESS));
+                value(EVENT, PTTG_AUDIT_GET_ARCHIVED_RESULTS_RESPONSE_SUCCESS));
 
         return archivedResults;
     }
