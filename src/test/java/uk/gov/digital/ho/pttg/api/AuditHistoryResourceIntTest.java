@@ -52,4 +52,26 @@ public class AuditHistoryResourceIntTest {
 
     }
 
+    @Test
+    public void shouldRetrieveAuditHistoryPaginated() throws JSONException {
+        String url = "/history?&eventTypes=INCOME_PROVING_FINANCIAL_STATUS_REQUEST,INCOME_PROVING_FINANCIAL_STATUS_RESPONSE&page=0&size=1";
+        String response = restTemplate.getForObject(url, String.class);
+
+        String firstId = JsonPath.read(response, "$[0].id");
+        String firstType = JsonPath.read(response, "$[0].ref");
+        assertThat(firstId).isEqualTo("some corr id");
+        assertThat(firstType).isEqualTo("INCOME_PROVING_FINANCIAL_STATUS_REQUEST");
+
+        url = "/history?&eventTypes=INCOME_PROVING_FINANCIAL_STATUS_REQUEST,INCOME_PROVING_FINANCIAL_STATUS_RESPONSE&page=1&size=1";
+        response = restTemplate.getForObject(url, String.class);
+        String secondId = JsonPath.read(response, "$[0].id");
+        String secondType = JsonPath.read(response, "$[0].ref");
+        assertThat(secondId).isEqualTo("some corr id");
+        assertThat(secondType).isEqualTo("INCOME_PROVING_FINANCIAL_STATUS_RESPONSE");
+
+        url = "/history?&eventTypes=INCOME_PROVING_FINANCIAL_STATUS_REQUEST,INCOME_PROVING_FINANCIAL_STATUS_RESPONSE&page=2&size=1";
+        response = restTemplate.getForObject(url, String.class);
+        assertThat(response).isEqualTo("[ ]");
+    }
+
 }
