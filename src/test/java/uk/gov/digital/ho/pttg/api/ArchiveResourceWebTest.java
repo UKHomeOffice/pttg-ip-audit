@@ -30,7 +30,6 @@ public class ArchiveResourceWebTest {
 
     @Autowired private MockMvc mockMvc;
 
-    private final static String ANY_NINO = "any_nino";
     private final static String ANY_RESULT = "any_result";
     private final static String ANY_EVENT_ID = "any-event-id";
     private final static LocalDate ANY_RESULT_DATE = LocalDate.now().minusDays(2);

@@ -25,6 +25,7 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_FAILURE;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ResourceExceptionHandlerTest {
@@ -130,7 +131,7 @@ public class ResourceExceptionHandlerTest {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
 
             return loggingEvent.getFormattedMessage().equals("Audit Exception: conversion error message") &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id");
+                    loggingEvent.getArgumentArray()[1].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_FAILURE));
         }));
     }
 
