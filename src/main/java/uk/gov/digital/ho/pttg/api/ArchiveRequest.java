@@ -15,7 +15,7 @@ import java.util.List;
 @Accessors(fluent = true)
 @EqualsAndHashCode
 @ToString
-class ArchiveRequest {
+public class ArchiveRequest {
     @JsonProperty
     private String result;
     @JsonProperty
