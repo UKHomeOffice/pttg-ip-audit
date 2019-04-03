@@ -31,6 +31,10 @@ public class ArchiveService {
         this.objectMapper = objectMapper;
     }
 
+    public void archiveNino(String nino, String result, LocalDate resultDate, List<String> eventIds, LocalDate lastArchiveDate) {
+
+    }
+
     void archiveResult(LocalDate date, String result) {
         List<AuditEntry> existingResults = repository.findArchivedResults(date.atStartOfDay(), date.plusDays(1).atStartOfDay());
         AuditEntry newResult = addResult(date, result, existingResults);

@@ -24,6 +24,6 @@ public class ArchiveResource {
             @PathVariable String result,
             @RequestBody ArchiveRequest archiveRequest
     ) {
-
+        archiveService.archiveNino(nino, result, archiveRequest.resultDate(), archiveRequest.eventIds(), archiveRequest.lastArchiveDate());
     }
 }

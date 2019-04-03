@@ -14,10 +14,10 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 class ArchiveRequest {
-    @JsonProperty
+    @JsonProperty @NonNull
     private LocalDate lastArchiveDate;
-    @JsonProperty
+    @JsonProperty @NonNull
     private List<String> eventIds;
-    @JsonProperty
+    @JsonProperty @NonNull
     private LocalDate resultDate;
 }
