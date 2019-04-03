@@ -37,7 +37,7 @@ public class ArchiveResourceWebTest {
     private final static LocalDate ANY_LAST_ARCHIVE_DATE = LocalDate.now().minusDays(1);
 
     @Test
-    public void archiveNino_basicRequest_returnsOk() throws Exception {
+    public void archiveResult_basicRequest_returnsOk() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .content(loadJsonRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID)))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -45,7 +45,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_basicRequest_callsService() throws Exception {
+    public void archiveResult_basicRequest_callsService() throws Exception {
         List<String> eventIds = singletonList(ANY_EVENT_ID);
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .content(loadJsonRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, eventIds))
@@ -55,7 +55,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_multipleEventIds_returnsOk() throws Exception {
+    public void archiveResult_multipleEventIds_returnsOk() throws Exception {
         List<String> eventIds = asList(ANY_EVENT_ID, ANY_EVENT_ID);
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .content(loadJsonRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, eventIds))
@@ -64,7 +64,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_malformedUrl_clientError() throws Exception {
+    public void archiveResult_malformedUrl_clientError() throws Exception {
         mockMvc.perform(post(String.format("/bad/%s", ANY_RESULT_DATE))
                 .content(loadJsonRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID)))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -72,7 +72,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_missingResultDate_clientError() throws Exception {
+    public void archiveResult_missingResultDate_clientError() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", ""))
                 .content(loadJsonRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID)))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -80,7 +80,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_malformedResultDate_clientError() throws Exception {
+    public void archiveResult_malformedResultDate_clientError() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", "im_not_a_date"))
                 .content(loadJsonRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID)))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -88,14 +88,14 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_missingBody_clientError() throws Exception {
+    public void archiveResult_missingBody_clientError() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
 
     @Test
-    public void archiveNino_malformedBody_clientError() throws Exception {
+    public void archiveResult_malformedBody_clientError() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .content("im_not_valid_json")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -103,7 +103,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_missingResult_clientError() throws Exception {
+    public void archiveResult_missingResult_clientError() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .content(loadJsonRequest("missing-result.json"))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -111,7 +111,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_emptyResult_clientError() throws Exception {
+    public void archiveResult_emptyResult_clientError() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .content(loadJsonRequest("", ANY_LAST_ARCHIVE_DATE, singletonList(ANY_EVENT_ID)))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -119,7 +119,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_nullResultValue_clientError() throws Exception {
+    public void archiveResult_nullResultValue_clientError() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .content(loadJsonRequest("null-result-value.json"))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -127,7 +127,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_missingArchiveDate_clientError() throws Exception {
+    public void archiveResult_missingArchiveDate_clientError() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .content(loadJsonRequest("missing-archive-date.json"))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -135,7 +135,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_emptyArchiveDate_clientError() throws Exception {
+    public void archiveResult_emptyArchiveDate_clientError() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .content(loadJsonRequest(ANY_RESULT, "", singletonList(ANY_EVENT_ID).toString()))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -143,7 +143,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_nullArchiveDate_clientError() throws Exception {
+    public void archiveResult_nullArchiveDate_clientError() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .content(loadJsonRequest("null-archive-date-value.json"))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -151,7 +151,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_invalidArchiveDate_clientError() throws Exception {
+    public void archiveResult_invalidArchiveDate_clientError() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .content(loadJsonRequest(ANY_RESULT, "2019-55-66", singletonList(ANY_EVENT_ID).toString()))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -159,7 +159,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_missingEventIds_clientError() throws Exception {
+    public void archiveResult_missingEventIds_clientError() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .content(loadJsonRequest("missing-eventids.json"))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -167,7 +167,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_emptyEventIds_clientError() throws Exception {
+    public void archiveResult_emptyEventIds_clientError() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .content(loadJsonRequest("empty-eventids.json"))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -175,7 +175,7 @@ public class ArchiveResourceWebTest {
     }
 
     @Test
-    public void archiveNino_nullEventIds_clientError() throws Exception {
+    public void archiveResult_nullEventIds_clientError() throws Exception {
         mockMvc.perform(post(String.format("/archive/%s", ANY_RESULT_DATE))
                 .content(loadJsonRequest("null-eventids-value.json"))
                 .contentType(MediaType.APPLICATION_JSON))

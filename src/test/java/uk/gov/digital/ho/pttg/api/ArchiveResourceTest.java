@@ -46,14 +46,14 @@ public class ArchiveResourceTest {
     }
 
     @Test
-    public void archiveNino_callArchiveService() {
+    public void archiveResult_callArchiveService() {
         archiveResource.archiveResult(ANY_RESULT_DATE, ANY_ARCHIVE_REQUEST);
 
         verify(mockArchiveService).archiveResult(ANY_RESULT_DATE, ANY_RESULT, ANY_EVENT_IDS, ANY_LAST_ARCHIVE_DATE);
     }
 
     @Test
-    public void archiveNino_logsRequestParameters() {
+    public void archiveResult_logsRequestParameters() {
         archiveResource.archiveResult(ANY_RESULT_DATE, ANY_ARCHIVE_REQUEST);
 
         verify(mockAppender).doAppend(argThat(argument -> {
@@ -63,12 +63,12 @@ public class ArchiveResourceTest {
                     ANY_RESULT_DATE,
                     ANY_ARCHIVE_REQUEST);
             return loggingEvent.getFormattedMessage().equals(expectedLogMessage) &&
-                    loggingEvent.getArgumentArray()[2].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_NINO_REQUEST_RECEIVED));
+                    loggingEvent.getArgumentArray()[2].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_RESULT_REQUEST_RECEIVED));
         }));
     }
 
     @Test
-    public void archiveNino_logsSuccess() {
+    public void archiveResult_logsSuccess() {
         archiveResource.archiveResult(ANY_RESULT_DATE, ANY_ARCHIVE_REQUEST);
 
         verify(mockAppender).doAppend(argThat(argument -> {
@@ -76,7 +76,7 @@ public class ArchiveResourceTest {
 
             String expectedLogMessage = "ArchiveResult request completed successfully";
             return loggingEvent.getFormattedMessage().equals(expectedLogMessage) &&
-                    loggingEvent.getArgumentArray()[0].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_NINO_RESPONSE_SUCCESS)) &&
+                    loggingEvent.getArgumentArray()[0].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_RESULT_RESPONSE_SUCCESS)) &&
                     ((ObjectAppendingMarker)loggingEvent.getArgumentArray()[1]).getFieldName().equals("request_duration_ms");
         }));
     }

@@ -34,12 +34,12 @@ public class ArchiveResource {
         log.info("Requested archiveResult for date {} with details {}",
                 date,
                 archiveRequest,
-                value(EVENT, PTTG_AUDIT_ARCHIVE_NINO_REQUEST_RECEIVED));
+                value(EVENT, PTTG_AUDIT_ARCHIVE_RESULT_REQUEST_RECEIVED));
 
         archiveService.archiveResult(date, archiveRequest.result(), archiveRequest.eventIds(), archiveRequest.lastArchiveDate());
 
         log.info("ArchiveResult request completed successfully",
-                value(EVENT, PTTG_AUDIT_ARCHIVE_NINO_RESPONSE_SUCCESS),
+                value(EVENT, PTTG_AUDIT_ARCHIVE_RESULT_RESPONSE_SUCCESS),
                 value(REQUEST_DURATION_MS, requestData.calculateRequestDuration())
                 );
     }
