@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -42,6 +43,11 @@ public class ResourceExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity handle(HttpMessageNotReadableException e) {
+        return processError(e.getMessage(), BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity handle(HttpMessageConversionException e) {
         return processError(e.getMessage(), BAD_REQUEST);
     }
 

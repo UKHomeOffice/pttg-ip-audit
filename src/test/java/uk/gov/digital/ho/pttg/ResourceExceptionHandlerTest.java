@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import uk.gov.digital.ho.pttg.api.RequestData;
 import uk.gov.digital.ho.pttg.application.ResourceExceptionHandler;
@@ -24,6 +25,7 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_FAILURE;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ResourceExceptionHandlerTest {
@@ -100,6 +102,36 @@ public class ResourceExceptionHandlerTest {
 
             return loggingEvent.getFormattedMessage().equals("Audit Exception: some other message") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[1]).getFieldName().equals("event_id");
+        }));
+    }
+
+    @Test
+    public void shouldHandleHttpMessageConversionException() {
+
+        HttpMessageConversionException exception = new HttpMessageConversionException("conversion error message");
+
+        ResponseEntity responseEntity = resourceExceptionHandler.handle(exception);
+
+        assertThat(responseEntity.getStatusCode()).isEqualTo(BAD_REQUEST);
+        assertThat(responseEntity.getHeaders()).containsKeys(CONTENT_TYPE);
+        assertThat(responseEntity.getHeaders().get(CONTENT_TYPE).size()).isEqualTo(1);
+        assertThat(responseEntity.getHeaders().get(CONTENT_TYPE).get(0)).isEqualTo(APPLICATION_JSON_VALUE);
+        assertThat(responseEntity.getBody()).isEqualTo("conversion error message");
+    }
+
+    @Test
+    public void shouldLogErrorForHttpMessageConversionException() {
+
+        HttpMessageNotReadableException mockException = mock(HttpMessageNotReadableException.class);
+        when(mockException.getMessage()).thenReturn("conversion error message");
+
+        resourceExceptionHandler.handle(mockException);
+
+        verify(mockAppender).doAppend(argThat(argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+
+            return loggingEvent.getFormattedMessage().equals("Audit Exception: conversion error message") &&
+                    loggingEvent.getArgumentArray()[1].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_FAILURE));
         }));
     }
 
