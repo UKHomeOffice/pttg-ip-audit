@@ -21,7 +21,7 @@ public class ArchiveRequest {
     @JsonProperty
     private LocalDate lastArchiveDate;
     @JsonProperty
-    private List<String> eventIds;
+    private List<String> correlationIds;
     @JsonProperty
     private String nino;
 
@@ -29,12 +29,12 @@ public class ArchiveRequest {
     ArchiveRequest(
             @JsonProperty(value = "result", required = true) @NonNull String result,
             @JsonProperty(value = "lastArchiveDate", required = true) @NonNull LocalDate lastArchiveDate,
-            @JsonProperty(value = "eventIds", required = true) @NonNull List<String> eventIds,
+            @JsonProperty(value = "correlationIds", required = true) @NonNull List<String> correlationIds,
             @JsonProperty(value = "nino", required = true) @NonNull String nino
     ) {
         this.result = result;
         this.lastArchiveDate = lastArchiveDate;
-        this.eventIds = eventIds;
+        this.correlationIds = correlationIds;
         this.nino = nino;
 
         validate();
@@ -45,7 +45,7 @@ public class ArchiveRequest {
             throwApiError("A result is required to record in the archive");
         }
 
-        if (eventIds.isEmpty()) {
+        if (correlationIds.isEmpty()) {
             throwApiError("At least one event id is required to be deleted from the audit history");
         }
 

@@ -50,7 +50,7 @@ public class ArchiveResourceTest {
     public void archiveResult_callArchiveService() {
         archiveResource.archiveResult(ANY_RESULT_DATE, ANY_ARCHIVE_REQUEST);
 
-        verify(mockArchiveService).archiveResult(ANY_RESULT_DATE, ANY_ARCHIVE_REQUEST.result(), ANY_ARCHIVE_REQUEST.eventIds(), ANY_ARCHIVE_REQUEST.lastArchiveDate());
+        verify(mockArchiveService).handleArchiveRequest(ANY_RESULT_DATE, ANY_ARCHIVE_REQUEST.result(), ANY_ARCHIVE_REQUEST.correlationIds(), ANY_ARCHIVE_REQUEST.lastArchiveDate(), ANY_NINO);
     }
 
     @Test

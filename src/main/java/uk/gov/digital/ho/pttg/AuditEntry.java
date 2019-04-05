@@ -1,9 +1,6 @@
 package uk.gov.digital.ho.pttg;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -56,6 +53,7 @@ public class AuditEntry {
 
     @Column(name = "detail", nullable = false)
     @Getter
+    @Setter
     private String detail;
 
     public AuditEntry(String uuid, LocalDateTime timestamp, String sessionId, String correlationId,

@@ -183,7 +183,7 @@ VALUES (
         'some uuid 50',
         '2017-09-02 00:00:00.000',
         '',
-        'corr id 6',
+        'corr id 50',
         'Audit Service',
         '',
         '',

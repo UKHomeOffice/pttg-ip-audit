@@ -51,7 +51,7 @@ public class ArchiveResourceWebTest {
                 .content(loadJsonRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, eventIds, ANY_NINO))
                 .contentType(MediaType.APPLICATION_JSON));
 
-        verify(archiveService).archiveResult(ANY_RESULT_DATE, ANY_RESULT, eventIds, ANY_LAST_ARCHIVE_DATE);
+        verify(archiveService).handleArchiveRequest(ANY_RESULT_DATE, ANY_RESULT, eventIds, ANY_LAST_ARCHIVE_DATE, ANY_NINO);
     }
 
     @Test

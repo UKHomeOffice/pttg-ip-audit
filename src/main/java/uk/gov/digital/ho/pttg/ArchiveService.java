@@ -9,6 +9,7 @@ import uk.gov.digital.ho.pttg.application.ArchiveException;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,8 +32,13 @@ public class ArchiveService {
         this.objectMapper = objectMapper;
     }
 
-    public void archiveResult(LocalDate resultDate, String result, List<String> eventIds, LocalDate lastArchiveDate) {
-
+    public void handleArchiveRequest(LocalDate resultDate, String result, List<String> correlationIds, LocalDate lastArchiveDate, String nino) {
+        LocalDateTime lastArchiveTime = lastArchiveDate.atTime(23, 59, 59, 999999999);
+        if (repository.countNinosAfterDate(lastArchiveTime, nino) > 0) {
+            return;
+        }
+        repository.deleteAllCorrelationIds(correlationIds);
+        archiveResult(resultDate, result);
     }
 
     void archiveResult(LocalDate date, String result) {
@@ -83,18 +89,8 @@ public class ArchiveService {
         int existingCount = newResult.getOrDefault(result, 0);
         newResult.put(result, existingCount + 1);
         String newResultString = serializeArchiveResultDetail(existingArchive, newResult);
-
-        return new AuditEntry(
-                existingResult.getUuid(),
-                existingResult.getTimestamp(),
-                existingResult.getSessionId(),
-                existingResult.getCorrelationId(),
-                existingResult.getUserId(),
-                existingResult.getDeployment(),
-                existingResult.getNamespace(),
-                existingResult.getType(),
-                newResultString
-        );
+        existingResult.setDetail(newResultString);
+        return existingResult;
     }
 
     private String serializeArchiveResult(ArchivedResult archivedResult) {

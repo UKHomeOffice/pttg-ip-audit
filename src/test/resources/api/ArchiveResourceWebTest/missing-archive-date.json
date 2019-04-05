@@ -1,5 +1,5 @@
 {
   "result": "PASS",
-  "eventIds": "some-event-id",
+  "correlationIds": "some-event-id",
   "nino": "AA123456A"
 }

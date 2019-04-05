@@ -1,6 +1,6 @@
 {
   "result": "PASS",
   "lastArchiveDate": "2019-06-03",
-  "eventIds": "some-event-id",
+  "correlationIds": "some-event-id",
   "nino": null
 }
