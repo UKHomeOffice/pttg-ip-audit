@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static uk.gov.digital.ho.pttg.AuditEventType.ARCHIVED_RESULTS;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_ARCHIVE_FAILURE;
+import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ArchiveServiceTest {
@@ -244,6 +244,10 @@ public class ArchiveServiceTest {
 
         verify(mockRepository).countNinosAfterDate(lastArchiveDateTime, nino);
         verifyNoMoreInteractions(mockRepository);
+
+        verify(mockAppender).doAppend(loggingEventArgumentCaptor.capture());
+        assertThat(loggingEventArgumentCaptor.getValue().getArgumentArray()[0])
+                .isEqualTo(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_NOT_READY_FOR_NINO));
     }
 
     private AuditEntry auditEntry(LocalDate date, String detail) {

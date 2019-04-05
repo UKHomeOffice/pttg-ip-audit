@@ -17,8 +17,7 @@ import java.util.UUID;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static uk.gov.digital.ho.pttg.AuditEventType.ARCHIVED_RESULTS;
-import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_ARCHIVE_FAILURE;
+import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @Component
 @Slf4j
@@ -35,6 +34,7 @@ public class ArchiveService {
     public void handleArchiveRequest(LocalDate resultDate, String result, List<String> correlationIds, LocalDate lastArchiveDate, String nino) {
         LocalDateTime lastArchiveTime = lastArchiveDate.atTime(23, 59, 59, 999999999);
         if (repository.countNinosAfterDate(lastArchiveTime, nino) > 0) {
+            log.info("Archive request ignored as more recent requests found for nino", value(EVENT, PTTG_AUDIT_ARCHIVE_NOT_READY_FOR_NINO));
             return;
         }
         repository.deleteAllCorrelationIds(correlationIds);
