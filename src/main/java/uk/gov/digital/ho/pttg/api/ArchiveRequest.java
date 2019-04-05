@@ -46,7 +46,7 @@ public class ArchiveRequest {
         }
 
         if (correlationIds.isEmpty()) {
-            throwApiError("At least one event id is required to be deleted from the audit history");
+            throwApiError("At least one correlation id is required to be deleted from the audit history");
         }
 
         if (nino.isEmpty()) {
