@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -12,11 +13,15 @@ import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.digital.ho.pttg.api.ArchiveRequest;
 
+import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.not;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
@@ -40,7 +45,7 @@ public class ArchiveServiceIntTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @Autowired
+    @SpyBean
     private AuditEntryJpaRepository repository;
 
     @Test
@@ -94,8 +99,31 @@ public class ArchiveServiceIntTest {
 
         Iterable<AuditEntry> all = repository.findAll();
         assertThat(all)
+                .filteredOn("type", not(ARCHIVED_RESULTS))
+                .extracting("correlationId")
+                .containsExactly("corr id 1", "corr id 2", "corr id 3", "corr id 4", "corr id 5", "corr id 6");
+        assertThat(all)
                 .filteredOn("type", ARCHIVED_RESULTS)
                 .filteredOn("timestamp", LocalDate.of(2017, 9, 3).atStartOfDay())
+                .hasSize(0);
+    }
+
+    @Test
+    public void archiveResult_errors_transactionIsRolledBack() {
+        ArchiveRequest archiveRequest = getArchiveRequest();
+        when(repository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenThrow(new RuntimeException("Simulated error"));
+
+        restTemplate.postForLocation("/archive/2017-09-01", archiveRequest);
+
+        Iterable<AuditEntry> all = repository.findAll();
+        assertThat(all)
+                .filteredOn("type", not(ARCHIVED_RESULTS))
+                .extracting("correlationId")
+                .containsExactly("corr id 1", "corr id 2", "corr id 3", "corr id 4", "corr id 5", "corr id 6");
+        assertThat(all)
+                .filteredOn("type", ARCHIVED_RESULTS)
+                .filteredOn("timestamp", LocalDate.of(2017, 9, 1).atStartOfDay())
                 .hasSize(0);
     }
 

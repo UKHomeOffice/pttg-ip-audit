@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.pttg.api.ArchivedResult;
 import uk.gov.digital.ho.pttg.application.ArchiveException;
 
@@ -31,6 +32,7 @@ public class ArchiveService {
         this.objectMapper = objectMapper;
     }
 
+    @Transactional
     public void handleArchiveRequest(LocalDate resultDate, String result, List<String> correlationIds, LocalDate lastArchiveDate, String nino) {
         LocalDateTime lastArchiveTime = lastArchiveDate.atTime(23, 59, 59, 999999999);
         if (repository.countNinosAfterDate(lastArchiveTime, nino) > 0) {
