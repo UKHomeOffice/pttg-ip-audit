@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -133,7 +134,7 @@ public class ArchiveServiceTest {
     public void archiveResult_today_getsFullDay() {
         LocalDateTime expectedStart = LocalDate.now().atStartOfDay();
         LocalDateTime expectedEnd = LocalDate.now().plusDays(1).atStartOfDay();
-        when(mockRepository.findArchivedResults(expectedStart, expectedEnd)).thenReturn(Collections.emptyList());
+        when(mockRepository.findArchivedResults(expectedStart, expectedEnd)).thenReturn(emptyList());
 
         archiveService.archiveResult(LocalDate.now(), "PASS");
 
@@ -145,7 +146,7 @@ public class ArchiveServiceTest {
 
     @Test
     public void archiveResult_newResult_resultSaved() {
-        when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(Collections.emptyList());
+        when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(emptyList());
 
         archiveService.archiveResult(LocalDate.now(), "PASS");
 
@@ -218,7 +219,7 @@ public class ArchiveServiceTest {
         String result = "PASS";
 
         when(mockRepository.countNinosAfterDate(lastArchiveDateTime, nino)).thenReturn(0L);
-        when(mockRepository.findArchivedResults(resultDate.atStartOfDay(), resultDate.plusDays(1).atStartOfDay())).thenReturn(new ArrayList<>());
+        when(mockRepository.findArchivedResults(resultDate.atStartOfDay(), resultDate.plusDays(1).atStartOfDay())).thenReturn(emptyList());
 
         archiveService.handleArchiveRequest(resultDate, result, eventIds, lastArchiveDate, nino);
 
