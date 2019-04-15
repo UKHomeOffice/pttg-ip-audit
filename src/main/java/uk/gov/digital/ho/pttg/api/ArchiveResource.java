@@ -26,7 +26,7 @@ public class ArchiveResource {
         this.requestData = requestData;
     }
 
-    @GetMapping(value = "/archived", produces = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/archive", produces = APPLICATION_JSON_VALUE)
     public List<ArchivedResult> getArchivedResults(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate

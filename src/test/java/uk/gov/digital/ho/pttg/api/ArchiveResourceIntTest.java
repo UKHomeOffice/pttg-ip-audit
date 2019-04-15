@@ -51,7 +51,7 @@ public class ArchiveResourceIntTest {
                 new ArchivedResult(ImmutableMap.of("ERROR", 2, "NOTFOUND", 99))
         );
 
-        String archivedResults = restTemplate.getForObject("/archived?fromDate={fromDate}&toDate={toDate}", String.class, ImmutableMap.of(
+        String archivedResults = restTemplate.getForObject("/archive?fromDate={fromDate}&toDate={toDate}", String.class, ImmutableMap.of(
                 "fromDate", LocalDate.of(2018, Month.SEPTEMBER, 1),
                 "toDate", LocalDate.of(2018, Month.SEPTEMBER, 30)
         ));
