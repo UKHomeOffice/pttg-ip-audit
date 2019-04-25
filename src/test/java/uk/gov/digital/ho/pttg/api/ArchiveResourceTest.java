@@ -65,15 +65,11 @@ public class ArchiveResourceTest {
     public void archiveResult_logsRequestParameters() {
         archiveResource.archiveResult(ANY_RESULT_DATE, ANY_ARCHIVE_REQUEST);
 
-        verify(mockAppender).doAppend(argThat(argument -> {
-            LoggingEvent loggingEvent = (LoggingEvent) argument;
+        String expectedLogMessage = String.format("Requested archiveResult for date %s with details %s",
+                ANY_RESULT_DATE,
+                ANY_ARCHIVE_REQUEST);
 
-            String expectedLogMessage = String.format("Requested archiveResult for date %s with details %s",
-                    ANY_RESULT_DATE,
-                    ANY_ARCHIVE_REQUEST);
-            return loggingEvent.getFormattedMessage().equals(expectedLogMessage) &&
-                    loggingEvent.getArgumentArray()[2].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_RESULT_REQUEST_RECEIVED));
-        }));
+        assertInfoLog(expectedLogMessage, PTTG_AUDIT_ARCHIVE_RESULT_REQUEST_RECEIVED);
     }
 
     @Test
@@ -149,6 +145,4 @@ public class ArchiveResourceTest {
                     asList(loggingEvent.getArgumentArray()).contains(new ObjectAppendingMarker("event_id", logEvent));
         }));
     }
-
-
 }

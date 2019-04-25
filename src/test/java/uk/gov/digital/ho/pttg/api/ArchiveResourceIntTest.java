@@ -36,13 +36,8 @@ public class ArchiveResourceIntTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-
-    @Before
-    public void setUp() {
-        ServiceConfiguration serviceConfiguration = new ServiceConfiguration(objectMapper, 0, 0);
-        objectMapper = ReflectionTestUtils.invokeMethod(serviceConfiguration, "initialiseObjectMapper", objectMapper);
-    }
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     public void shouldReturnArchivedResults() throws JsonProcessingException {
