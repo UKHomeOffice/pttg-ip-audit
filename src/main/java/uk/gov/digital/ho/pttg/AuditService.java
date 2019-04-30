@@ -14,8 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
-import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_CONFIG_MISMATCH;
+import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @Component
 @Slf4j
