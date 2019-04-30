@@ -29,6 +29,9 @@ public class AuditResourceIntTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    @Autowired
+    private AuditEntryJpaRepository auditEntryJpaRepository;
+
     @Test
     public void shouldRetrieveAllAudit() throws IOException, JSONException {
         String auditRecords = restTemplate.getForObject("/audit", String.class);
