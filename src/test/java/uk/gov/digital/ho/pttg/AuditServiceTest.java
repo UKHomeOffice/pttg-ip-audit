@@ -13,6 +13,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.digital.ho.pttg.alert.AppropriateUsageChecker;
 import uk.gov.digital.ho.pttg.alert.sysdig.SuspectUsage;
 import uk.gov.digital.ho.pttg.api.AuditRecord;
@@ -263,5 +264,32 @@ public class AuditServiceTest {
 
         assertThat((loggingEventsList.get(0).getArgumentArray()[2]))
                 .isEqualTo(new ObjectAppendingMarker("event_id", PTTG_AUDIT_CONFIG_MISMATCH));
+    }
+
+    @Test
+    public void shouldLogWarningWhenAddingDuplicateAuditEntry() {
+
+        AuditableData auditableData = new AuditableData("some event id",
+                now,
+                "some session id",
+                "some correlation id",
+                "some user id",
+                "some deployment name",
+                "some deployment namespace",
+                INCOME_PROVING_FINANCIAL_STATUS_REQUEST,
+                "some json");
+
+        doThrow(DataIntegrityViolationException.class).when(mockRepository).save(any());
+        auditService.add(auditableData);
+
+        verify(mockAppender, times(2)).doAppend(loggingEventArgumentCaptor.capture());
+        List<ILoggingEvent> loggingEventsList = loggingEventArgumentCaptor.getAllValues();
+
+        assertThat(loggingEventsList.get(1).getLevel()).isEqualTo(Level.WARN);
+
+        String expectedLogMessage = String.format("Audit exception: audit with event uuid: %s and event type: %s already exists.",
+                "some event id", INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
+
+        assertThat(loggingEventsList.get(1).getFormattedMessage()).isEqualTo(expectedLogMessage);
     }
 }
