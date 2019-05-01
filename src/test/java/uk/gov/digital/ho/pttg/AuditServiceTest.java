@@ -20,6 +20,7 @@ import uk.gov.digital.ho.pttg.api.AuditableData;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -219,7 +220,15 @@ public class AuditServiceTest {
                 "some data");
 
         auditService.add(auditableDataSameNamespace);
-        verify(mockAppender, never()).doAppend(any());
+        verify(mockAppender, times(2)).doAppend(loggingEventArgumentCaptor.capture());
+        List<ILoggingEvent> loggingEventsList = loggingEventArgumentCaptor.getAllValues();
+
+        assertThat(loggingEventsList.get(0).getLevel())
+                .isNotEqualTo(Level.WARN);
+
+        assertThat(loggingEventsList.get(1).getLevel())
+                .isNotEqualTo(Level.WARN);
+
     }
 
     @Test
@@ -240,19 +249,19 @@ public class AuditServiceTest {
                 "some data");
 
         auditService.add(auditableDataAnotherNamespace);
-        verify(mockAppender).doAppend(loggingEventArgumentCaptor.capture());
+        verify(mockAppender, times(3)).doAppend(loggingEventArgumentCaptor.capture());
+        List<ILoggingEvent> loggingEventsList = loggingEventArgumentCaptor.getAllValues();
 
-        ILoggingEvent loggingEvent = loggingEventArgumentCaptor.getValue();
-        assertThat(loggingEvent.getLevel())
+        assertThat(loggingEventsList.get(0).getLevel())
                 .isEqualTo(Level.WARN);
 
         String expectedLogMessage = String.format("Auditing Deployment Namespace of AuditEvent = '%s' does not match '%s' so no suspicious behaviour will be detected.",
                 auditEventDeploymentNamespace, deploymentNamespace);
 
-        assertThat(loggingEvent.getFormattedMessage())
+        assertThat(loggingEventsList.get(0).getFormattedMessage())
                 .isEqualTo(expectedLogMessage);
 
-        assertThat((loggingEvent.getArgumentArray()[2]))
+        assertThat((loggingEventsList.get(0).getArgumentArray()[2]))
                 .isEqualTo(new ObjectAppendingMarker("event_id", PTTG_AUDIT_CONFIG_MISMATCH));
     }
 }
