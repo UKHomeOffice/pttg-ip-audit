@@ -16,10 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import uk.gov.digital.ho.pttg.AuditEventType;
 import uk.gov.digital.ho.pttg.AuditService;
-import uk.gov.digital.ho.pttg.api.AuditRecord;
-import uk.gov.digital.ho.pttg.api.AuditResource;
-import uk.gov.digital.ho.pttg.api.AuditableData;
-import uk.gov.digital.ho.pttg.api.RequestData;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -121,8 +117,14 @@ public class AuditResourceTest {
 
         verify(mockAppender).doAppend(argThat(argument -> {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
+            return loggingEvent.getFormattedMessage().equals("Audit request INCOME_PROVING_FINANCIAL_STATUS_RESPONSE received for correlation id some correlation id") &&
+                    (loggingEvent.getArgumentArray()[1]).equals("some correlation id") &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id") ;
+        }));
 
-            return loggingEvent.getFormattedMessage().equals("Audited INCOME_PROVING_FINANCIAL_STATUS_RESPONSE for correlation id some correlation id") &&
+        verify(mockAppender).doAppend(argThat(argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+            return loggingEvent.getFormattedMessage().equals("Audit request INCOME_PROVING_FINANCIAL_STATUS_RESPONSE processed for correlation id some correlation id") &&
                     (loggingEvent.getArgumentArray()[1]).equals("some correlation id") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("request_duration_ms");

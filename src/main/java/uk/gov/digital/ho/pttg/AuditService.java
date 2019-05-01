@@ -3,6 +3,7 @@ package uk.gov.digital.ho.pttg;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.pttg.alert.AppropriateUsageChecker;
@@ -14,8 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
-import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_CONFIG_MISMATCH;
+import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @Component
 @Slf4j
@@ -40,12 +40,25 @@ public class AuditService {
         if (auditEntry.getType().isAlertable()) {
             checkNamespace(auditableData);
             SuspectUsage suspectUsage = appropriateUsageChecker.precheck();
-            repository.save(auditEntry);
+            addAudit(auditEntry);
             appropriateUsageChecker.postcheck(suspectUsage);
         } else {
-            repository.save(auditEntry);
+            addAudit(auditEntry);
         }
+    }
 
+    private void addAudit(AuditEntry auditEntry) {
+        log.info("Audit request {} received for correlation id {}",
+                auditEntry.getType(), auditEntry.getCorrelationId(), value(EVENT, PTTG_AUDIT_REQUEST_RECEIVED));
+        try {
+            repository.save(auditEntry);
+            log.info("Audit request {} completed for correlation id {}",
+                    auditEntry.getType(), auditEntry.getCorrelationId(), value(EVENT, PTTG_AUDIT_RESPONSE_SUCCESS));
+
+        } catch ( DataIntegrityViolationException e) {
+            log.warn("Audit exception: audit with event uuid: {} and event type: {} already exists.",
+                    auditEntry.getUuid(), auditEntry.getType(), value(EVENT, PTTG_AUDIT_FAILURE));
+        }
     }
 
     private void checkNamespace(AuditableData auditableData) {
