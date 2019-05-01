@@ -12,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import static org.mockito.BDDMockito.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import uk.gov.digital.ho.pttg.alert.AppropriateUsageChecker;
@@ -25,7 +26,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 import static uk.gov.digital.ho.pttg.AuditEventType.*;
 import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_CONFIG_MISMATCH;
 
@@ -143,7 +143,7 @@ public class AuditServiceTest {
 
         auditService.add(auditableData);
 
-        verify(mockRepository).save(captorAuditEntry.capture());
+        then(mockRepository).should().save(captorAuditEntry.capture());
 
         AuditEntry arg = captorAuditEntry.getValue();
 
@@ -174,16 +174,16 @@ public class AuditServiceTest {
 
         auditService.add(auditableData);
 
-        verify(mockRepository).save(any(AuditEntry.class));
-        verify(mockChecker, never()).precheck();
-        verify(mockChecker, never()).postcheck(any(SuspectUsage.class));
+        then(mockRepository).should().save(any(AuditEntry.class));
+        then(mockChecker).should(never()).precheck();
+        then(mockChecker).should(never()).postcheck(any(SuspectUsage.class));
     }
 
     @Test
     public void shouldAlert() {
 
         SuspectUsage someSuspectUsage = mock(SuspectUsage.class);
-        when(mockChecker.precheck()).thenReturn(someSuspectUsage);
+        given(mockChecker.precheck()).willReturn(someSuspectUsage);
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -199,9 +199,9 @@ public class AuditServiceTest {
 
         auditService.add(auditableData);
 
-        verify(mockRepository).save(any(AuditEntry.class));
-        verify(mockChecker).precheck();
-        verify(mockChecker).postcheck(any(SuspectUsage.class));
+        then(mockRepository).should().save(any(AuditEntry.class));
+        then(mockChecker).should().precheck();
+        then(mockChecker).should().postcheck(any(SuspectUsage.class));
     }
 
     @Test
@@ -221,7 +221,7 @@ public class AuditServiceTest {
                 "some data");
 
         auditService.add(auditableDataSameNamespace);
-        verify(mockAppender, times(2)).doAppend(loggingEventArgumentCaptor.capture());
+        then(mockAppender).should(times(2)).doAppend(loggingEventArgumentCaptor.capture());
         List<ILoggingEvent> loggingEventsList = loggingEventArgumentCaptor.getAllValues();
 
         assertThat(loggingEventsList.get(0).getLevel())
@@ -250,7 +250,7 @@ public class AuditServiceTest {
                 "some data");
 
         auditService.add(auditableDataAnotherNamespace);
-        verify(mockAppender, times(3)).doAppend(loggingEventArgumentCaptor.capture());
+        then(mockAppender).should(times(3)).doAppend(loggingEventArgumentCaptor.capture());
         List<ILoggingEvent> loggingEventsList = loggingEventArgumentCaptor.getAllValues();
 
         assertThat(loggingEventsList.get(0).getLevel())
@@ -279,10 +279,10 @@ public class AuditServiceTest {
                 INCOME_PROVING_FINANCIAL_STATUS_REQUEST,
                 "some json");
 
-        doThrow(DataIntegrityViolationException.class).when(mockRepository).save(any());
-        auditService.add(auditableData);
+        given(mockRepository.save(any())).willThrow(DataIntegrityViolationException.class);
 
-        verify(mockAppender, times(2)).doAppend(loggingEventArgumentCaptor.capture());
+        auditService.add(auditableData);
+        then(mockAppender).should(times(2)).doAppend(loggingEventArgumentCaptor.capture());
         List<ILoggingEvent> loggingEventsList = loggingEventArgumentCaptor.getAllValues();
 
         assertThat(loggingEventsList.get(1).getLevel()).isEqualTo(Level.WARN);
