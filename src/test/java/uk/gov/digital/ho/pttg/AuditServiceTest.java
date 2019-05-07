@@ -221,15 +221,11 @@ public class AuditServiceTest {
                 "some data");
 
         auditService.add(auditableDataSameNamespace);
-        then(mockAppender).should(times(2)).doAppend(loggingEventArgumentCaptor.capture());
+        then(mockAppender).should().doAppend(loggingEventArgumentCaptor.capture());
         List<ILoggingEvent> loggingEventsList = loggingEventArgumentCaptor.getAllValues();
 
         assertThat(loggingEventsList.get(0).getLevel())
                 .isNotEqualTo(Level.WARN);
-
-        assertThat(loggingEventsList.get(1).getLevel())
-                .isNotEqualTo(Level.WARN);
-
     }
 
     @Test
@@ -250,7 +246,7 @@ public class AuditServiceTest {
                 "some data");
 
         auditService.add(auditableDataAnotherNamespace);
-        then(mockAppender).should(times(3)).doAppend(loggingEventArgumentCaptor.capture());
+        then(mockAppender).should(times(2)).doAppend(loggingEventArgumentCaptor.capture());
         List<ILoggingEvent> loggingEventsList = loggingEventArgumentCaptor.getAllValues();
 
         assertThat(loggingEventsList.get(0).getLevel())
@@ -282,14 +278,14 @@ public class AuditServiceTest {
         given(mockRepository.save(any())).willThrow(DataIntegrityViolationException.class);
 
         auditService.add(auditableData);
-        then(mockAppender).should(times(2)).doAppend(loggingEventArgumentCaptor.capture());
-        List<ILoggingEvent> loggingEventsList = loggingEventArgumentCaptor.getAllValues();
+        then(mockAppender).should().doAppend(loggingEventArgumentCaptor.capture());
+        ILoggingEvent loggingEvent = loggingEventArgumentCaptor.getValue();
 
-        assertThat(loggingEventsList.get(1).getLevel()).isEqualTo(Level.WARN);
+        assertThat(loggingEvent.getLevel()).isEqualTo(Level.WARN);
 
         String expectedLogMessage = String.format("Audit exception: audit with event uuid: %s and event type: %s already exists.",
                 "some event id", INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
 
-        assertThat(loggingEventsList.get(1).getFormattedMessage()).isEqualTo(expectedLogMessage);
+        assertThat(loggingEvent.getFormattedMessage()).isEqualTo(expectedLogMessage);
     }
 }
