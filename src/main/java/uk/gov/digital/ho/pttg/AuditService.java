@@ -48,11 +48,9 @@ public class AuditService {
     }
 
     private void addAudit(AuditEntry auditEntry) {
-        log.info("Audit request {} received for correlation id {}",
-                auditEntry.getType(), auditEntry.getCorrelationId(), value(EVENT, PTTG_AUDIT_REQUEST_RECEIVED));
         try {
             repository.save(auditEntry);
-            log.info("Audit request {} completed for correlation id {}",
+            log.info("Audit request {} processed for correlation id {}",
                     auditEntry.getType(), auditEntry.getCorrelationId(), value(EVENT, PTTG_AUDIT_RESPONSE_SUCCESS));
 
         } catch ( DataIntegrityViolationException e) {
