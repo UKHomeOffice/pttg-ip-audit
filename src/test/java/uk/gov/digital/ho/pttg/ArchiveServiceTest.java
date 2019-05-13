@@ -20,15 +20,19 @@ import uk.gov.digital.ho.pttg.application.ServiceConfiguration;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static uk.gov.digital.ho.pttg.AuditEventType.ARCHIVED_RESULTS;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_ARCHIVE_FAILURE;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_CONFIG_MISMATCH;
+import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ArchiveServiceTest {
@@ -130,7 +134,7 @@ public class ArchiveServiceTest {
     public void archiveResult_today_getsFullDay() {
         LocalDateTime expectedStart = LocalDate.now().atStartOfDay();
         LocalDateTime expectedEnd = LocalDate.now().plusDays(1).atStartOfDay();
-        when(mockRepository.findArchivedResults(expectedStart, expectedEnd)).thenReturn(Collections.emptyList());
+        when(mockRepository.findArchivedResults(expectedStart, expectedEnd)).thenReturn(emptyList());
 
         archiveService.archiveResult(LocalDate.now(), "PASS");
 
@@ -142,7 +146,7 @@ public class ArchiveServiceTest {
 
     @Test
     public void archiveResult_newResult_resultSaved() {
-        when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(Collections.emptyList());
+        when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(emptyList());
 
         archiveService.archiveResult(LocalDate.now(), "PASS");
 
@@ -181,7 +185,7 @@ public class ArchiveServiceTest {
     @Test
     public void archiveResult_multipleArchivesFoundForDate_exceptionThrown() {
         AuditEntry existingArchive = auditEntry(LocalDate.now(), "{\"results\": { \"PASS\": 1}}");
-        when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(Arrays.asList(existingArchive, existingArchive));
+        when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(asList(existingArchive, existingArchive));
 
         assertThatThrownBy(() -> archiveService.archiveResult(LocalDate.now(), "PASS"))
                 .isInstanceOf(ArchiveException.class)
@@ -191,7 +195,7 @@ public class ArchiveServiceTest {
     @Test
     public void archiveResult_multipleArchivesFoundForDate_errorLogged() {
         AuditEntry existingArchive = auditEntry(LocalDate.now(), "{\"results\": { \"PASS\": 1}}");
-        when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(Arrays.asList(existingArchive, existingArchive));
+        when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(asList(existingArchive, existingArchive));
 
         try {
             archiveService.archiveResult(LocalDate.now(), "PASS");
@@ -203,6 +207,48 @@ public class ArchiveServiceTest {
         ILoggingEvent loggingEvent = loggingEventArgumentCaptor.getValue();
         assertThat((loggingEvent.getArgumentArray()[0]))
                 .isEqualTo(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_FAILURE));
+    }
+
+    @Test
+    public void handleArchiveRequest_callsCollaboratorsWithParameters() {
+        LocalDate lastArchiveDate = LocalDate.now();
+        LocalDateTime lastArchiveDateTime = LocalDate.now().atTime(23, 59, 59, 999999999);
+        String nino = "any-nino";
+        List<String> eventIds = asList("any-corr-id-1", "any-corr-id-2");
+        LocalDate resultDate = LocalDate.now().minusDays(1);
+        String result = "PASS";
+
+        when(mockRepository.countNinosAfterDate(lastArchiveDateTime, nino)).thenReturn(0L);
+        when(mockRepository.findArchivedResults(resultDate.atStartOfDay(), resultDate.plusDays(1).atStartOfDay())).thenReturn(emptyList());
+
+        archiveService.handleArchiveRequest(resultDate, result, eventIds, lastArchiveDate, nino);
+
+        verify(mockRepository).deleteAllCorrelationIds(eventIds);
+        verify(mockRepository).save(captorAuditEntry.capture());
+        AuditEntry savedAuditEntry = captorAuditEntry.getValue();
+        assertThat(savedAuditEntry.getType()).isEqualTo(ARCHIVED_RESULTS);
+        assertThat(savedAuditEntry.getDetail()).contains(result);
+    }
+
+    @Test
+    public void handleArchiveRequest_doesNothingIfNewerNinos() {
+        LocalDate lastArchiveDate = LocalDate.now();
+        LocalDateTime lastArchiveDateTime = LocalDate.now().plusDays(1).atStartOfDay().minusNanos(1);
+        String nino = "any-nino";
+        List<String> eventIds = asList("any-corr-id-1", "any-corr-id-2");
+        LocalDate resultDate = LocalDate.now().minusDays(1);
+        String result = "PASS";
+
+        when(mockRepository.countNinosAfterDate(lastArchiveDateTime, nino)).thenReturn(1L);
+
+        archiveService.handleArchiveRequest(resultDate, result, eventIds, lastArchiveDate, nino);
+
+        verify(mockRepository).countNinosAfterDate(lastArchiveDateTime, nino);
+        verifyNoMoreInteractions(mockRepository);
+
+        verify(mockAppender).doAppend(loggingEventArgumentCaptor.capture());
+        assertThat(loggingEventArgumentCaptor.getValue().getArgumentArray()[0])
+                .isEqualTo(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_NOT_READY_FOR_NINO));
     }
 
     private AuditEntry auditEntry(LocalDate date, String detail) {
