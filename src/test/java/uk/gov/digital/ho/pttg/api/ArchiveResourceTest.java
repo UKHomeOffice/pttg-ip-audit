@@ -40,8 +40,9 @@ public class ArchiveResourceTest {
     private static final String ANY_RESULT = "any-result";
     private static final LocalDate ANY_LAST_ARCHIVE_DATE = LocalDate.now();
     private static final LocalDate ANY_RESULT_DATE = LocalDate.now().minusDays(1);
+    private static final String ANY_NINO = "any-nino";
     private static final List<String> ANY_EVENT_IDS = asList("any-event-id1", "any-event-id2");
-    private static final ArchiveRequest ANY_ARCHIVE_REQUEST = new ArchiveRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, ANY_EVENT_IDS);
+    private static final ArchiveRequest ANY_ARCHIVE_REQUEST = new ArchiveRequest(ANY_RESULT, ANY_LAST_ARCHIVE_DATE, ANY_EVENT_IDS, ANY_NINO);
 
     private static final LocalDate SOME_DATE = LocalDate.now();
     private static final ArchivedResult SOME_ARCHIVED_RESULT = new ArchivedResult(ImmutableMap.of("PASS", 5));
@@ -58,7 +59,7 @@ public class ArchiveResourceTest {
     public void archiveResult_callArchiveService() {
         archiveResource.archiveResult(ANY_RESULT_DATE, ANY_ARCHIVE_REQUEST);
 
-        verify(mockArchiveService).archiveResult(ANY_RESULT_DATE, ANY_ARCHIVE_REQUEST.result(), ANY_ARCHIVE_REQUEST.eventIds(), ANY_ARCHIVE_REQUEST.lastArchiveDate());
+        verify(mockArchiveService).handleArchiveRequest(ANY_RESULT_DATE, ANY_ARCHIVE_REQUEST.result(), ANY_ARCHIVE_REQUEST.correlationIds(), ANY_ARCHIVE_REQUEST.lastArchiveDate(), ANY_NINO);
     }
 
     @Test

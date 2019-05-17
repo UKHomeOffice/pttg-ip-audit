@@ -52,7 +52,7 @@ public class AuditResource {
 
         auditService.add(auditableData);
 
-        log.info("Audit request {} processed for correlation id {}",
+        log.info("Audit request {} completed for correlation id {}",
                     auditableData.getEventType(),
                     auditableData.getCorrelationId(),
                     value(EVENT, PTTG_AUDIT_REQUEST_COMPLETED),

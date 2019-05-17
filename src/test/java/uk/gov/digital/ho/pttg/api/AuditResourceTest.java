@@ -124,7 +124,7 @@ public class AuditResourceTest {
 
         verify(mockAppender).doAppend(argThat(argument -> {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
-            return loggingEvent.getFormattedMessage().equals("Audit request INCOME_PROVING_FINANCIAL_STATUS_RESPONSE processed for correlation id some correlation id") &&
+            return loggingEvent.getFormattedMessage().equals("Audit request INCOME_PROVING_FINANCIAL_STATUS_RESPONSE completed for correlation id some correlation id") &&
                     (loggingEvent.getArgumentArray()[1]).equals("some correlation id") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("event_id") &&
                     ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName().equals("request_duration_ms");

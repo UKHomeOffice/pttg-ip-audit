@@ -4,11 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.pttg.api.ArchivedResult;
 import uk.gov.digital.ho.pttg.application.ArchiveException;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,8 +19,7 @@ import java.util.stream.Collectors;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static uk.gov.digital.ho.pttg.AuditEventType.ARCHIVED_RESULTS;
-import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_ARCHIVE_FAILURE;
+import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @Component
 @Slf4j
@@ -32,8 +33,15 @@ public class ArchiveService {
         this.objectMapper = objectMapper;
     }
 
-    public void archiveResult(LocalDate resultDate, String result, List<String> eventIds, LocalDate lastArchiveDate) {
-
+    @Transactional
+    public void handleArchiveRequest(LocalDate resultDate, String result, List<String> correlationIds, LocalDate lastArchiveDate, String nino) {
+        LocalDateTime lastArchiveTime = lastArchiveDate.atTime(23, 59, 59, 999999999);
+        if (repository.countNinosAfterDate(lastArchiveTime, nino) > 0) {
+            log.info("Archive request ignored as more recent requests found for nino", value(EVENT, PTTG_AUDIT_ARCHIVE_NOT_READY_FOR_NINO));
+            return;
+        }
+        repository.deleteAllCorrelationIds(correlationIds);
+        archiveResult(resultDate, result);
     }
 
     void archiveResult(LocalDate date, String result) {
@@ -92,18 +100,8 @@ public class ArchiveService {
         int existingCount = newResult.getOrDefault(result, 0);
         newResult.put(result, existingCount + 1);
         String newResultString = serializeArchiveResultDetail(existingArchive, newResult);
-
-        return new AuditEntry(
-                existingResult.getUuid(),
-                existingResult.getTimestamp(),
-                existingResult.getSessionId(),
-                existingResult.getCorrelationId(),
-                existingResult.getUserId(),
-                existingResult.getDeployment(),
-                existingResult.getNamespace(),
-                existingResult.getType(),
-                newResultString
-        );
+        existingResult.setDetail(newResultString);
+        return existingResult;
     }
 
     private String serializeArchiveResult(ArchivedResult archivedResult) {

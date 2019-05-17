@@ -54,7 +54,7 @@ public class ArchiveResource {
                 archiveRequest,
                 value(EVENT, PTTG_AUDIT_ARCHIVE_RESULT_REQUEST_RECEIVED));
 
-        archiveService.archiveResult(date, archiveRequest.result(), archiveRequest.eventIds(), archiveRequest.lastArchiveDate());
+        archiveService.handleArchiveRequest(date, archiveRequest.result(), archiveRequest.correlationIds(), archiveRequest.lastArchiveDate(), archiveRequest.nino());
 
         log.info("ArchiveResult request completed successfully",
                 value(EVENT, PTTG_AUDIT_ARCHIVE_RESULT_RESPONSE_SUCCESS),

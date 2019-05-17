@@ -15,23 +15,27 @@ import java.util.List;
 @Accessors(fluent = true)
 @EqualsAndHashCode
 @ToString
-class ArchiveRequest {
+public class ArchiveRequest {
     @JsonProperty
     private String result;
     @JsonProperty
     private LocalDate lastArchiveDate;
     @JsonProperty
-    private List<String> eventIds;
+    private List<String> correlationIds;
+    @JsonProperty
+    private String nino;
 
     @JsonCreator
     ArchiveRequest(
             @JsonProperty(value = "result", required = true) @NonNull String result,
             @JsonProperty(value = "lastArchiveDate", required = true) @NonNull LocalDate lastArchiveDate,
-            @JsonProperty(value = "eventIds", required = true) @NonNull List<String> eventIds
+            @JsonProperty(value = "correlationIds", required = true) @NonNull List<String> correlationIds,
+            @JsonProperty(value = "nino", required = true) @NonNull String nino
     ) {
         this.result = result;
         this.lastArchiveDate = lastArchiveDate;
-        this.eventIds = eventIds;
+        this.correlationIds = correlationIds;
+        this.nino = nino;
 
         validate();
     }
@@ -41,8 +45,12 @@ class ArchiveRequest {
             throwApiError("A result is required to record in the archive");
         }
 
-        if (eventIds.isEmpty()) {
-            throwApiError("At least one event id is required to be deleted from the audit history");
+        if (correlationIds.isEmpty()) {
+            throwApiError("At least one correlation id is required to be deleted from the audit history");
+        }
+
+        if (nino.isEmpty()) {
+            throwApiError("A nino is required to check for newer requests and prevent archiving");
         }
     }
 

@@ -1,5 +1,6 @@
 {
   "result": "%s",
   "lastArchiveDate": "%s",
-  "eventIds": [%s]
+  "correlationIds": [%s],
+  "nino": "%s"
 }
