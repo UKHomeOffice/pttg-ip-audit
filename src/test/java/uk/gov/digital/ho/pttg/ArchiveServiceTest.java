@@ -4,6 +4,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.logstash.logback.marker.ObjectAppendingMarker;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,12 +17,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.util.ReflectionTestUtils;
+import uk.gov.digital.ho.pttg.api.ArchivedResult;
 import uk.gov.digital.ho.pttg.application.ArchiveException;
 import uk.gov.digital.ho.pttg.application.ServiceConfiguration;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +34,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static uk.gov.digital.ho.pttg.AuditEventType.ARCHIVED_RESULTS;
-import static uk.gov.digital.ho.pttg.application.LogEvent.*;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_ARCHIVE_FAILURE;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_ARCHIVE_NOT_READY_FOR_NINO;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ArchiveServiceTest {
@@ -249,6 +252,47 @@ public class ArchiveServiceTest {
         verify(mockAppender).doAppend(loggingEventArgumentCaptor.capture());
         assertThat(loggingEventArgumentCaptor.getValue().getArgumentArray()[0])
                 .isEqualTo(new ObjectAppendingMarker("event_id", PTTG_AUDIT_ARCHIVE_NOT_READY_FOR_NINO));
+    }
+
+    @Test
+    @SuppressFBWarnings(value="RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
+    public void getArchivedResults_givenFromDate_getFromStartOfDay() {
+        LocalDate fromDate = LocalDate.now().minusDays(1);
+        LocalDate someDate = LocalDate.now();
+
+        archiveService.getArchivedResults(fromDate, someDate);
+        verify(mockRepository).findArchivedResults(eq(fromDate.atStartOfDay()), any(LocalDateTime.class));
+    }
+
+    @Test
+    @SuppressFBWarnings(value="RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
+    public void getArchivedResults_givenToDate_getFromStartOfNextDay() {
+        LocalDate toDate = LocalDate.now();
+        LocalDate someDate = LocalDate.now().minusDays(1);
+
+        LocalDateTime startOfNextDay = toDate.plusDays(1).atStartOfDay();
+        archiveService.getArchivedResults(someDate, toDate);
+        verify(mockRepository).findArchivedResults(any(LocalDateTime.class), eq(startOfNextDay));
+    }
+
+    @Test
+    public void getArchivedResults_givenDataFromDatabase_expectedResults() {
+        LocalDate fromDate = LocalDate.now().minusDays(3);
+        LocalDate toDate = LocalDate.now();
+        List<AuditEntry> dbQueryResult = asList(
+                auditEntry(fromDate, "{\"results\": { \"PASS\": 1}}"),
+                auditEntry(fromDate.plusDays(1), "{\"results\": { \"ERROR\": 3}}")
+        );
+
+        when(mockRepository.findArchivedResults(any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(dbQueryResult);
+
+        List<ArchivedResult> expectedResults = asList(
+                new ArchivedResult(ImmutableMap.of("PASS", 1)),
+                new ArchivedResult(ImmutableMap.of("ERROR", 3))
+        );
+        assertThat(archiveService.getArchivedResults(fromDate, toDate))
+                .isEqualTo(expectedResults);
     }
 
     private AuditEntry auditEntry(LocalDate date, String detail) {

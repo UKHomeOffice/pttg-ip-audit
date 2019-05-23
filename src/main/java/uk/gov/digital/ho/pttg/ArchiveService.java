@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
 import static uk.gov.digital.ho.pttg.AuditEventType.ARCHIVED_RESULTS;
@@ -47,6 +48,14 @@ public class ArchiveService {
         List<AuditEntry> existingResults = repository.findArchivedResults(date.atStartOfDay(), date.plusDays(1).atStartOfDay());
         AuditEntry newResult = addResult(date, result, existingResults);
         repository.save(newResult);
+    }
+
+    public List<ArchivedResult> getArchivedResults(LocalDate fromDate, LocalDate toDate) {
+        List<AuditEntry> archivedResults = repository.findArchivedResults(fromDate.atStartOfDay(), toDate.plusDays(1).atStartOfDay());
+
+        return archivedResults.stream()
+                .map(this::deserializeArchiveResultDetail)
+                .collect(Collectors.toList());
     }
 
     private AuditEntry addResult(LocalDate date, String result, List<AuditEntry> existingResults) {
@@ -134,6 +143,4 @@ public class ArchiveService {
         log.error(errorMessage, exception, value(EVENT, PTTG_AUDIT_ARCHIVE_FAILURE));
         throw new ArchiveException(errorMessage, exception);
     }
-
-
 }

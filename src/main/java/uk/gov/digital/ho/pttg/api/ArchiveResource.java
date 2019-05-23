@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.*;
 import uk.gov.digital.ho.pttg.ArchiveService;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static uk.gov.digital.ho.pttg.api.RequestData.REQUEST_DURATION_MS;
 import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
@@ -22,6 +24,22 @@ public class ArchiveResource {
     public ArchiveResource(ArchiveService archiveService, RequestData requestData) {
         this.archiveService = archiveService;
         this.requestData = requestData;
+    }
+
+    @GetMapping(value = "/archive", produces = APPLICATION_JSON_VALUE)
+    public List<ArchivedResult> getArchivedResults(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
+    ) {
+        log.info("Request received for archived results between {} and {}", fromDate, toDate,
+                value(EVENT, PTTG_AUDIT_GET_ARCHIVED_RESULTS_REQUEST_RECEIVED));
+
+        List<ArchivedResult> archivedResults = archiveService.getArchivedResults(fromDate, toDate);
+
+        log.info("Returned response with {} archived results", archivedResults.size(),
+                value(EVENT, PTTG_AUDIT_GET_ARCHIVED_RESULTS_RESPONSE_SUCCESS));
+
+        return archivedResults;
     }
 
     @PostMapping("/archive/{date}")
@@ -41,6 +59,6 @@ public class ArchiveResource {
         log.info("ArchiveResult request completed successfully",
                 value(EVENT, PTTG_AUDIT_ARCHIVE_RESULT_RESPONSE_SUCCESS),
                 value(REQUEST_DURATION_MS, requestData.calculateRequestDuration())
-                );
+        );
     }
 }
