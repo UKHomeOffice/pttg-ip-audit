@@ -21,6 +21,8 @@ The API is implemented using Spring Boot and exposes a RESTFul interface.
 
 The endpoints are defined in `AuditResource.java`, `AuditHistoryResource.java` and `ArchiveResource.java`.
 
+The database schema is created and maintained by the Flyway scripts found in `src/main/resources/db/migration`. 
+
 ## Building
 
 ### ACP
