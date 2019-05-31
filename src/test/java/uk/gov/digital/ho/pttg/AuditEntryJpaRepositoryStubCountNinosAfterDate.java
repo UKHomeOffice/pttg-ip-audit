@@ -77,6 +77,11 @@ class AuditEntryJpaRepositoryStubCountNinosAfterDate implements AuditEntryJpaRep
     }
 
     @Override
+    public List<String> getAllCorrelationIds(List<AuditEventType> eventTypes) {
+        return realRepository.getAllCorrelationIds(eventTypes);
+    }
+
+    @Override
     @Modifying
     @Transactional
     public void deleteAllCorrelationIds(List<String> correlationIds) {

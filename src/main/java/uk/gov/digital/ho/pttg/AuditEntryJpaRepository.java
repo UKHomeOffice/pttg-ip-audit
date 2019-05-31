@@ -40,7 +40,8 @@ public interface AuditEntryJpaRepository extends PagingAndSortingRepository<Audi
     @Query("SELECT audit from AuditEntry audit WHERE audit.timestamp >= :fromDate AND audit.timestamp < :toDate AND audit.type = 'ARCHIVED_RESULTS'")
     List<AuditEntry> findArchivedResults(@Param("fromDate") LocalDateTime fromDate, @Param("toDate") LocalDateTime toDate);
 
-
+    @Query("SELECT DISTINCT(audit.correlationId) from AuditEntry audit WHERE audit.type in (:eventTypes)")
+    List<String> getAllCorrelationIds(@Param("eventTypes") List<AuditEventType> eventTypes);
 
 }
 

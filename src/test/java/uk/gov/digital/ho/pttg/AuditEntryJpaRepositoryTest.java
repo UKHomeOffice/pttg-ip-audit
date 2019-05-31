@@ -277,12 +277,75 @@ public class AuditEntryJpaRepositoryTest {
         assertThat(results).containsExactly(archivedResult2);
     }
 
+    @Test
+    public void getAllCorrelationIds_givenEventType_returnCorrelationIds() {
+        String correlationId = "some correlation id";
+        repository.save(createAudit(correlationId, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE));
+
+        List<String> correlationIds = repository.getAllCorrelationIds(singletonList(INCOME_PROVING_FINANCIAL_STATUS_RESPONSE));
+        assertThat(correlationIds)
+                .contains(correlationId);
+    }
+
+    @Test
+    public void getAllCorrelationIds_givenEventType_returnOnlyCorrelationIdsForEventType() {
+        String correlationId1 = "some correlation id";
+        String correlationId2 = "some other correlation id";
+        String correlationId3 = "yet some other correlation id";
+        repository.save(createAudit(correlationId1, INCOME_PROVING_INCOME_CHECK_REQUEST));
+        repository.save(createAudit(correlationId2, INCOME_PROVING_INCOME_CHECK_REQUEST));
+        repository.save(createAudit(correlationId3, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE));
+
+        List<String> correlationIds = repository.getAllCorrelationIds(singletonList(INCOME_PROVING_INCOME_CHECK_REQUEST));
+        assertThat(correlationIds)
+                .containsOnly(correlationId1, correlationId2);
+    }
+
+    @Test
+    public void getAllCorrelationIds_multipleEventTypes_returnCorrelationIdsForEventTypes() {
+        String correlationId1 = "some correlation id";
+        String correlationId2 = "some other correlation id";
+        String correlationId3 = "yet some other correlation id";
+        repository.save(createAudit(correlationId1, INCOME_PROVING_INCOME_CHECK_REQUEST));
+        repository.save(createAudit(correlationId2, DWP_BENEFIT_REQUEST));
+        repository.save(createAudit(correlationId3, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE));
+
+        List<String> correlationIds = repository.getAllCorrelationIds(Arrays.asList(INCOME_PROVING_INCOME_CHECK_REQUEST, DWP_BENEFIT_REQUEST));
+        assertThat(correlationIds)
+                .containsOnly(correlationId1, correlationId2);
+    }
+
+    @Test
+    public void getAllCorrelationIds_multipleEntriesPerCorrelationId_returnDistinctIds() {
+        String correlationId = "some correlation id";
+        repository.save(createAudit(correlationId, INCOME_PROVING_INCOME_CHECK_REQUEST));
+        repository.save(createAudit(correlationId, DWP_BENEFIT_REQUEST));
+
+        assertThat(repository.getAllCorrelationIds(Arrays.asList(INCOME_PROVING_INCOME_CHECK_REQUEST, DWP_BENEFIT_REQUEST)))
+                .hasSize(1)
+                .contains(correlationId);
+    }
+
     private AuditEntry createAudit(LocalDateTime timestamp) {
         return createAudit(timestamp, USER_ID);
     }
 
     private AuditEntry createAudit(LocalDateTime timestamp, String userId) {
         return createAudit(timestamp, userId, DETAIL);
+    }
+
+    private AuditEntry createAudit(String correlationId, AuditEventType eventType) {
+        return new AuditEntry(
+                randomUUID().toString(),
+                NOW,
+                SESSION_ID,
+                correlationId,
+                USER_ID,
+                DEPLOYMENT,
+                NAMESPACE,
+                eventType,
+                DETAIL
+        );
     }
 
     private AuditEntry createAudit(LocalDateTime timestamp, String userId, String detail) {
