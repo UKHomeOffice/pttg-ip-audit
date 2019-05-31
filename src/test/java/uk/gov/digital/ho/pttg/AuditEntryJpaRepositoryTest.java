@@ -319,9 +319,9 @@ public class AuditEntryJpaRepositoryTest {
     public void getAllCorrelationIds_multipleEntriesPerCorrelationId_returnDistinctIds() {
         String correlationId = "some correlation id";
         repository.save(createAudit(correlationId, INCOME_PROVING_INCOME_CHECK_REQUEST));
-        repository.save(createAudit(correlationId, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE));
+        repository.save(createAudit(correlationId, DWP_BENEFIT_REQUEST));
 
-        assertThat(repository.getAllCorrelationIds(Arrays.asList(INCOME_PROVING_INCOME_CHECK_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE)))
+        assertThat(repository.getAllCorrelationIds(Arrays.asList(INCOME_PROVING_INCOME_CHECK_REQUEST, DWP_BENEFIT_REQUEST)))
                 .hasSize(1)
                 .contains(correlationId);
     }
