@@ -25,4 +25,8 @@ public class AuditHistoryService {
                 .map(AuditService::transformToAuditRecord)
                 .collect(Collectors.toList());
     }
+
+    public List<String> getAllCorrelationIds(List<AuditEventType> eventTypes){
+        return repository.getAllCorrelationIds(eventTypes);
+    }
 }

@@ -13,6 +13,7 @@ import uk.gov.digital.ho.pttg.api.AuditRecord;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,6 +63,26 @@ public class AuditHistoryServiceTest {
         assertThat(auditRecord.getId()).isEqualToIgnoringCase("any_corr_id");
         assertThat(auditRecord.getEmail()).isEqualToIgnoringCase("any_user_id");
         assertThat(auditRecord.getNino()).isEqualToIgnoringCase("any_nino");
+    }
+
+    @Test
+    public void getAllCorrelationIds_givenEventTypes_callsAuditRepo() {
+        List<AuditEventType> eventTypes = Collections.singletonList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
+        auditHistoryService.getAllCorrelationIds(eventTypes);
+
+        verify(repository).getAllCorrelationIds(eq(eventTypes));
+    }
+
+    @Test
+    public void getAllCorrelationIds_correlationIdsFromRepo_returned() {
+        List<String> someCorrelationIds = Arrays.asList("some correlationID", "some other correlationID");
+        when(repository.getAllCorrelationIds(any()))
+                .thenReturn(someCorrelationIds);
+
+        List<String> returnedCorrelationIds = auditHistoryService.getAllCorrelationIds(
+                Collections.singletonList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST));
+
+        assertThat(returnedCorrelationIds).isEqualTo(someCorrelationIds);
     }
 
     private AuditEntry getAuditEntry() {
