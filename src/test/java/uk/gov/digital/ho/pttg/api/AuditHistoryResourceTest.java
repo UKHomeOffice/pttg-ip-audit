@@ -1,4 +1,4 @@
-package uk.gov.digital.ho.pttg;
+package uk.gov.digital.ho.pttg.api;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -11,14 +11,15 @@ import net.logstash.logback.marker.ObjectAppendingMarker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import uk.gov.digital.ho.pttg.api.AuditHistoryResource;
-import uk.gov.digital.ho.pttg.api.AuditRecord;
-import uk.gov.digital.ho.pttg.api.RequestData;
+import uk.gov.digital.ho.pttg.AuditEventType;
+import uk.gov.digital.ho.pttg.AuditHistoryService;
+import uk.gov.digital.ho.pttg.application.LogEvent;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,13 +28,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_HISTORY_REQUEST_RECEIVED;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_HISTORY_RESPONSE_SUCCESS;
+import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuditHistoryResourceTest {
@@ -143,5 +145,61 @@ public class AuditHistoryResourceTest {
             return loggingEvent.getFormattedMessage().equals(expectedLogMessage) &&
                     loggingEvent.getArgumentArray()[3].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_HISTORY_REQUEST_RECEIVED));
         }));
+    }
+
+    @Test
+    public void getAllCorrelationIds_givenEventTypes_passToService() {
+        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+
+        historyResource.getAllCorrelationIds(eventTypes);
+
+        verify(mockHistoryService).getAllCorrelationIds(eq(eventTypes));
+    }
+
+    @Test
+    public void getAllCorrelationIds_correlationIdsFromService_returned() {
+        List<String> correlationIds = Arrays.asList("some correlation id", "some other correlation id");
+        when(mockHistoryService.getAllCorrelationIds(any()))
+                .thenReturn(correlationIds);
+
+        List<AuditEventType> anyEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        List<String> returnedCorrelationIds = historyResource.getAllCorrelationIds(anyEventTypes);
+
+        assertThat(returnedCorrelationIds).isEqualTo(correlationIds);
+    }
+
+    @Test
+    public void getAllCorrelationIds_givenEventTypes_logEntryParameters() {
+        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+
+        historyResource.getAllCorrelationIds(eventTypes);
+
+        String expectedLogMessage = String.format("Requested all correlation ids for events [%s, %s]",
+                INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+
+        verify(mockAppender).doAppend(argThat(
+                hasLogParameters(expectedLogMessage, PTTG_AUDIT_HISTORY_CORRELATION_IDS_REQUEST_RECEIVED)));
+    }
+
+    @Test
+    public void getAllCorrelationIds_returnedCorrelationIds_logCount() {
+        List<String> correlationIds = Arrays.asList("some correlation id", "some other correlation id", "yet some other correlation id");
+        given(mockHistoryService.getAllCorrelationIds(any())).willReturn(correlationIds);
+
+        List<AuditEventType> anyEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        historyResource.getAllCorrelationIds(anyEventTypes);
+
+        String expectedMessage = "Returning 3 correlation IDs for all correlation ID request";
+        then(mockAppender)
+                .should()
+                .doAppend(argThat(hasLogParameters(expectedMessage, PTTG_AUDIT_HISTORY_CORRELATION_IDS_REQUEST_SUCCESS)));
+    }
+
+    public ArgumentMatcher<ILoggingEvent> hasLogParameters(String expectedMessage, LogEvent event) {
+        return argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+            return loggingEvent.getFormattedMessage().equals(expectedMessage) &&
+                    loggingEvent.getArgumentArray()[1].equals(new ObjectAppendingMarker("event_id", event));
+        };
     }
 }

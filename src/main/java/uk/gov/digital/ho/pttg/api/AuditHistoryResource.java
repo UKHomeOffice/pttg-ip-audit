@@ -54,6 +54,17 @@ public class AuditHistoryResource {
         return result;
     }
 
+    public List<String> getAllCorrelationIds(List<AuditEventType> eventTypes) {
+        log.info("Requested all correlation ids for events {}", eventTypes, value(EVENT, PTTG_AUDIT_HISTORY_CORRELATION_IDS_REQUEST_RECEIVED));
+
+        List<String> correlationIds = auditHistoryService.getAllCorrelationIds(eventTypes);
+
+        log.info("Returning {} correlation IDs for all correlation ID request", correlationIds.size(),
+                value(EVENT, PTTG_AUDIT_HISTORY_CORRELATION_IDS_REQUEST_SUCCESS));
+
+        return correlationIds;
+    }
+
     private LocalDate useDefaultIfNull(LocalDate toDate) {
         return toDate != null ? toDate : LocalDate.now();
     }
