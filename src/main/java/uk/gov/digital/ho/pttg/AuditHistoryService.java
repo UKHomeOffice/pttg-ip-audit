@@ -29,4 +29,10 @@ public class AuditHistoryService {
     public List<String> getAllCorrelationIds(List<AuditEventType> eventTypes){
         return repository.getAllCorrelationIds(eventTypes);
     }
+
+    public List<AuditRecord> getRecordsForCorrelationId(String correlationId, List<AuditEventType> eventTypes) {
+        return repository.findEntriesByCorrelationId(correlationId, eventTypes).stream()
+                .map(AuditService::transformToAuditRecord)
+                .collect(Collectors.toList());
+    }
 }
