@@ -43,6 +43,8 @@ public interface AuditEntryJpaRepository extends PagingAndSortingRepository<Audi
     @Query("SELECT DISTINCT(audit.correlationId) from AuditEntry audit WHERE audit.type in (:eventTypes)")
     List<String> getAllCorrelationIds(@Param("eventTypes") List<AuditEventType> eventTypes);
 
+    @Query("SELECT audit from AuditEntry audit WHERE audit.correlationId = :correlationId AND audit.type in (:eventTypes)")
+    List<AuditEntry> findEntriesByCorrelationId(@Param("correlationId") String correlationId, @Param("eventTypes") List<AuditEventType> eventTypes);
 }
 
 
