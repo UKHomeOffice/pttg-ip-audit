@@ -326,6 +326,46 @@ public class AuditEntryJpaRepositoryTest {
                 .contains(correlationId);
     }
 
+    @Test
+    public void findEntriesByCorrelationId_noEntriesForCorrelationId_emptyList() {
+        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_INCOME_CHECK_REQUEST, INCOME_PROVING_INCOME_CHECK_RESPONSE);
+        assertThat(repository.findEntriesByCorrelationId("does not exist in Database", eventTypes))
+                .isEmpty();
+    }
+
+    @Test
+    public void findEntriesByCorrelationId_entriesExistForCorrelationId_returnAll() {
+        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_INCOME_CHECK_REQUEST, INCOME_PROVING_INCOME_CHECK_RESPONSE);
+        String someCorrelationId = "some correlation id";
+        List<AuditEntry> expectedEntries = Arrays.asList(
+                createAudit(someCorrelationId, INCOME_PROVING_INCOME_CHECK_REQUEST),
+                createAudit(someCorrelationId, INCOME_PROVING_INCOME_CHECK_RESPONSE)
+        );
+
+        expectedEntries.forEach(expectedEntry -> repository.save(expectedEntry));
+
+        List<AuditEntry> actualEntries = repository.findEntriesByCorrelationId(someCorrelationId, eventTypes);
+
+        assertThat(actualEntries).isEqualTo(expectedEntries);
+    }
+
+    @Test
+    public void findEntriesByCorrelationId_entriesDifferentEventType_notReturned() {
+        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_INCOME_CHECK_REQUEST, INCOME_PROVING_INCOME_CHECK_RESPONSE);
+        String someCorrelationId = "some correlation id";
+        List<AuditEntry> expectedEntries = Arrays.asList(
+                createAudit(someCorrelationId, DWP_BENEFIT_REQUEST),
+                createAudit(someCorrelationId, HMRC_ACCESS_CODE_REQUEST)
+        );
+
+        expectedEntries.forEach(expectedEntry -> repository.save(expectedEntry));
+
+        List<AuditEntry> actualEntries = repository.findEntriesByCorrelationId(someCorrelationId, eventTypes);
+
+        assertThat(actualEntries).isEmpty();
+
+    }
+
     private AuditEntry createAudit(LocalDateTime timestamp) {
         return createAudit(timestamp, USER_ID);
     }
