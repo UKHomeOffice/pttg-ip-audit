@@ -148,6 +148,7 @@ public class AuditHistoryResourceTest {
     }
 
     @Test
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     public void getAllCorrelationIds_givenEventTypes_passToService() {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
 

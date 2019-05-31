@@ -54,7 +54,8 @@ public class AuditHistoryResource {
         return result;
     }
 
-    public List<String> getAllCorrelationIds(List<AuditEventType> eventTypes) {
+    @GetMapping(value = "correlationids")
+    public List<String> getAllCorrelationIds(@RequestParam List<AuditEventType> eventTypes) {
         log.info("Requested all correlation ids for events {}", eventTypes, value(EVENT, PTTG_AUDIT_HISTORY_CORRELATION_IDS_REQUEST_RECEIVED));
 
         List<String> correlationIds = auditHistoryService.getAllCorrelationIds(eventTypes);
