@@ -298,7 +298,7 @@ public class AuditEntryJpaRepositoryTest {
 
         List<String> correlationIds = repository.getAllCorrelationIds(singletonList(INCOME_PROVING_INCOME_CHECK_REQUEST));
         assertThat(correlationIds)
-                .contains(correlationId1, correlationId2);
+                .containsOnly(correlationId1, correlationId2);
     }
 
     @Test
@@ -312,16 +312,16 @@ public class AuditEntryJpaRepositoryTest {
 
         List<String> correlationIds = repository.getAllCorrelationIds(Arrays.asList(INCOME_PROVING_INCOME_CHECK_REQUEST, DWP_BENEFIT_REQUEST));
         assertThat(correlationIds)
-                .contains(correlationId1, correlationId2);
+                .containsOnly(correlationId1, correlationId2);
     }
 
     @Test
     public void getAllCorrelationIds_multipleEntriesPerCorrelationId_returnDistinctIds() {
         String correlationId = "some correlation id";
         repository.save(createAudit(correlationId, INCOME_PROVING_INCOME_CHECK_REQUEST));
-        repository.save(createAudit(correlationId, INCOME_PROVING_INCOME_CHECK_REQUEST));
+        repository.save(createAudit(correlationId, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE));
 
-        assertThat(repository.getAllCorrelationIds(singletonList(INCOME_PROVING_INCOME_CHECK_REQUEST)))
+        assertThat(repository.getAllCorrelationIds(Arrays.asList(INCOME_PROVING_INCOME_CHECK_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE)))
                 .hasSize(1)
                 .contains(correlationId);
     }
