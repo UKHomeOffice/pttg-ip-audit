@@ -193,7 +193,7 @@ public class AuditHistoryResourceTest {
         String expectedMessage = "Returning 3 correlation IDs for all correlation ID request";
         then(mockAppender)
                 .should()
-                .doAppend(argThat(hasLogParameters(expectedMessage, PTTG_AUDIT_HISTORY_CORRELATION_IDS_REQUEST_SUCCESS)));
+                .doAppend(argThat(hasLogParameters(expectedMessage, PTTG_AUDIT_HISTORY_CORRELATION_IDS_RESPONSE_SUCCESS)));
     }
 
     public ArgumentMatcher<ILoggingEvent> hasLogParameters(String expectedMessage, LogEvent event) {
