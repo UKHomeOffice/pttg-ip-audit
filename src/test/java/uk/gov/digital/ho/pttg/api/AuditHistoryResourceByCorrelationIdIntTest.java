@@ -26,7 +26,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
         @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "/sql/AuditHistoryRecordsIntTest/before.sql"),
         @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "/sql/AuditHistoryRecordsIntTest/after.sql")
 })
-public class AuditHistoryResourceRecordsIntTest {
+public class AuditHistoryResourceByCorrelationIdIntTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
