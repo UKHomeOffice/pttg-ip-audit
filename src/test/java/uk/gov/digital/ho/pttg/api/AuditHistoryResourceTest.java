@@ -18,9 +18,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import uk.gov.digital.ho.pttg.AuditEventType;
 import uk.gov.digital.ho.pttg.AuditHistoryService;
-import uk.gov.digital.ho.pttg.api.AuditHistoryResource;
-import uk.gov.digital.ho.pttg.api.AuditRecord;
-import uk.gov.digital.ho.pttg.api.RequestData;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
