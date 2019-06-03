@@ -61,7 +61,8 @@ public class AuditHistoryResource {
         List<String> correlationIds = auditHistoryService.getAllCorrelationIds(eventTypes);
 
         log.info("Returning {} correlation IDs for all correlation ID request", correlationIds.size(),
-                value(EVENT, PTTG_AUDIT_HISTORY_CORRELATION_IDS_RESPONSE_SUCCESS));
+                value(EVENT, PTTG_AUDIT_HISTORY_CORRELATION_IDS_RESPONSE_SUCCESS),
+                value(REQUEST_DURATION_MS, requestData.calculateRequestDuration()));
 
         return correlationIds;
     }

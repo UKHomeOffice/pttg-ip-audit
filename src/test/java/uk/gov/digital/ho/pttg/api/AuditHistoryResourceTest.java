@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.AdditionalMatchers.and;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -193,7 +194,10 @@ public class AuditHistoryResourceTest {
         String expectedMessage = "Returning 3 correlation IDs for all correlation ID request";
         then(mockAppender)
                 .should()
-                .doAppend(argThat(hasLogParameters(expectedMessage, PTTG_AUDIT_HISTORY_CORRELATION_IDS_RESPONSE_SUCCESS)));
+                .doAppend(and(
+                        argThat(hasLogParameters(expectedMessage, PTTG_AUDIT_HISTORY_CORRELATION_IDS_RESPONSE_SUCCESS)),
+                        argThat(hasRequestDuration())
+                ));
     }
 
     public ArgumentMatcher<ILoggingEvent> hasLogParameters(String expectedMessage, LogEvent event) {
@@ -201,6 +205,14 @@ public class AuditHistoryResourceTest {
             LoggingEvent loggingEvent = (LoggingEvent) argument;
             return loggingEvent.getFormattedMessage().equals(expectedMessage) &&
                     loggingEvent.getArgumentArray()[1].equals(new ObjectAppendingMarker("event_id", event));
+        };
+    }
+
+    public ArgumentMatcher<ILoggingEvent> hasRequestDuration() {
+        return argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+            return loggingEvent.getArgumentArray().length > 2 &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration_ms");
         };
     }
 }
