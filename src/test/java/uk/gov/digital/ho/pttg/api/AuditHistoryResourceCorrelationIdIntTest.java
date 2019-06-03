@@ -35,7 +35,7 @@ public class AuditHistoryResourceCorrelationIdIntTest {
 
     @Test
     public void shouldReturnCorrelationIdsForRequestedEventTypes() throws IOException {
-        String url = "/correlationids?eventTypes=INCOME_PROVING_FINANCIAL_STATUS_REQUEST,INCOME_PROVING_FINANCIAL_STATUS_RESPONSE";
+        String url = "/correlationIds?eventTypes=INCOME_PROVING_FINANCIAL_STATUS_REQUEST,INCOME_PROVING_FINANCIAL_STATUS_RESPONSE";
         String response = restTemplate.getForObject(url, String.class);
 
         List<String> list = objectMapper.readValue(response, List.class);
