@@ -30,7 +30,7 @@ import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STA
 public class AuditHistoryWebTest {
 
     private final static String HISTORY_URL = "/history";
-    private final static String CORRELATION_ID_URL = "/correlationids";
+    private final static String CORRELATION_ID_URL = "/correlationIds";
     private static final String HISTORY_BY_CORRELATION_ID_URL = "/historyByCorrelationId";
 
     private static final LocalDate REQ_DATE = LocalDate.now();
