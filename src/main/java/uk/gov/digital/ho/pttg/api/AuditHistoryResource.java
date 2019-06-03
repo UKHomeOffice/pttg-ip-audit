@@ -54,7 +54,10 @@ public class AuditHistoryResource {
         return result;
     }
 
-    public List<AuditRecord> getRecordsForCorrelationId(String correlationId, List<AuditEventType> eventTypes) {
+    @GetMapping(value = "/records", produces = APPLICATION_JSON_VALUE)
+    public List<AuditRecord> getRecordsForCorrelationId(
+            @RequestParam String correlationId, @RequestParam List<AuditEventType> eventTypes) {
+
         log.info("Requested audit records for correlationID {} and events {}", correlationId, eventTypes,
                 value(EVENT, PTTG_AUDIT_HISTORY_BY_CORRELATION_ID_REQUEST_RECEIVED));
 

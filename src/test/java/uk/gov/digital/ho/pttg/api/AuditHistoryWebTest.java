@@ -19,6 +19,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
@@ -27,7 +28,8 @@ import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STA
 @WebMvcTest(value = AuditHistoryResource.class)
 public class AuditHistoryWebTest {
 
-    private final static String BASE_URL = "/history";
+    private final static String HISTORY_URL = "/history";
+    private static final String RECORDS_URL = "/records";
 
     private static final LocalDate REQ_DATE = LocalDate.now();
     private static final String REQ_DATE_PARAM = REQ_DATE.format(DateTimeFormatter.ISO_DATE);
@@ -35,6 +37,7 @@ public class AuditHistoryWebTest {
             INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
     private static final String EVENT_TYPES_PARAM = String.format("%s,%s",
             INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+    private static final String REQ_CORRELATION_ID_PARAM = "some correlation id";
 
     @MockBean
     private AuditHistoryService mockAuditHistoryService;
@@ -44,7 +47,7 @@ public class AuditHistoryWebTest {
 
     @Test
     public void retrieveAuditHistory_returnsOk() throws Exception {
-        mockMvc.perform(get(BASE_URL)
+        mockMvc.perform(get(HISTORY_URL)
                     .param("toDate", REQ_DATE_PARAM)
                     .param("eventTypes", EVENT_TYPES_PARAM)
                 )
@@ -53,7 +56,7 @@ public class AuditHistoryWebTest {
 
     @Test
     public void retrieveAuditHistory_callsService() throws Exception {
-        mockMvc.perform(get(BASE_URL)
+        mockMvc.perform(get(HISTORY_URL)
                     .param("toDate", REQ_DATE_PARAM)
                     .param("eventTypes", EVENT_TYPES_PARAM)
                 );
@@ -64,7 +67,7 @@ public class AuditHistoryWebTest {
 
     @Test
     public void retrieveAuditHistory_badDateParam() throws Exception {
-        mockMvc.perform(get(BASE_URL)
+        mockMvc.perform(get(HISTORY_URL)
                     .param("toDate", REQ_DATE_PARAM + "bad")
                     .param("eventTypes", EVENT_TYPES_PARAM)
                 )
@@ -73,16 +76,8 @@ public class AuditHistoryWebTest {
 
     @Test
     public void retrieveAuditHistory_badEventTypesParam() throws Exception {
-        mockMvc.perform(get(BASE_URL)
+        mockMvc.perform(get(HISTORY_URL)
                     .param("toDate", REQ_DATE_PARAM)
-                    .param("eventTypes", "This is not an event type")
-                )
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void retrieveAuditHistory_missingDate() throws Exception {
-        mockMvc.perform(get(BASE_URL)
                     .param("eventTypes", "This is not an event type")
                 )
                 .andExpect(status().is4xxClientError());
@@ -90,7 +85,7 @@ public class AuditHistoryWebTest {
 
     @Test
     public void retrieveAuditHistory_missingEventType() throws Exception {
-        mockMvc.perform(get(BASE_URL)
+        mockMvc.perform(get(HISTORY_URL)
                     .param("toDate", REQ_DATE_PARAM)
                 )
                 .andExpect(status().is4xxClientError());
@@ -98,8 +93,58 @@ public class AuditHistoryWebTest {
 
     @Test
     public void retrieveAuditHistory_missingParams() throws Exception {
-        mockMvc.perform(get(BASE_URL))
+        mockMvc.perform(get(HISTORY_URL))
                 .andExpect(status().is4xxClientError());
     }
 
+    @Test
+    public void getRecordsForCorrelationId_returnsOk() throws Exception {
+        mockMvc.perform(get(RECORDS_URL)
+                .param("correlationId", REQ_CORRELATION_ID_PARAM)
+                .param("eventTypes", EVENT_TYPES_PARAM)
+        )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_callsService() throws Exception {
+        mockMvc.perform(get(RECORDS_URL)
+                .param("correlationId", REQ_CORRELATION_ID_PARAM)
+                .param("eventTypes", EVENT_TYPES_PARAM));
+
+        verify(mockAuditHistoryService).getRecordsForCorrelationId(REQ_CORRELATION_ID_PARAM, EVENT_TYPES);
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_badEventTypesParam() throws Exception {
+        mockMvc.perform(get(RECORDS_URL)
+                .param("correlationId", REQ_CORRELATION_ID_PARAM)
+                .param("eventTypes", "This is not an event type")
+        )
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_missingCorrelationId() throws Exception {
+        mockMvc.perform(get(RECORDS_URL)
+                .param("eventTypes", EVENT_TYPES_PARAM)
+        )
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_missingEventType() throws Exception {
+        mockMvc.perform(get(RECORDS_URL)
+                .param("correlationId", REQ_CORRELATION_ID_PARAM)
+        )
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_contentTypeJson() throws Exception {
+        mockMvc.perform(get(RECORDS_URL)
+                .param("correlationId", REQ_CORRELATION_ID_PARAM)
+                .param("eventTypes", EVENT_TYPES_PARAM))
+                .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"));
+    }
 }

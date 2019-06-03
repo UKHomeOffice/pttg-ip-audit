@@ -215,5 +215,4 @@ public class AuditHistoryResourceTest {
                             ((ObjectAppendingMarker) argument.getArgumentArray()[3]).getFieldName().equals("request_duration_ms");
                 }));
     }
-    // TODO OJR EE-19133 do IntTest, do WebTest
 }
