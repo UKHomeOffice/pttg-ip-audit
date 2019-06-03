@@ -54,7 +54,7 @@ public class AuditHistoryResource {
         return result;
     }
 
-    @GetMapping(value = "/records", produces = APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/historyByCorrelationId", produces = APPLICATION_JSON_VALUE)
     public List<AuditRecord> getRecordsForCorrelationId(
             @RequestParam String correlationId, @RequestParam List<AuditEventType> eventTypes) {
 

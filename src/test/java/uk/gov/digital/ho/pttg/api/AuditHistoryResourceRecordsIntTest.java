@@ -35,7 +35,7 @@ public class AuditHistoryResourceRecordsIntTest {
 
     @Test
     public void shouldRetrieveRecords() throws IOException {
-        String url = "/records?correlationId=correlation-id-1&eventTypes=INCOME_PROVING_FINANCIAL_STATUS_REQUEST,INCOME_PROVING_FINANCIAL_STATUS_RESPONSE";
+        String url = "/historyByCorrelationId?correlationId=correlation-id-1&eventTypes=INCOME_PROVING_FINANCIAL_STATUS_REQUEST,INCOME_PROVING_FINANCIAL_STATUS_RESPONSE";
         String response = restTemplate.getForObject(url, String.class);
 
         assertThat(objectMapper.readValue(response, List.class))
