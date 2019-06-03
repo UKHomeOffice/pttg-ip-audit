@@ -1,6 +1,5 @@
 package uk.gov.digital.ho.pttg.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,7 +11,6 @@ import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
-import java.time.DateTimeException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,15 +28,13 @@ public class AuditHistoryResourceByCorrelationIdIntTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Test
     public void shouldRetrieveRecords() throws IOException {
         String url = "/historyByCorrelationId?correlationId=correlation-id-1&eventTypes=INCOME_PROVING_FINANCIAL_STATUS_REQUEST,INCOME_PROVING_FINANCIAL_STATUS_RESPONSE";
         String response = restTemplate.getForObject(url, String.class);
 
-        assertThat(objectMapper.readValue(response, List.class))
+        assertThat((List) JsonPath.read(response, "$"))
                 .hasSize(2);
 
         String firstCorrelationId = JsonPath.read(response, "$.[0].id");
