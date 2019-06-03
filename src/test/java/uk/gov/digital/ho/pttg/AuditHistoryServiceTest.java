@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
+import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
 
 @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
 @RunWith(MockitoJUnitRunner.class)
@@ -83,6 +84,33 @@ public class AuditHistoryServiceTest {
                 Collections.singletonList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST));
 
         assertThat(returnedCorrelationIds).isEqualTo(someCorrelationIds);
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_givenParameters_callsAuditRepo() {
+        String someCorrelationId = "some correlation id";
+        List<AuditEventType> someEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+
+        auditHistoryService.getRecordsForCorrelationId(someCorrelationId, someEventTypes);
+
+        verify(repository).findEntriesByCorrelationId(someCorrelationId, someEventTypes);
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_recordsFromRepo_returned() {
+        List<AuditEntry> auditEntries = Collections.singletonList(getAuditEntry());
+        when(repository.findEntriesByCorrelationId(any(), any()))
+                .thenReturn(auditEntries);
+
+        String someCorrelationId = "some correlation id";
+        List<AuditEventType> someEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        List<AuditRecord> auditRecords = auditHistoryService.getRecordsForCorrelationId(someCorrelationId, someEventTypes);
+
+        assertThat(auditRecords).size().isEqualTo(1);
+        AuditRecord auditRecord = auditRecords.get(0);
+        assertThat(auditRecord.getId()).isEqualToIgnoringCase("any_corr_id");
+        assertThat(auditRecord.getEmail()).isEqualToIgnoringCase("any_user_id");
+        assertThat(auditRecord.getNino()).isEqualToIgnoringCase("any_nino");
     }
 
     private AuditEntry getAuditEntry() {

@@ -67,6 +67,22 @@ public class AuditHistoryResource {
         return correlationIds;
     }
 
+    @GetMapping(value = "/historyByCorrelationId", produces = APPLICATION_JSON_VALUE)
+    public List<AuditRecord> getRecordsForCorrelationId(
+            @RequestParam String correlationId, @RequestParam List<AuditEventType> eventTypes) {
+
+        log.info("Requested audit records for correlationID {} and events {}", correlationId, eventTypes,
+                value(EVENT, PTTG_AUDIT_HISTORY_BY_CORRELATION_ID_REQUEST_RECEIVED));
+
+        List<AuditRecord> records = auditHistoryService.getRecordsForCorrelationId(correlationId, eventTypes);
+
+        log.info("Returned {} audit records for correlation ID {}", records.size(), correlationId,
+                value(EVENT, PTTG_AUDIT_HISTORY_BY_CORRELATION_ID_RESPONSE_SUCCESS),
+                value(REQUEST_DURATION_MS, requestData.calculateRequestDuration()));
+
+        return records;
+    }
+
     private LocalDate useDefaultIfNull(LocalDate toDate) {
         return toDate != null ? toDate : LocalDate.now();
     }

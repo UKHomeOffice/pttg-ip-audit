@@ -31,13 +31,15 @@ public class AuditHistoryWebTest {
 
     private final static String HISTORY_URL = "/history";
     private final static String CORRELATION_ID_URL = "/correlationids";
+    private static final String HISTORY_BY_CORRELATION_ID_URL = "/historyByCorrelationId";
 
     private static final LocalDate REQ_DATE = LocalDate.now();
     private static final String REQ_DATE_PARAM = REQ_DATE.format(DateTimeFormatter.ISO_DATE);
     private static final List<AuditEventType> EVENT_TYPES = Arrays.asList(
             INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
     private static final String EVENT_TYPES_PARAM = String.format("%s,%s",
-            INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+                                                                  INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+    private static final String REQ_CORRELATION_ID_PARAM = "some correlation id";
 
     @MockBean
     private AuditHistoryService mockAuditHistoryService;
@@ -48,18 +50,18 @@ public class AuditHistoryWebTest {
     @Test
     public void retrieveAuditHistory_returnsOk() throws Exception {
         mockMvc.perform(get(HISTORY_URL)
-                    .param("toDate", REQ_DATE_PARAM)
-                    .param("eventTypes", EVENT_TYPES_PARAM)
-                )
-                .andExpect(status().isOk());
+                                .param("toDate", REQ_DATE_PARAM)
+                                .param("eventTypes", EVENT_TYPES_PARAM)
+                       )
+               .andExpect(status().isOk());
     }
 
     @Test
     public void retrieveAuditHistory_callsService() throws Exception {
         mockMvc.perform(get(HISTORY_URL)
-                    .param("toDate", REQ_DATE_PARAM)
-                    .param("eventTypes", EVENT_TYPES_PARAM)
-                );
+                                .param("toDate", REQ_DATE_PARAM)
+                                .param("eventTypes", EVENT_TYPES_PARAM)
+                       );
 
         Pageable defaultPageable = PageRequest.of(0, 20);
         verify(mockAuditHistoryService).getAuditHistory(REQ_DATE, EVENT_TYPES, defaultPageable);
@@ -68,55 +70,47 @@ public class AuditHistoryWebTest {
     @Test
     public void retrieveAuditHistory_badDateParam() throws Exception {
         mockMvc.perform(get(HISTORY_URL)
-                    .param("toDate", REQ_DATE_PARAM + "bad")
-                    .param("eventTypes", EVENT_TYPES_PARAM)
-                )
-                .andExpect(status().is4xxClientError());
+                                .param("toDate", REQ_DATE_PARAM + "bad")
+                                .param("eventTypes", EVENT_TYPES_PARAM)
+                       )
+               .andExpect(status().is4xxClientError());
     }
 
     @Test
     public void retrieveAuditHistory_badEventTypesParam() throws Exception {
         mockMvc.perform(get(HISTORY_URL)
-                    .param("toDate", REQ_DATE_PARAM)
-                    .param("eventTypes", "This is not an event type")
-                )
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    public void retrieveAuditHistory_missingDate() throws Exception {
-        mockMvc.perform(get(HISTORY_URL)
-                    .param("eventTypes", "This is not an event type")
-                )
-                .andExpect(status().is4xxClientError());
+                                .param("toDate", REQ_DATE_PARAM)
+                                .param("eventTypes", "This is not an event type")
+                       )
+               .andExpect(status().is4xxClientError());
     }
 
     @Test
     public void retrieveAuditHistory_missingEventType() throws Exception {
         mockMvc.perform(get(HISTORY_URL)
-                    .param("toDate", REQ_DATE_PARAM)
-                )
-                .andExpect(status().is4xxClientError());
+                                .param("toDate", REQ_DATE_PARAM)
+                       )
+               .andExpect(status().is4xxClientError());
     }
 
     @Test
     public void retrieveAuditHistory_missingParams() throws Exception {
         mockMvc.perform(get(HISTORY_URL))
-                .andExpect(status().is4xxClientError());
+               .andExpect(status().is4xxClientError());
     }
 
     @Test
     public void getCorrelationIds_returnsOk() throws Exception {
         mockMvc.perform(get(CORRELATION_ID_URL)
-                .param("eventTypes", EVENT_TYPES_PARAM))
-                .andExpect(status().isOk());
+                                .param("eventTypes", EVENT_TYPES_PARAM))
+               .andExpect(status().isOk());
     }
 
     @Test
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     public void getCorrelationIds_callsService() throws Exception {
         mockMvc.perform(get(CORRELATION_ID_URL)
-                .param("eventTypes", EVENT_TYPES_PARAM));
+                                .param("eventTypes", EVENT_TYPES_PARAM));
 
         verify(mockAuditHistoryService).getAllCorrelationIds(EVENT_TYPES);
     }
@@ -124,20 +118,72 @@ public class AuditHistoryWebTest {
     @Test
     public void getCorrelationIds_badEventTypesParam() throws Exception {
         mockMvc.perform(get(CORRELATION_ID_URL)
-                .param("eventTypes", "this is not an event type"))
-                .andExpect(status().is4xxClientError());
+                                .param("eventTypes", "this is not an event type"))
+               .andExpect(status().is4xxClientError());
     }
 
     @Test
     public void getCorrelationIds_missingEventType() throws Exception {
         mockMvc.perform(get(CORRELATION_ID_URL))
-                .andExpect(status().is4xxClientError());
+               .andExpect(status().is4xxClientError());
     }
 
     @Test
     public void getCorrelationIds_contentTypeJson() throws Exception {
         mockMvc.perform(get(CORRELATION_ID_URL)
-                .param("eventTypes", EVENT_TYPES_PARAM))
-                .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"));
+                                .param("eventTypes", EVENT_TYPES_PARAM))
+               .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"));
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_returnsOk() throws Exception {
+        mockMvc.perform(get(HISTORY_BY_CORRELATION_ID_URL)
+                                .param("correlationId", REQ_CORRELATION_ID_PARAM)
+                                .param("eventTypes", EVENT_TYPES_PARAM)
+                       )
+               .andExpect(status().isOk());
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_callsService() throws Exception {
+        mockMvc.perform(get(HISTORY_BY_CORRELATION_ID_URL)
+                                .param("correlationId", REQ_CORRELATION_ID_PARAM)
+                                .param("eventTypes", EVENT_TYPES_PARAM));
+
+        verify(mockAuditHistoryService).getRecordsForCorrelationId(REQ_CORRELATION_ID_PARAM, EVENT_TYPES);
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_badEventTypesParam() throws Exception {
+        mockMvc.perform(get(HISTORY_BY_CORRELATION_ID_URL)
+                                .param("correlationId", REQ_CORRELATION_ID_PARAM)
+                                .param("eventTypes", "This is not an event type")
+                       )
+               .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_missingCorrelationId() throws Exception {
+        mockMvc.perform(get(HISTORY_BY_CORRELATION_ID_URL)
+                                .param("eventTypes", EVENT_TYPES_PARAM)
+                       )
+               .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_missingEventType() throws Exception {
+        mockMvc.perform(get(HISTORY_BY_CORRELATION_ID_URL)
+                                .param("correlationId", REQ_CORRELATION_ID_PARAM)
+                       )
+               .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_contentTypeJson() throws Exception {
+        mockMvc.perform(get(HISTORY_BY_CORRELATION_ID_URL)
+                                .param("correlationId", REQ_CORRELATION_ID_PARAM)
+                                .param("eventTypes", EVENT_TYPES_PARAM)
+                       )
+               .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"));
     }
 }
