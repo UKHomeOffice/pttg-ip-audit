@@ -25,15 +25,12 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
-@SqlGroup({
-        @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "/sql/ArchiveResourceIntTest/before.sql"),
-        @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "/sql/ArchiveResourceIntTest/after.sql")
-})
 public class ArchiveResourceLoggingIntTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
 
+    // Mock the archive service bean so we avoid running a postgres jsonb sql query against the in memory hsql database, which fails
     @MockBean
     private ArchiveService archiveService;
 
