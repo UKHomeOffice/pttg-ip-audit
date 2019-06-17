@@ -1,4 +1,4 @@
-package uk.gov.digital.ho.pttg;
+package uk.gov.digital.ho.pttg.api;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -11,29 +11,34 @@ import net.logstash.logback.marker.ObjectAppendingMarker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import uk.gov.digital.ho.pttg.api.AuditHistoryResource;
-import uk.gov.digital.ho.pttg.api.AuditRecord;
-import uk.gov.digital.ho.pttg.api.RequestData;
+import uk.gov.digital.ho.pttg.AuditEventType;
+import uk.gov.digital.ho.pttg.AuditHistoryService;
+import uk.gov.digital.ho.pttg.application.LogEvent;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.AdditionalMatchers.and;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_HISTORY_REQUEST_RECEIVED;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_HISTORY_RESPONSE_SUCCESS;
+import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AuditHistoryResourceTest {
@@ -143,5 +148,138 @@ public class AuditHistoryResourceTest {
             return loggingEvent.getFormattedMessage().equals(expectedLogMessage) &&
                     loggingEvent.getArgumentArray()[3].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_HISTORY_REQUEST_RECEIVED));
         }));
+    }
+
+    @Test
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
+    public void getAllCorrelationIds_givenEventTypes_passToService() {
+        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+
+        historyResource.getAllCorrelationIds(eventTypes);
+
+        verify(mockHistoryService).getAllCorrelationIds(eq(eventTypes));
+    }
+
+    @Test
+    public void getAllCorrelationIds_correlationIdsFromService_returned() {
+        List<String> correlationIds = Arrays.asList("some correlation id", "some other correlation id");
+        when(mockHistoryService.getAllCorrelationIds(any()))
+                .thenReturn(correlationIds);
+
+        List<AuditEventType> anyEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        List<String> returnedCorrelationIds = historyResource.getAllCorrelationIds(anyEventTypes);
+
+        assertThat(returnedCorrelationIds).isEqualTo(correlationIds);
+    }
+
+    @Test
+    public void getAllCorrelationIds_givenEventTypes_logEntryParameters() {
+        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+
+        historyResource.getAllCorrelationIds(eventTypes);
+
+        String expectedLogMessage = String.format("Requested all correlation ids for events [%s, %s]",
+                INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+
+        verify(mockAppender).doAppend(argThat(
+                hasLogParameters(expectedLogMessage, PTTG_AUDIT_HISTORY_CORRELATION_IDS_REQUEST_RECEIVED)));
+    }
+
+    @Test
+    public void getAllCorrelationIds_returnedCorrelationIds_logCount() {
+        List<String> correlationIds = Arrays.asList("some correlation id", "some other correlation id", "yet some other correlation id");
+        given(mockHistoryService.getAllCorrelationIds(any())).willReturn(correlationIds);
+
+        List<AuditEventType> anyEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        historyResource.getAllCorrelationIds(anyEventTypes);
+
+        String expectedMessage = "Returning 3 correlation IDs for all correlation ID request";
+        then(mockAppender)
+                .should()
+                .doAppend(and(
+                        argThat(hasLogParameters(expectedMessage, PTTG_AUDIT_HISTORY_CORRELATION_IDS_RESPONSE_SUCCESS)),
+                        argThat(hasRequestDuration())
+                ));
+    }
+
+    public ArgumentMatcher<ILoggingEvent> hasLogParameters(String expectedMessage, LogEvent event) {
+        return argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+            return loggingEvent.getFormattedMessage().equals(expectedMessage) &&
+                    loggingEvent.getArgumentArray()[1].equals(new ObjectAppendingMarker("event_id", event));
+        };
+    }
+
+    public ArgumentMatcher<ILoggingEvent> hasRequestDuration() {
+        return argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+            return loggingEvent.getArgumentArray().length > 2 &&
+                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration_ms");
+        };
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_givenParameters_callAuditHistoryService() {
+        String someCorrelationId = "some correlation ID";
+        List<AuditEventType> someEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+
+        historyResource.getRecordsForCorrelationId(someCorrelationId, someEventTypes);
+
+        verify(mockHistoryService).getRecordsForCorrelationId(someCorrelationId, someEventTypes);
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_recordsFromService_returned() {
+        List<AuditRecord> expectedRecords = Collections.singletonList(AUDIT_RECORD);
+        when(mockHistoryService.getRecordsForCorrelationId(any(), any()))
+                .thenReturn(expectedRecords);
+
+        List<AuditEventType> anyEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        List<AuditRecord> actualRecords = historyResource.getRecordsForCorrelationId("any correlation ID", anyEventTypes);
+
+        assertThat(actualRecords).isEqualTo(expectedRecords);
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_givenParameters_logParameters() {
+        String someCorrelationId = "some correlation ID";
+        List<AuditEventType> someEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+
+        historyResource.getRecordsForCorrelationId(someCorrelationId, someEventTypes);
+
+        String expectedMessage = String.format("Requested audit records for correlationID %s and events [%s, %s]", someCorrelationId,
+                INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+
+        verify(mockAppender).doAppend(argThat(argument -> {
+            LoggingEvent loggingEvent = (LoggingEvent) argument;
+            return loggingEvent.getFormattedMessage().equals(expectedMessage) &&
+                    loggingEvent.getArgumentArray()[2].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_HISTORY_BY_CORRELATION_ID_REQUEST_RECEIVED));
+        }));
+    }
+
+    @Test
+    public void getRecordsForCorrelationId_returnedRecords_logCount() {
+        LocalDateTime anyDate = LocalDateTime.now();
+        AuditEventType anyEventType = INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
+        Map<String, Object> anyDetail = Collections.emptyMap();
+
+        List<AuditRecord> someAuditRecords = Arrays.asList(new AuditRecord("any id", anyDate, "any email", anyEventType, anyDetail, "any nino"),
+                new AuditRecord("any id", anyDate, "any email", anyEventType, anyDetail, "any nino"),
+                new AuditRecord("any id", anyDate, "any email", anyEventType, anyDetail, "any nino"));
+
+        given(mockHistoryService.getRecordsForCorrelationId(any(), any()))
+                .willReturn(someAuditRecords);
+
+        historyResource.getRecordsForCorrelationId("some-correlation-ID", Collections.singletonList(anyEventType));
+
+        String expectedMessage = "Returned 3 audit records for correlation ID some-correlation-ID";
+        then(mockAppender)
+                .should()
+                .doAppend(argThat(argument -> {
+                    LoggingEvent loggingEvent = (LoggingEvent) argument;
+                    return loggingEvent.getFormattedMessage().equals(expectedMessage) &&
+                            argument.getArgumentArray()[2].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_HISTORY_BY_CORRELATION_ID_RESPONSE_SUCCESS)) &&
+                            ((ObjectAppendingMarker) argument.getArgumentArray()[3]).getFieldName().equals("request_duration_ms");
+                }));
     }
 }
