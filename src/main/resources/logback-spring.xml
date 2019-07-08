@@ -9,13 +9,13 @@
     <springProfile name="logtoconsole">
         <appender name="applicationAppender" class="ch.qos.logback.core.ConsoleAppender">
             <layout class="ch.qos.logback.classic.PatternLayout">
-                <Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
+                <Pattern>%replace(${CONSOLE_LOG_PATTERN}){'([A-Za-z]\\s*[A-Za-z]\\s*[0-9]\\s*[0-9]\\s*[0-9]\\s*)[0-9]\\s*[0-9]\\s*[0-9]\\s*[A-Da-d]','$1****'}</Pattern>
             </layout>
         </appender>
 
         <appender name="thirdPartyAppender" class="ch.qos.logback.core.ConsoleAppender">
             <layout class="ch.qos.logback.classic.PatternLayout">
-                <Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
+                <Pattern>%replace(${CONSOLE_LOG_PATTERN}){'([A-Za-z]\\s*[A-Za-z]\\s*[0-9]\\s*[0-9]\\s*[0-9]\\s*)[0-9]\\s*[0-9]\\s*[0-9]\\s*[A-Da-d]','$1****'}</Pattern>
             </layout>
             <filter class="ch.qos.logback.classic.filter.LevelFilter">
                 <level>ERROR</level>
@@ -26,7 +26,7 @@
 
         <appender name="thirdPartyErrorAppender" class="ch.qos.logback.core.ConsoleAppender">
             <layout class="ch.qos.logback.classic.PatternLayout">
-                <Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
+                <Pattern>%replace(${CONSOLE_LOG_PATTERN}){'([A-Za-z]\\s*[A-Za-z]\\s*[0-9]\\s*[0-9]\\s*[0-9]\\s*)[0-9]\\s*[0-9]\\s*[0-9]\\s*[A-Da-d]','$1****'}</Pattern>
             </layout>
             <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
                 <level>ERROR</level>
@@ -38,6 +38,10 @@
         <appender name="applicationAppender" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
                 <includeCallerInfo>true</includeCallerInfo>
+                <fieldNames>
+                    <!-- Do not output the standard message field.  It will be output by the pattern provider below -->
+                    <message>[ignore]</message>
+                </fieldNames>
                 <provider class="net.logstash.logback.composite.loggingevent.LoggingEventPatternJsonProvider">
                     <pattern>
                         {
@@ -45,7 +49,8 @@
                         "thread"    : "%thread",
                         "subsystem" : "${appName}",
                         "logger"    : "%logger{50}",
-                        "exception" : "%exception"
+                        "exception" : "%exception",
+                        "message": "%replace(%msg){'([A-Za-z]\\s*[A-Za-z]\\s*[0-9]\\s*[0-9]\\s*[0-9]\\s*)[0-9]\\s*[0-9]\\s*[0-9]\\s*[A-Da-d]','$1****'}"
                         }
                     </pattern>
                 </provider>
@@ -55,13 +60,18 @@
         <appender name="thirdPartyAppender" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
                 <includeCallerInfo>true</includeCallerInfo>
+                <fieldNames>
+                    <!-- Do not output the standard message field.  It will be output by the pattern provider below -->
+                    <message>[ignore]</message>
+                </fieldNames>
                 <provider class="net.logstash.logback.composite.loggingevent.LoggingEventPatternJsonProvider">
                     <pattern>
                         {
                         "thread" : "%thread",
                         "subsystem" : "${appName}",
                         "logger" : "%logger{50}",
-                        "exception" : "%exception"
+                        "exception" : "%exception",
+                        "message": "%replace(%msg){'([A-Za-z]\\s*[A-Za-z]\\s*[0-9]\\s*[0-9]\\s*[0-9]\\s*)[0-9]\\s*[0-9]\\s*[0-9]\\s*[A-Da-d]','$1****'}"
                         }
                     </pattern>
                 </provider>
@@ -76,6 +86,10 @@
         <appender name="thirdPartyErrorAppender" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
                 <includeCallerInfo>true</includeCallerInfo>
+                <fieldNames>
+                    <!-- Do not output the standard message field.  It will be output by the pattern provider below -->
+                    <message>[ignore]</message>
+                </fieldNames>
                 <provider class="net.logstash.logback.composite.loggingevent.LoggingEventPatternJsonProvider">
                     <pattern>
                         {
@@ -84,7 +98,8 @@
                         "subsystem" : "${appName}",
                         "logger" : "%logger{50}",
                         "exception" : "%exception",
-                        "event_id": "THIRD_PARTY_ERROR"
+                        "event_id": "THIRD_PARTY_ERROR",
+                        "message": "%replace(%msg){'([A-Za-z]\\s*[A-Za-z]\\s*[0-9]\\s*[0-9]\\s*[0-9]\\s*)[0-9]\\s*[0-9]\\s*[0-9]\\s*[A-Da-d]','$1****'}"
                         }
                     </pattern>
                 </provider>
@@ -94,7 +109,7 @@
             </filter>
         </appender>
     </springProfile>
-    
+
     <logger name="uk.gov" additivity="false" level="INFO">
         <appender-ref ref="applicationAppender"/>
     </logger>
