@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.pttg.alert.CountByUser;
-import uk.gov.digital.ho.pttg.api.ipsstatistics.IpsStatistics;
 
 import java.time.LocalDateTime;
 import java.util.List;
