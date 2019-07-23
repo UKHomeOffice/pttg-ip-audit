@@ -363,7 +363,23 @@ public class AuditEntryJpaRepositoryTest {
         List<AuditEntry> actualEntries = repository.findEntriesByCorrelationId(someCorrelationId, eventTypes);
 
         assertThat(actualEntries).isEmpty();
+    }
 
+    @Test
+    public void findAllIpsStatistics_noEntries_emptyList() {
+        assertThat(repository.findAllIpsStatistics()).isEmpty();
+    }
+
+    @Test
+    public void findAllIpsStatistics_ipsStatisticsEntries_allAsList() {
+        List<AuditEntry> expectedEntries = Arrays.asList(
+                createAudit("any correlation id", IPS_STATISTICS),
+                createAudit("any correlation other id", IPS_STATISTICS));
+        expectedEntries.forEach(expectedEntry-> repository.save(expectedEntry));
+
+        List<AuditEntry> actualEntries = repository.findAllIpsStatistics();
+
+        assertThat(actualEntries).isEqualTo(expectedEntries);
     }
 
     private AuditEntry createAudit(LocalDateTime timestamp) {

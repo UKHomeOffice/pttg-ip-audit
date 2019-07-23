@@ -99,6 +99,11 @@ class AuditEntryJpaRepositoryStubCountNinosAfterDate implements AuditEntryJpaRep
     }
 
     @Override
+    public List<AuditEntry> findAllIpsStatistics() {
+        return realRepository.findAllIpsStatistics();
+    }
+
+    @Override
     public Iterable<AuditEntry> findAll(Sort sort) {
         return realRepository.findAll(sort);
     }

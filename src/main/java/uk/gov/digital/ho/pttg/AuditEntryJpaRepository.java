@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.digital.ho.pttg.alert.CountByUser;
+import uk.gov.digital.ho.pttg.api.ipsstatistics.IpsStatistics;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,6 +46,9 @@ public interface AuditEntryJpaRepository extends PagingAndSortingRepository<Audi
 
     @Query("SELECT audit from AuditEntry audit WHERE audit.correlationId = :correlationId AND audit.type in (:eventTypes)")
     List<AuditEntry> findEntriesByCorrelationId(@Param("correlationId") String correlationId, @Param("eventTypes") List<AuditEventType> eventTypes);
+
+    @Query("SELECT audit FROM AuditEntry audit WHERE audit.type = 'IPS_STATISTICS'")
+    List<AuditEntry> findAllIpsStatistics();
 }
 
 
