@@ -45,6 +45,9 @@ public interface AuditEntryJpaRepository extends PagingAndSortingRepository<Audi
 
     @Query("SELECT audit from AuditEntry audit WHERE audit.correlationId = :correlationId AND audit.type in (:eventTypes)")
     List<AuditEntry> findEntriesByCorrelationId(@Param("correlationId") String correlationId, @Param("eventTypes") List<AuditEventType> eventTypes);
+
+    @Query("SELECT audit FROM AuditEntry audit WHERE audit.type = 'IPS_STATISTICS'")
+    List<AuditEntry> findAllIpsStatistics();
 }
 
 

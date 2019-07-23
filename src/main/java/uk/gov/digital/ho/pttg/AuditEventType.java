@@ -18,7 +18,9 @@ public enum AuditEventType {
 
     DWP_BENEFIT_REQUEST(false),
 
-    ARCHIVED_RESULTS(false);
+    ARCHIVED_RESULTS(false),
+
+    IPS_STATISTICS(false);
 
     private boolean alertable;
 
