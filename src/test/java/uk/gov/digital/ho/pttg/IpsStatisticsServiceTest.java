@@ -85,7 +85,7 @@ public class IpsStatisticsServiceTest {
 
     @Test
     public void getIpsStatistics_noStatisticsForDates_returnNO_STATISTICS() {
-        IpsStatistics notRequestedStatistics = new IpsStatistics(LocalDate.parse("2019-03-01"), LocalDate.parse("2019-03-31"), ANY_INT, ANY_INT, ANY_INT, ANY_INT);
+        IpsStatistics notRequestedStatistics = statsFor("2019-03-01", "2019-03-31");
         List<AuditEntry> auditEntries = singletonList(entryFor(notRequestedStatistics));
 
         given(mockRepository.findAllIpsStatistics()).willReturn(auditEntries);
@@ -99,7 +99,7 @@ public class IpsStatisticsServiceTest {
         LocalDate someFromDate = LocalDate.parse("2019-05-01");
         LocalDate someToDate = LocalDate.parse("2019-05-31");
 
-        IpsStatistics expectedStatistics = new IpsStatistics(someFromDate, someToDate, ANY_INT, ANY_INT, ANY_INT, ANY_INT);
+        IpsStatistics expectedStatistics = statsFor(someFromDate, someToDate);
         List<AuditEntry> auditEntries = singletonList(entryFor(expectedStatistics));
 
         given(mockRepository.findAllIpsStatistics()).willReturn(auditEntries);
@@ -111,7 +111,7 @@ public class IpsStatisticsServiceTest {
     @Test
     public void getIpsStatistics_sameFromDate_differentToDate_returnNO_STATISTICS() {
         LocalDate someFromDate = LocalDate.parse("2018-03-01");
-        IpsStatistics sameFromDateStatistics = new IpsStatistics(someFromDate, LocalDate.parse("2018-03-29"), ANY_INT, ANY_INT, ANY_INT, ANY_INT);
+        IpsStatistics sameFromDateStatistics = statsFor(someFromDate, LocalDate.parse("2018-03-29"));
         List<AuditEntry> auditEntries = singletonList(entryFor(sameFromDateStatistics));
 
         given(mockRepository.findAllIpsStatistics()).willReturn(auditEntries);
@@ -123,7 +123,7 @@ public class IpsStatisticsServiceTest {
     @Test
     public void getIpsStatistics_sameToDate_differentFromDate_returnNO_STATISTICS() {
         LocalDate someToDate = LocalDate.parse("2019-03-29");
-        IpsStatistics sameToDateStatistics = new IpsStatistics(LocalDate.parse("2019-03-01"), someToDate, ANY_INT, ANY_INT, ANY_INT, ANY_INT);
+        IpsStatistics sameToDateStatistics = statsFor(LocalDate.parse("2019-03-01"), someToDate);
         List<AuditEntry> auditEntries = singletonList(entryFor(sameToDateStatistics));
 
         given(mockRepository.findAllIpsStatistics()).willReturn(auditEntries);
@@ -136,12 +136,12 @@ public class IpsStatisticsServiceTest {
     public void getIpsStatistics_multipleResults_returnRequested() {
         LocalDate someFromDate = LocalDate.parse("2019-08-01");
         LocalDate someToDate = LocalDate.parse("2019-07-31");
-        IpsStatistics expectedStatistics = new IpsStatistics(someFromDate, someToDate, ANY_INT, ANY_INT, ANY_INT, ANY_INT);
+        IpsStatistics expectedStatistics = statsFor(someFromDate, someToDate);
 
         List<AuditEntry> auditEntries = asList(
-                entryFor(new IpsStatistics(ANY_DATE, ANY_DATE, ANY_INT, ANY_INT, ANY_INT, ANY_INT)),
+                entryFor(statsFor(ANY_DATE, ANY_DATE)),
                 entryFor(expectedStatistics),
-                entryFor(new IpsStatistics(ANY_DATE, ANY_DATE, ANY_INT, ANY_INT, ANY_INT, ANY_INT)));
+                entryFor(statsFor(ANY_DATE, ANY_DATE)));
 
         given(mockRepository.findAllIpsStatistics()).willReturn(auditEntries);
 
@@ -189,7 +189,7 @@ public class IpsStatisticsServiceTest {
     public void getIpsStatistics_multipleResults_logError() {
         LocalDate someFromDate = LocalDate.parse("2019-08-01");
         LocalDate someToDate = LocalDate.parse("2019-07-31");
-        IpsStatistics duplicatedStatistics = new IpsStatistics(someFromDate, someToDate, ANY_INT, ANY_INT, ANY_INT, ANY_INT);
+        IpsStatistics duplicatedStatistics = statsFor(someFromDate, someToDate);
 
         given(mockRepository.findAllIpsStatistics()).willReturn(asList(entryFor(duplicatedStatistics),
                                                                        entryFor(duplicatedStatistics)));
@@ -215,7 +215,7 @@ public class IpsStatisticsServiceTest {
 
         LocalDate someFromDate = LocalDate.parse("2019-08-01");
         LocalDate someToDate = LocalDate.parse("2019-07-31");
-        IpsStatistics duplicatedStatistics = new IpsStatistics(someFromDate, someToDate, ANY_INT, ANY_INT, ANY_INT, ANY_INT);
+        IpsStatistics duplicatedStatistics = statsFor(someFromDate, someToDate);
 
         given(mockRepository.findAllIpsStatistics()).willReturn(asList(entryFor(duplicatedStatistics),
                                                                        entryFor(duplicatedStatistics)));
@@ -223,7 +223,15 @@ public class IpsStatisticsServiceTest {
         service.getIpsStatistics(someFromDate, someToDate);
     }
 
-    public AuditEntry entryFor(IpsStatistics notRequestedStatistics) {
+    private IpsStatistics statsFor(String fromDate, String toDate) {
+        return statsFor(LocalDate.parse(fromDate), LocalDate.parse(toDate));
+    }
+
+    private IpsStatistics statsFor(LocalDate fromDate, LocalDate toDate) {
+        return new IpsStatistics(fromDate, toDate, ANY_INT, ANY_INT, ANY_INT, ANY_INT);
+    }
+
+    private AuditEntry entryFor(IpsStatistics notRequestedStatistics) {
         return new AuditEntry(ANY_STRING, ANY_DATE_TIME, ANY_STRING, ANY_STRING, ANY_STRING, ANY_STRING, ANY_STRING, AuditEventType.IPS_STATISTICS, toJson(notRequestedStatistics));
     }
 
