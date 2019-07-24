@@ -1,15 +1,24 @@
-package uk.gov.digital.ho.pttg.api.ipsstatistics;
+package uk.gov.digital.ho.pttg;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.logstash.logback.marker.ObjectAppendingMarker;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.LoggerFactory;
 import org.springframework.test.util.ReflectionTestUtils;
-import uk.gov.digital.ho.pttg.AuditEntry;
-import uk.gov.digital.ho.pttg.AuditEntryJpaRepository;
-import uk.gov.digital.ho.pttg.AuditEventType;
+import uk.gov.digital.ho.pttg.api.IpsStatistics;
+import uk.gov.digital.ho.pttg.application.IpsStatisticsException;
 import uk.gov.digital.ho.pttg.application.ServiceConfiguration;
 
 import java.time.LocalDate;
@@ -20,9 +29,12 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static uk.gov.digital.ho.pttg.api.ipsstatistics.IpsStatisticsService.NO_STATISTICS;
+import static uk.gov.digital.ho.pttg.IpsStatisticsService.NO_STATISTICS;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_IPS_STATS_MALFORMED;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_IPS_STATS_MULTIPLE_FOUND;
 
 @RunWith(MockitoJUnitRunner.class)
 public class IpsStatisticsServiceTest {
@@ -34,15 +46,25 @@ public class IpsStatisticsServiceTest {
 
     @Mock
     private AuditEntryJpaRepository mockRepository;
+    @Mock
+    private Appender<ILoggingEvent> mockAppender;
+    private ArgumentCaptor<ILoggingEvent> logCaptor;
 
     private ObjectMapper objectMapper = new ObjectMapper();
     private IpsStatisticsService service;
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void setUp() {
         ServiceConfiguration serviceConfiguration = new ServiceConfiguration(objectMapper, 0, 0);
         objectMapper = ReflectionTestUtils.invokeMethod(serviceConfiguration, "initialiseObjectMapper", objectMapper);
         service = new IpsStatisticsService(mockRepository, objectMapper);
+
+        Logger logger = (Logger) LoggerFactory.getLogger(IpsStatisticsService.class);
+        logger.addAppender(mockAppender);
+        logCaptor = ArgumentCaptor.forClass(ILoggingEvent.class);
     }
 
     @Test
@@ -125,8 +147,80 @@ public class IpsStatisticsServiceTest {
         IpsStatistics actualStatistics = service.getIpsStatistics(someFromDate, someToDate);
         assertThat(actualStatistics).isEqualTo(expectedStatistics);
     }
-    // TODO OJR EE-20105 malformed -log; malformed - exception
-    // TODO OJR EE-20105 Multiple same - log; multiple same - exception
+
+    @Test
+    public void getIpsStatistics_malformedEntry_logError() {
+        String malformedStatistics = "malformed!";
+        AuditEntry malformedEntry = new AuditEntry(ANY_STRING, ANY_DATE_TIME, ANY_STRING, ANY_STRING, ANY_STRING, ANY_STRING, ANY_STRING,
+                                                   AuditEventType.IPS_STATISTICS, malformedStatistics);
+
+        given(mockRepository.findAllIpsStatistics()).willReturn(singletonList(malformedEntry));
+
+        try {
+            service.getIpsStatistics(ANY_DATE, ANY_DATE);
+        } catch (IpsStatisticsException ignored) {
+            // Not of interest to this test
+        }
+
+        then(mockAppender).should().doAppend(logCaptor.capture());
+
+        LoggingEvent loggingEvent = (LoggingEvent) logCaptor.getValue();
+        assertThat(loggingEvent.getFormattedMessage()).contains("Malformed", malformedStatistics);
+        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
+        assertThat(loggingEvent.getArgumentArray()).contains(new ObjectAppendingMarker("event_id", PTTG_AUDIT_IPS_STATS_MALFORMED));
+    }
+
+    @Test
+    public void getIpsStatistics_malformedEntry_throwIpsStatisticsException() {
+        expectedException.expect(IpsStatisticsException.class);
+        expectedException.expectMessage(startsWith("Malformed"));
+
+        String malformedStatistics = "malformed!";
+        AuditEntry malformedEntry = new AuditEntry(ANY_STRING, ANY_DATE_TIME, ANY_STRING, ANY_STRING, ANY_STRING, ANY_STRING, ANY_STRING,
+                                                   AuditEventType.IPS_STATISTICS, malformedStatistics);
+
+        given(mockRepository.findAllIpsStatistics()).willReturn(singletonList(malformedEntry));
+
+        service.getIpsStatistics(ANY_DATE, ANY_DATE);
+    }
+
+    @Test
+    public void getIpsStatistics_multipleResults_logError() {
+        LocalDate someFromDate = LocalDate.parse("2019-08-01");
+        LocalDate someToDate = LocalDate.parse("2019-07-31");
+        IpsStatistics duplicatedStatistics = new IpsStatistics(someFromDate, someToDate, ANY_INT, ANY_INT, ANY_INT, ANY_INT);
+
+        given(mockRepository.findAllIpsStatistics()).willReturn(asList(entryFor(duplicatedStatistics),
+                                                                       entryFor(duplicatedStatistics)));
+
+        try {
+            service.getIpsStatistics(someFromDate, someToDate);
+        } catch (IpsStatisticsException ignored) {
+            // Not of interest to this test
+        }
+
+        then(mockAppender).should().doAppend(logCaptor.capture());
+
+        LoggingEvent loggingEvent = (LoggingEvent) logCaptor.getValue();
+        assertThat(loggingEvent.getFormattedMessage()).contains("Multiple", someFromDate.toString(), someToDate.toString());
+        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
+        assertThat(loggingEvent.getArgumentArray()).contains(new ObjectAppendingMarker("event_id", PTTG_AUDIT_IPS_STATS_MULTIPLE_FOUND));
+    }
+
+    @Test
+    public void getIpsStatistics_multipleResults_throwIpsStatisticsException() {
+        expectedException.expect(IpsStatisticsException.class);
+        expectedException.expectMessage(startsWith("Multiple"));
+
+        LocalDate someFromDate = LocalDate.parse("2019-08-01");
+        LocalDate someToDate = LocalDate.parse("2019-07-31");
+        IpsStatistics duplicatedStatistics = new IpsStatistics(someFromDate, someToDate, ANY_INT, ANY_INT, ANY_INT, ANY_INT);
+
+        given(mockRepository.findAllIpsStatistics()).willReturn(asList(entryFor(duplicatedStatistics),
+                                                                       entryFor(duplicatedStatistics)));
+
+        service.getIpsStatistics(someFromDate, someToDate);
+    }
 
     public AuditEntry entryFor(IpsStatistics notRequestedStatistics) {
         return new AuditEntry(ANY_STRING, ANY_DATE_TIME, ANY_STRING, ANY_STRING, ANY_STRING, ANY_STRING, ANY_STRING, AuditEventType.IPS_STATISTICS, toJson(notRequestedStatistics));

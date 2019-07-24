@@ -1,4 +1,4 @@
-package uk.gov.digital.ho.pttg.api.ipsstatistics;
+package uk.gov.digital.ho.pttg.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @Getter
 @Accessors(fluent = true)
 @ToString
+public
 class IpsStatistics {
     @JsonProperty(value = "From Date")
     private LocalDate fromDate;
