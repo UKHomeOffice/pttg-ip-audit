@@ -32,13 +32,11 @@ class IpsStatisticsService {
                                                             .filter(stats -> sameDates(stats, fromDate, toDate))
                                                             .collect(Collectors.toList());
 
-        if (statisticsForDate.size() > 1) {
-            log.error("Multiple IPS Statistics found for fromDate={} and toDate={}", fromDate, toDate, value(EVENT, PTTG_AUDIT_IPS_STATS_MULTIPLE_FOUND));
-            throw new IpsStatisticsException("Multiple IPS Statistics found");
-        }
         if (statisticsForDate.isEmpty()) {
             return NO_STATISTICS;
         }
+
+        checkForSingleMatch(fromDate, toDate, statisticsForDate);
         return statisticsForDate.get(0);
     }
 
@@ -48,6 +46,13 @@ class IpsStatisticsService {
         } catch (IOException e) {
             log.error("Malformed IPS Statistics entry found - {}", auditEntry.getDetail(), value(EVENT, PTTG_AUDIT_IPS_STATS_MALFORMED));
             throw new IpsStatisticsException("Malformed IPS Statistics");
+        }
+    }
+
+    private void checkForSingleMatch(LocalDate fromDate, LocalDate toDate, List<IpsStatistics> statisticsForDate) {
+        if (statisticsForDate.size() > 1) {
+            log.error("Multiple IPS Statistics found for fromDate={} and toDate={}", fromDate, toDate, value(EVENT, PTTG_AUDIT_IPS_STATS_MULTIPLE_FOUND));
+            throw new IpsStatisticsException("Multiple IPS Statistics found");
         }
     }
 

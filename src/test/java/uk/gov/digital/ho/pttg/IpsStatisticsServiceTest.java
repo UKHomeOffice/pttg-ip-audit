@@ -64,6 +64,7 @@ public class IpsStatisticsServiceTest {
 
         Logger logger = (Logger) LoggerFactory.getLogger(IpsStatisticsService.class);
         logger.addAppender(mockAppender);
+
         logCaptor = ArgumentCaptor.forClass(ILoggingEvent.class);
     }
 
