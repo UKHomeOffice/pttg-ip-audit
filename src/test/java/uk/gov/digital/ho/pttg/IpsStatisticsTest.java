@@ -1,4 +1,4 @@
-package uk.gov.digital.ho.pttg.api.ipsstatistics;
+package uk.gov.digital.ho.pttg;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
+import uk.gov.digital.ho.pttg.api.IpsStatistics;
 import uk.gov.digital.ho.pttg.application.ServiceConfiguration;
 
 import java.io.IOException;
