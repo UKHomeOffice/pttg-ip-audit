@@ -69,13 +69,6 @@ public class IpsStatisticsServiceTest {
     }
 
     @Test
-    public void getIpsStatistics_anyDates_fetchStatisticsFromDatabase() {
-        service.getIpsStatistics(ANY_DATE, ANY_DATE);
-
-        then(mockRepository).should().findAllIpsStatistics();
-    }
-
-    @Test
     public void getIpsStatistics_noStatisticsInDatabase_returnNO_STATISTICS() {
         given(mockRepository.findAllIpsStatistics()).willReturn(emptyList());
 
