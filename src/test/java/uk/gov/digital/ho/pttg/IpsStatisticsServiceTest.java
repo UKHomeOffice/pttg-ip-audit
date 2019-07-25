@@ -5,6 +5,8 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.logstash.logback.marker.ObjectAppendingMarker;
 import org.junit.Before;
@@ -14,7 +16,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.digital.ho.pttg.api.IpsStatistics;
@@ -29,12 +33,14 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.startsWith;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.when;
 import static uk.gov.digital.ho.pttg.IpsStatisticsService.NO_STATISTICS;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_IPS_STATS_MALFORMED;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_IPS_STATS_MULTIPLE_FOUND;
+import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class IpsStatisticsServiceTest {
@@ -48,7 +54,9 @@ public class IpsStatisticsServiceTest {
     private AuditEntryJpaRepository mockRepository;
     @Mock
     private Appender<ILoggingEvent> mockAppender;
-    private ArgumentCaptor<ILoggingEvent> logCaptor;
+    private ArgumentCaptor<LoggingEvent> logCaptor;
+
+    private ArgumentCaptor<AuditEntry> auditEntryCaptor;
 
     private ObjectMapper objectMapper = new ObjectMapper();
     private IpsStatisticsService service;
@@ -65,7 +73,8 @@ public class IpsStatisticsServiceTest {
         Logger logger = (Logger) LoggerFactory.getLogger(IpsStatisticsService.class);
         logger.addAppender(mockAppender);
 
-        logCaptor = ArgumentCaptor.forClass(ILoggingEvent.class);
+        logCaptor = ArgumentCaptor.forClass(LoggingEvent.class);
+        auditEntryCaptor = ArgumentCaptor.forClass(AuditEntry.class);
     }
 
     @Test
@@ -158,7 +167,7 @@ public class IpsStatisticsServiceTest {
 
         then(mockAppender).should().doAppend(logCaptor.capture());
 
-        LoggingEvent loggingEvent = (LoggingEvent) logCaptor.getValue();
+        LoggingEvent loggingEvent = logCaptor.getValue();
         assertThat(loggingEvent.getFormattedMessage()).contains("Malformed", malformedStatistics);
         assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
         assertThat(loggingEvent.getArgumentArray()).contains(new ObjectAppendingMarker("event_id", PTTG_AUDIT_IPS_STATS_MALFORMED));
@@ -195,7 +204,7 @@ public class IpsStatisticsServiceTest {
 
         then(mockAppender).should().doAppend(logCaptor.capture());
 
-        LoggingEvent loggingEvent = (LoggingEvent) logCaptor.getValue();
+        LoggingEvent loggingEvent = logCaptor.getValue();
         assertThat(loggingEvent.getFormattedMessage()).contains("Multiple", someFromDate.toString(), someToDate.toString());
         assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
         assertThat(loggingEvent.getArgumentArray()).contains(new ObjectAppendingMarker("event_id", PTTG_AUDIT_IPS_STATS_MULTIPLE_FOUND));
@@ -214,6 +223,89 @@ public class IpsStatisticsServiceTest {
                                                                        entryFor(duplicatedStatistics)));
 
         service.getIpsStatistics(someFromDate, someToDate);
+    }
+
+    @Test
+    public void storeIpsStatistics_givenStatistics_saveAsAuditEntry() {
+        IpsStatistics statistics = statsFor(ANY_DATE, ANY_DATE);
+
+        service.storeIpsStatistics(statistics);
+
+        then(mockRepository).should().save(auditEntryCaptor.capture());
+        AuditEntry savedAuditEntry = auditEntryCaptor.getValue();
+
+        JSONAssert.assertEquals(toJson(statistics), savedAuditEntry.getDetail(), false);
+        assertThat(savedAuditEntry.getType()).isEqualTo(AuditEventType.IPS_STATISTICS);
+    }
+
+    @Test
+    public void storeIpsStatistics_alreadyHaveStatisticsForDate_logError() {
+        LocalDate someFromDate = LocalDate.parse("2019-06-01");
+        LocalDate someToDate = LocalDate.parse("2019-06-30");
+        IpsStatistics statistics = statsFor(someFromDate, someToDate);
+
+        List<AuditEntry> alreadyPresentStatistics = singletonList(entryFor(statistics));
+        given(mockRepository.findAllIpsStatistics()).willReturn(alreadyPresentStatistics);
+
+        try {
+            service.storeIpsStatistics(statistics);
+        } catch (IpsStatisticsException ignored) {
+            // Not of interest to this test.
+        }
+
+        then(mockAppender).should().doAppend(logCaptor.capture());
+        LoggingEvent loggingEvent = logCaptor.getValue();
+
+        assertThat(loggingEvent.getFormattedMessage()).contains("Statistics already exist", someFromDate.toString(), someToDate.toString());
+        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
+        assertThat(loggingEvent.getArgumentArray()).contains(new ObjectAppendingMarker("event_id", PTTG_AUDIT_IPS_STATS_DUPLICATION_ATTEMPT));
+    }
+
+    @Test
+    public void storeIpsStatistics_alreadyHaveStatisticsForDate_throwIpsStatisticsException() {
+        expectedException.expect(IpsStatisticsException.class);
+        expectedException.expectMessage(containsString("already exist"));
+
+        LocalDate someFromDate = LocalDate.parse("2019-06-01");
+        LocalDate someToDate = LocalDate.parse("2019-06-30");
+        IpsStatistics statistics = statsFor(someFromDate, someToDate);
+
+        List<AuditEntry> alreadyPresentStatistics = singletonList(entryFor(statistics));
+        given(mockRepository.findAllIpsStatistics()).willReturn(alreadyPresentStatistics);
+
+        service.storeIpsStatistics(statistics);
+    }
+
+    @Test
+    public void storeIpsStatistics_jsonException_logError() throws JsonProcessingException {
+        ObjectMapper exceptionThrowingMapper = Mockito.mock(ObjectMapper.class);
+        when(exceptionThrowingMapper.writeValueAsString(any(IpsStatistics.class))).thenThrow(new JsonParseException(null, "JSON error"));
+
+        IpsStatisticsService service = new IpsStatisticsService(mockRepository, exceptionThrowingMapper);
+        try {
+            service.storeIpsStatistics(statsFor(ANY_DATE, ANY_DATE));
+        } catch (IpsStatisticsException ignored) {
+            // Not of interest to this test.
+        }
+
+        then(mockAppender).should().doAppend(logCaptor.capture());
+        LoggingEvent loggingEvent = logCaptor.getValue();
+
+        assertThat(loggingEvent.getFormattedMessage()).contains("JSON", "parse", "error");
+        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
+        assertThat(loggingEvent.getArgumentArray()).contains(new ObjectAppendingMarker("event_id", PTTG_AUDIT_IPS_STATS_PARSE_ERROR));
+    }
+
+    @Test
+    public void storeIpsStatistics_jsonException_throwIpsStatisticsException() throws JsonProcessingException {
+        expectedException.expect(IpsStatisticsException.class);
+        expectedException.expectMessage(containsString("parse error"));
+
+        ObjectMapper exceptionThrowingMapper = Mockito.mock(ObjectMapper.class);
+        when(exceptionThrowingMapper.writeValueAsString(any(IpsStatistics.class))).thenThrow(new JsonParseException(null, "JSON error"));
+
+        IpsStatisticsService service = new IpsStatisticsService(mockRepository, exceptionThrowingMapper);
+        service.storeIpsStatistics(statsFor(ANY_DATE, ANY_DATE));
     }
 
     private IpsStatistics statsFor(String fromDate, String toDate) {
