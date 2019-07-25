@@ -20,15 +20,15 @@ import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_IPS_STATS_E
 
 @AllArgsConstructor
 @Slf4j
-class IpsStatisticsService {
+public class IpsStatisticsService {
 
-    static final IpsStatistics NO_STATISTICS = new IpsStatistics(LocalDate.MIN, LocalDate.MIN, Integer.MIN_VALUE,
-                                                                 Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    public static final IpsStatistics NO_STATISTICS = new IpsStatistics(LocalDate.MIN, LocalDate.MIN, Integer.MIN_VALUE,
+                                                                        Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
 
     private AuditEntryJpaRepository repository;
     private ObjectMapper objectMapper;
 
-    IpsStatistics getIpsStatistics(LocalDate fromDate, LocalDate toDate) {
+    public IpsStatistics getIpsStatistics(LocalDate fromDate, LocalDate toDate) {
         List<AuditEntry> auditEntries = repository.findAllIpsStatistics();
 
         List<IpsStatistics> statisticsForDate = auditEntries.stream()
@@ -44,7 +44,7 @@ class IpsStatisticsService {
         return statisticsForDate.get(0);
     }
 
-    void storeIpsStatistics(IpsStatistics ipsStatistics) {
+    public void storeIpsStatistics(IpsStatistics ipsStatistics) {
         if (isDuplicatedStatistics(ipsStatistics)) {
             handleError(String.format("Statistics already exist for fromDate=%s and toDate=%s", ipsStatistics.fromDate(), ipsStatistics.toDate()));
         }
