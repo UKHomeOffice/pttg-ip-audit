@@ -15,7 +15,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static net.logstash.logback.argument.StructuredArguments.value;
-import static uk.gov.digital.ho.pttg.application.LogEvent.*;
+import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_IPS_STATS_ERROR;
 
 @AllArgsConstructor
 @Slf4j
@@ -44,35 +45,30 @@ class IpsStatisticsService {
     }
 
     void storeIpsStatistics(IpsStatistics ipsStatistics) {
-        if (repository.findAllIpsStatistics().stream()
-                      .map(this::extractIpsStatistics)
-                      .anyMatch(stats -> sameDates(stats, ipsStatistics.fromDate(), ipsStatistics.toDate()))) {
-            log.error("Statistics already exist for fromDate={} and toDate={}", ipsStatistics.fromDate(), ipsStatistics.toDate(),
-                      value(EVENT, PTTG_AUDIT_IPS_STATS_DUPLICATION_ATTEMPT));
-            throw new IpsStatisticsException("Statistics already exist for the date range");
+        if (isDuplicatedStatistics(ipsStatistics)) {
+            handleError(String.format("Statistics already exist for fromDate=%s and toDate=%s", ipsStatistics.fromDate(), ipsStatistics.toDate()));
         }
 
         try {
             repository.save(createAuditEvent(ipsStatistics));
         } catch (JsonProcessingException e) {
-            log.error("JSON parse error for IpsStatistics", value(EVENT, PTTG_AUDIT_IPS_STATS_PARSE_ERROR));
-            throw new IpsStatisticsException("JSON parse error");
+            handleError("JSON parse error");
         }
     }
 
     private IpsStatistics extractIpsStatistics(AuditEntry auditEntry) {
+        IpsStatistics extractedStatistics = null;
         try {
-            return objectMapper.readValue(auditEntry.getDetail(), IpsStatistics.class);
+            extractedStatistics = objectMapper.readValue(auditEntry.getDetail(), IpsStatistics.class);
         } catch (IOException e) {
-            log.error("Malformed IPS Statistics entry found - {}", auditEntry.getDetail(), value(EVENT, PTTG_AUDIT_IPS_STATS_MALFORMED));
-            throw new IpsStatisticsException("Malformed IPS Statistics");
+            handleError(String.format("Malformed IPS Statistics entry found - %s", auditEntry.getDetail()));
         }
+        return extractedStatistics;
     }
 
     private void checkForSingleMatch(LocalDate fromDate, LocalDate toDate, List<IpsStatistics> statisticsForDate) {
         if (statisticsForDate.size() > 1) {
-            log.error("Multiple IPS Statistics found for fromDate={} and toDate={}", fromDate, toDate, value(EVENT, PTTG_AUDIT_IPS_STATS_MULTIPLE_FOUND));
-            throw new IpsStatisticsException("Multiple IPS Statistics found");
+            handleError(String.format("Multiple IPS Statistics found for fromDate=%s and toDate=%s", fromDate, toDate));
         }
     }
 
@@ -86,6 +82,16 @@ class IpsStatisticsService {
                               "",
                               AuditEventType.IPS_STATISTICS,
                               objectMapper.writeValueAsString(ipsStatistics));
+    }
+
+    private void handleError(String message) {
+        log.error(message, value(EVENT, PTTG_AUDIT_IPS_STATS_ERROR));
+        throw new IpsStatisticsException(message);
+    }
+
+    private boolean isDuplicatedStatistics(IpsStatistics ipsStatistics) {
+        IpsStatistics duplicatedStatistics = getIpsStatistics(ipsStatistics.fromDate(), ipsStatistics.toDate());
+        return duplicatedStatistics != NO_STATISTICS;
     }
 
     private boolean sameDates(IpsStatistics ipsStatistics, LocalDate fromDate, LocalDate toDate) {

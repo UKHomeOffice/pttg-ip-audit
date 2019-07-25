@@ -49,6 +49,7 @@ public class IpsStatisticsServiceTest {
     private static final int ANY_INT = 0;
     private static final String ANY_STRING = "any";
     private static final LocalDateTime ANY_DATE_TIME = LocalDateTime.now();
+    private static final IpsStatistics ANY_IPS_STATS = statsFor(ANY_DATE, ANY_DATE);
 
     @Mock
     private AuditEntryJpaRepository mockRepository;
@@ -141,9 +142,9 @@ public class IpsStatisticsServiceTest {
         IpsStatistics expectedStatistics = statsFor(someFromDate, someToDate);
 
         List<AuditEntry> auditEntries = asList(
-                entryFor(statsFor(ANY_DATE, ANY_DATE)),
+                entryFor(ANY_IPS_STATS),
                 entryFor(expectedStatistics),
-                entryFor(statsFor(ANY_DATE, ANY_DATE)));
+                entryFor(ANY_IPS_STATS));
 
         given(mockRepository.findAllIpsStatistics()).willReturn(auditEntries);
 
@@ -166,11 +167,7 @@ public class IpsStatisticsServiceTest {
         }
 
         then(mockAppender).should().doAppend(logCaptor.capture());
-
-        LoggingEvent loggingEvent = logCaptor.getValue();
-        assertThat(loggingEvent.getFormattedMessage()).contains("Malformed", malformedStatistics);
-        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
-        assertThat(loggingEvent.getArgumentArray()).contains(new ObjectAppendingMarker("event_id", PTTG_AUDIT_IPS_STATS_MALFORMED));
+        assertErrorLog(logCaptor.getValue(), "Malformed", malformedStatistics);
     }
 
     @Test
@@ -203,11 +200,7 @@ public class IpsStatisticsServiceTest {
         }
 
         then(mockAppender).should().doAppend(logCaptor.capture());
-
-        LoggingEvent loggingEvent = logCaptor.getValue();
-        assertThat(loggingEvent.getFormattedMessage()).contains("Multiple", someFromDate.toString(), someToDate.toString());
-        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
-        assertThat(loggingEvent.getArgumentArray()).contains(new ObjectAppendingMarker("event_id", PTTG_AUDIT_IPS_STATS_MULTIPLE_FOUND));
+        assertErrorLog(logCaptor.getValue(), "Multiple", someFromDate.toString(), someToDate.toString());
     }
 
     @Test
@@ -227,14 +220,14 @@ public class IpsStatisticsServiceTest {
 
     @Test
     public void storeIpsStatistics_givenStatistics_saveAsAuditEntry() {
-        IpsStatistics statistics = statsFor(ANY_DATE, ANY_DATE);
+        IpsStatistics someStatistics = statsFor(ANY_DATE, ANY_DATE);
 
-        service.storeIpsStatistics(statistics);
+        service.storeIpsStatistics(someStatistics);
 
         then(mockRepository).should().save(auditEntryCaptor.capture());
         AuditEntry savedAuditEntry = auditEntryCaptor.getValue();
 
-        JSONAssert.assertEquals(toJson(statistics), savedAuditEntry.getDetail(), false);
+        JSONAssert.assertEquals(toJson(someStatistics), savedAuditEntry.getDetail(), false);
         assertThat(savedAuditEntry.getType()).isEqualTo(AuditEventType.IPS_STATISTICS);
     }
 
@@ -254,11 +247,7 @@ public class IpsStatisticsServiceTest {
         }
 
         then(mockAppender).should().doAppend(logCaptor.capture());
-        LoggingEvent loggingEvent = logCaptor.getValue();
-
-        assertThat(loggingEvent.getFormattedMessage()).contains("Statistics already exist", someFromDate.toString(), someToDate.toString());
-        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
-        assertThat(loggingEvent.getArgumentArray()).contains(new ObjectAppendingMarker("event_id", PTTG_AUDIT_IPS_STATS_DUPLICATION_ATTEMPT));
+        assertErrorLog(logCaptor.getValue(), "Statistics already exist", someFromDate.toString(), someToDate.toString());
     }
 
     @Test
@@ -283,17 +272,13 @@ public class IpsStatisticsServiceTest {
 
         IpsStatisticsService service = new IpsStatisticsService(mockRepository, exceptionThrowingMapper);
         try {
-            service.storeIpsStatistics(statsFor(ANY_DATE, ANY_DATE));
+            service.storeIpsStatistics(ANY_IPS_STATS);
         } catch (IpsStatisticsException ignored) {
             // Not of interest to this test.
         }
 
         then(mockAppender).should().doAppend(logCaptor.capture());
-        LoggingEvent loggingEvent = logCaptor.getValue();
-
-        assertThat(loggingEvent.getFormattedMessage()).contains("JSON", "parse", "error");
-        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
-        assertThat(loggingEvent.getArgumentArray()).contains(new ObjectAppendingMarker("event_id", PTTG_AUDIT_IPS_STATS_PARSE_ERROR));
+        assertErrorLog(logCaptor.getValue(), "JSON", "parse", "error");
     }
 
     @Test
@@ -305,14 +290,20 @@ public class IpsStatisticsServiceTest {
         when(exceptionThrowingMapper.writeValueAsString(any(IpsStatistics.class))).thenThrow(new JsonParseException(null, "JSON error"));
 
         IpsStatisticsService service = new IpsStatisticsService(mockRepository, exceptionThrowingMapper);
-        service.storeIpsStatistics(statsFor(ANY_DATE, ANY_DATE));
+        service.storeIpsStatistics(ANY_IPS_STATS);
     }
 
-    private IpsStatistics statsFor(String fromDate, String toDate) {
+    private void assertErrorLog(LoggingEvent loggingEvent, String... contents) {
+        assertThat(loggingEvent.getFormattedMessage()).contains(contents);
+        assertThat(loggingEvent.getLevel()).isEqualTo(Level.ERROR);
+        assertThat(loggingEvent.getArgumentArray()).contains(new ObjectAppendingMarker("event_id", PTTG_AUDIT_IPS_STATS_ERROR));
+    }
+
+    private static IpsStatistics statsFor(String fromDate, String toDate) {
         return statsFor(LocalDate.parse(fromDate), LocalDate.parse(toDate));
     }
 
-    private IpsStatistics statsFor(LocalDate fromDate, LocalDate toDate) {
+    private static IpsStatistics statsFor(LocalDate fromDate, LocalDate toDate) {
         return new IpsStatistics(fromDate, toDate, ANY_INT, ANY_INT, ANY_INT, ANY_INT);
     }
 
