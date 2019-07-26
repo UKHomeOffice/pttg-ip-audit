@@ -2,7 +2,6 @@ package uk.gov.digital.ho.pttg.api;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,12 +25,20 @@ public class IpsStatisticsResource {
     @GetMapping(value = "/ipsstatistics", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<IpsStatistics> getIpsStatistics(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
                                                           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
-        log.info("Requested IPS Statistics with fromDate={} and toDate={}", fromDate, toDate,
-                 value(EVENT, PTTG_AUDIT_GET_IPS_STATS_REQUEST_RECEIVED));
+
+        if (nullDate(fromDate, toDate)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
         IpsStatistics ipsStatistics = service.getIpsStatistics(fromDate, toDate);
 
         return responseEntity(ipsStatistics);
+    }
+
+    private boolean nullDate(LocalDate fromDate, LocalDate toDate) {
+        log.info("Requested IPS Statistics with fromDate={} and toDate={}", fromDate, toDate,
+                 value(EVENT, PTTG_AUDIT_GET_IPS_STATS_REQUEST_RECEIVED));
+        return fromDate == null || toDate == null;
     }
 
     @PostMapping(value = "/ipsstatistics")
