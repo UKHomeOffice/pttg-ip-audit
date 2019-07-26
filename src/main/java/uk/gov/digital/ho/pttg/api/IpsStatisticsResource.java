@@ -14,6 +14,7 @@ import static uk.gov.digital.ho.pttg.application.LogEvent.*;
 
 @AllArgsConstructor
 @Slf4j
+//@RestController TODO OJR EE-20105 2019-07-26 Endpoint intentionally not exposed to allow code to be merged to master without manual testing.
 public class IpsStatisticsResource {
 
     private IpsStatisticsService service;
