@@ -23,13 +23,8 @@ public class IpsStatisticsResource {
                  value(EVENT, PTTG_AUDIT_GET_IPS_STATS_REQUEST_RECEIVED));
 
         IpsStatistics ipsStatistics = service.getIpsStatistics(fromDate, toDate);
-        if(ipsStatistics == NO_STATISTICS) {
-            log.warn("IPS Statistics not found", value(EVENT, PTTG_AUDIT_GET_IPS_STATS_NOT_FOUND));
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
 
-        log.info("Returned IPS Statistics", value(EVENT, PTTG_AUDIT_GET_IPS_STATS_RESPONSE_SUCCESS));
-        return new ResponseEntity<>(ipsStatistics, HttpStatus.OK);
+        return responseEntity(ipsStatistics);
     }
 
     public void storeIpsStatistics(IpsStatistics ipsStatistics) {
@@ -38,4 +33,15 @@ public class IpsStatisticsResource {
         service.storeIpsStatistics(ipsStatistics);
         log.info("Successfully stored IPS Statistics", value(EVENT, PTTG_AUDIT_STORE_IPS_STATS_RESPONSE_SUCCESS));
     }
+
+    private ResponseEntity<IpsStatistics> responseEntity(IpsStatistics ipsStatistics) {
+        if (ipsStatistics == NO_STATISTICS) {
+            log.warn("IPS Statistics not found", value(EVENT, PTTG_AUDIT_GET_IPS_STATS_NOT_FOUND));
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        log.info("Returned IPS Statistics", value(EVENT, PTTG_AUDIT_GET_IPS_STATS_RESPONSE_SUCCESS));
+        return new ResponseEntity<>(ipsStatistics, HttpStatus.OK);
+    }
+
 }
