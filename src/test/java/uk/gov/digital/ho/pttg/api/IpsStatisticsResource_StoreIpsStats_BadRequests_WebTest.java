@@ -42,7 +42,7 @@ public class IpsStatisticsResource_StoreIpsStats_BadRequests_WebTest {
     public String fileName;
 
     @Parameters(name = "Should get a bad request trying to store IPS statistics: {0}")
-    public static Iterable<String> testData() throws IOException {
+    public static Iterable<String> testData() {
         return Files.fileNamesIn("src/test/resources/api/IpsStatisticsTest/badrequests", false);
     }
 
