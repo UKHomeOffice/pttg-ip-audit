@@ -1,19 +1,26 @@
 package uk.gov.digital.ho.pttg.api;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.digital.ho.pttg.IpsStatisticsService;
 
+import java.io.IOException;
 import java.time.LocalDate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.digital.ho.pttg.IpsStatisticsService.NO_STATISTICS;
 
@@ -26,6 +33,7 @@ public class IpsStatisticsResourceWebTest {
     @Autowired private MockMvc mockMvc;
 
     private static final String GET_STATS_URL = "/ipsstatistics?fromDate={fromDate}&toDate={toDate}";
+    private static final String STORE_STATS_URL = "/ipsstatistics";
     private static final LocalDate ANY_DATE = LocalDate.now();
 
     @Test
@@ -78,5 +86,189 @@ public class IpsStatisticsResourceWebTest {
     public void getIpsStatistics_malformedToDate_badRequest() throws Exception {
         mockMvc.perform(get(GET_STATS_URL, ANY_DATE, "not a valid date"))
                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_basicRequest_returnOk() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("ipsstatistics.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk());
+    }
+
+    @Test
+    public void saveIpsStatistics_basicRequest_storeStatistics() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("ipsstatistics.json"))
+                                .contentType(MediaType.APPLICATION_JSON));
+
+        ArgumentCaptor<IpsStatistics> argumentCaptor = ArgumentCaptor.forClass(IpsStatistics.class);
+        then(mockService).should().storeIpsStatistics(argumentCaptor.capture());
+
+        IpsStatistics expectedStatistics = new IpsStatistics(LocalDate.parse("2019-06-01"), LocalDate.parse("2019-06-30"),
+                                                             7, 3, 2, 1);
+        assertThat(argumentCaptor.getValue()).isEqualTo(expectedStatistics);
+    }
+
+    @Test
+    public void saveIpsStatistics_noBody_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_malformed_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content("not a valid request")
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_noFromDate_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("no-from-date.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_noToDate_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("no-to-date.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_noPassed_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("no-passed.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_noNotPassed_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("no-not-passed.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_noNotFound_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("no-not-found.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_noError_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("no-error.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_fromDateNull_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("null-from-date.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_toDateNull_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("null-to-date.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_passedNull_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("null-passed.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_notPassedNull_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("null-not-passed.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_notFoundNull_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("null-not-found.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_errorNull_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("null-error.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_malformedFromDate_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("malformed-from-date.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_malformedToDate_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("malformed-to-date.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_nonIntPassed_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("non-int-passed.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_nonIntNotPassed_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("non-int-not-passed.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_nonIntNotFound_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("non-int-not-found.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void saveIpsStatistics_nonIntError_badRequest() throws Exception {
+        mockMvc.perform(post(STORE_STATS_URL)
+                                .content(loadJsonRequest("non-int-error.json"))
+                                .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+    }
+
+    private String loadJsonRequest(String fileName) throws IOException {
+        return IOUtils.toString(getClass().getResourceAsStream("/api/IpsStatisticsTest/" + fileName));
     }
 }
