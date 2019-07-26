@@ -91,7 +91,7 @@ public class IpsStatisticsResourceWebTest {
     @Test
     public void saveIpsStatistics_basicRequest_returnOk() throws Exception {
         mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("ipsstatistics.json"))
+                                .content(loadJsonRequest())
                                 .contentType(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk());
     }
@@ -99,7 +99,7 @@ public class IpsStatisticsResourceWebTest {
     @Test
     public void saveIpsStatistics_basicRequest_storeStatistics() throws Exception {
         mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("ipsstatistics.json"))
+                                .content(loadJsonRequest())
                                 .contentType(MediaType.APPLICATION_JSON));
 
         ArgumentCaptor<IpsStatistics> argumentCaptor = ArgumentCaptor.forClass(IpsStatistics.class);
@@ -124,151 +124,7 @@ public class IpsStatisticsResourceWebTest {
                .andExpect(status().isBadRequest());
     }
 
-    @Test
-    public void saveIpsStatistics_noFromDate_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("no-from-date.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_noToDate_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("no-to-date.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_noPassed_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("no-passed.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_noNotPassed_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("no-not-passed.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_noNotFound_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("no-not-found.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_noError_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("no-error.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_fromDateNull_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("null-from-date.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_toDateNull_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("null-to-date.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_passedNull_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("null-passed.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_notPassedNull_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("null-not-passed.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_notFoundNull_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("null-not-found.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_errorNull_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("null-error.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_malformedFromDate_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("malformed-from-date.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_malformedToDate_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("malformed-to-date.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_nonIntPassed_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("non-int-passed.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_nonIntNotPassed_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("non-int-not-passed.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_nonIntNotFound_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("non-int-not-found.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void saveIpsStatistics_nonIntError_badRequest() throws Exception {
-        mockMvc.perform(post(STORE_STATS_URL)
-                                .content(loadJsonRequest("non-int-error.json"))
-                                .contentType(MediaType.APPLICATION_JSON))
-               .andExpect(status().isBadRequest());
-    }
-
-    private String loadJsonRequest(String fileName) throws IOException {
-        return IOUtils.toString(getClass().getResourceAsStream("/api/IpsStatisticsTest/" + fileName));
+    private String loadJsonRequest() throws IOException {
+        return IOUtils.toString(getClass().getResourceAsStream("/api/IpsStatisticsTest/ipsstatistics.json"));
     }
 }
