@@ -16,26 +16,33 @@ import java.time.LocalDate;
 @ToString
 public
 class IpsStatistics {
-    @JsonProperty
+    private static final String FROM_DATE_KEY = "From Date";
+    private static final String TO_DATE_KEY = "To Date";
+    private static final String PASSED_KEY = "Passed";
+    private static final String NOT_PASSED_KEY = "Not Passed";
+    private static final String NOT_FOUND_KEY = "Not Found";
+    private static final String ERROR_KEY = "Error";
+
+    @JsonProperty(value = FROM_DATE_KEY)
     private LocalDate fromDate;
-    @JsonProperty
+    @JsonProperty(value = TO_DATE_KEY)
     private LocalDate toDate;
-    @JsonProperty
+    @JsonProperty(value = PASSED_KEY)
     private int passed;
-    @JsonProperty
+    @JsonProperty(value = NOT_PASSED_KEY)
     private int notPassed;
-    @JsonProperty
+    @JsonProperty(value = NOT_FOUND_KEY)
     private int notFound;
-    @JsonProperty
+    @JsonProperty(value = ERROR_KEY)
     private int error;
 
     @JsonCreator
-    public IpsStatistics(@JsonProperty(value = "From Date", required = true) @NonNull LocalDate fromDate,
-                         @JsonProperty(value = "To Date", required = true) @NonNull LocalDate toDate,
-                         @JsonProperty(value = "Passed", required = true) @NonNull Integer passed,
-                         @JsonProperty(value = "Not Passed", required = true) @NonNull Integer notPassed,
-                         @JsonProperty(value = "Not Found", required = true) @NonNull Integer notFound,
-                         @JsonProperty(value = "Error", required = true) @NonNull Integer error) {
+    public IpsStatistics(@JsonProperty(value = FROM_DATE_KEY, required = true) @NonNull LocalDate fromDate,
+                         @JsonProperty(value = TO_DATE_KEY, required = true) @NonNull LocalDate toDate,
+                         @JsonProperty(value = PASSED_KEY, required = true) @NonNull Integer passed,
+                         @JsonProperty(value = NOT_PASSED_KEY, required = true) @NonNull Integer notPassed,
+                         @JsonProperty(value = NOT_FOUND_KEY, required = true) @NonNull Integer notFound,
+                         @JsonProperty(value = ERROR_KEY, required = true) @NonNull Integer error) {
         this.fromDate = fromDate;
         this.toDate = toDate;
         this.passed = passed;
