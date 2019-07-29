@@ -15,7 +15,7 @@ pipeline:
       - sh /root/git-utilities/set-up-github-user.sh "$${GITHUB_SSH_KEY}"
       - ./gradlew release -Prelease.useAutomaticVersion=true -x runBuildTasks
     when:
-      branch: [EE-20105-get-save-stats, master]
+      branch: master
       event: [push]
 
   docker-build:
