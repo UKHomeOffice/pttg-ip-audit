@@ -8,10 +8,11 @@ import ch.qos.logback.core.Appender;
 import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.logstash.logback.marker.ObjectAppendingMarker;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatcher;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.LoggerFactory;
@@ -30,12 +31,11 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.AdditionalMatchers.and;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
 import static uk.gov.digital.ho.pttg.application.LogEvent.*;
@@ -48,6 +48,8 @@ public class AuditHistoryResourceTest {
     @Mock private RequestData mockRequestData;
 
     private AuditHistoryResource historyResource;
+
+    private ArgumentCaptor<LoggingEvent> logCaptor;
 
     private static final AuditRecord AUDIT_RECORD = new AuditRecord("some id",
             LocalDateTime.of(2017, 12, 8, 0, 0),
@@ -64,6 +66,8 @@ public class AuditHistoryResourceTest {
         Logger rootLogger = (Logger) LoggerFactory.getLogger(AuditHistoryResource.class);
         rootLogger.setLevel(Level.INFO);
         rootLogger.addAppender(mockAppender);
+
+        logCaptor = ArgumentCaptor.forClass(LoggingEvent.class);
     }
 
     @Test
@@ -96,17 +100,16 @@ public class AuditHistoryResourceTest {
 
         historyResource.retrieveAuditHistory(LocalDate.now(), eventTypes, SOME_PAGEABLE);
 
-        verify(mockAppender).doAppend(argThat(argument -> {
-            LoggingEvent loggingEvent = (LoggingEvent) argument;
+        then(mockAppender).should(atLeastOnce()).doAppend(logCaptor.capture());
 
-            String expectedLogMessage = String.format("Requested Audit History for events [%s, %s] up to end date %s with pageable of %s",
+        String expectedLogMessage = String.format("Requested Audit History for events [%s, %s] up to end date %s with pageable of %s",
                     INCOME_PROVING_FINANCIAL_STATUS_REQUEST.name(),
                     INCOME_PROVING_FINANCIAL_STATUS_RESPONSE.name(),
                     LocalDate.now().format(DateTimeFormatter.ofPattern("yyy-MM-dd")),
                     SOME_PAGEABLE);
-            return loggingEvent.getFormattedMessage().equals(expectedLogMessage) &&
-                    loggingEvent.getArgumentArray()[3].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_HISTORY_REQUEST_RECEIVED));
-        }));
+
+        assertThat(logForEvent(PTTG_AUDIT_HISTORY_REQUEST_RECEIVED).getFormattedMessage())
+                .isEqualTo(expectedLogMessage);
     }
 
     @Test
@@ -116,13 +119,11 @@ public class AuditHistoryResourceTest {
 
         historyResource.retrieveAuditHistory(LocalDate.now(), eventTypes, SOME_PAGEABLE);
 
-        verify(mockAppender).doAppend(argThat(argument -> {
-            LoggingEvent loggingEvent = (LoggingEvent) argument;
+        then(mockAppender).should(atLeastOnce()).doAppend(logCaptor.capture());
 
-            return loggingEvent.getFormattedMessage().equals("Returned 1 audit record(s) for history request") &&
-                    loggingEvent.getArgumentArray()[1].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_HISTORY_RESPONSE_SUCCESS)) &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration_ms");
-        }));
+        LoggingEvent loggingEvent = logForEvent(PTTG_AUDIT_HISTORY_RESPONSE_SUCCESS);
+        assertThat(loggingEvent.getFormattedMessage()).isEqualTo("Returned 1 audit record(s) for history request");
+        assertThat(((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName()).isEqualTo("request_duration_ms");
     }
 
     @Test
@@ -139,15 +140,12 @@ public class AuditHistoryResourceTest {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
 
         historyResource.retrieveAuditHistory(null, eventTypes, SOME_PAGEABLE);
+        then(mockAppender).should(atLeastOnce()).doAppend(logCaptor.capture());
 
-        verify(mockAppender).doAppend(argThat(argument -> {
-            LoggingEvent loggingEvent = (LoggingEvent) argument;
-
-            String expectedLogMessage = String.format("Requested Audit History for events [%s, %s] up to end date %s with pageable of %s",
-                    INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE, null, SOME_PAGEABLE);
-            return loggingEvent.getFormattedMessage().equals(expectedLogMessage) &&
-                    loggingEvent.getArgumentArray()[3].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_HISTORY_REQUEST_RECEIVED));
-        }));
+        String expectedLogMessage = String.format("Requested Audit History for events [%s, %s] up to end date %s with pageable of %s",
+                                                  INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE, null, SOME_PAGEABLE);
+        LoggingEvent loggingEvent = logForEvent(PTTG_AUDIT_HISTORY_REQUEST_RECEIVED);
+        assertThat(loggingEvent.getFormattedMessage()).isEqualTo(expectedLogMessage);
     }
 
     @Test
@@ -181,8 +179,10 @@ public class AuditHistoryResourceTest {
         String expectedLogMessage = String.format("Requested all correlation ids for events [%s, %s]",
                 INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
 
-        verify(mockAppender).doAppend(argThat(
-                hasLogParameters(expectedLogMessage, PTTG_AUDIT_HISTORY_CORRELATION_IDS_REQUEST_RECEIVED)));
+        then(mockAppender).should(atLeastOnce()).doAppend(logCaptor.capture());
+
+        LoggingEvent loggingEvent = logForEvent(PTTG_AUDIT_HISTORY_CORRELATION_IDS_REQUEST_RECEIVED);
+        assertThat(loggingEvent.getFormattedMessage()).isEqualTo(expectedLogMessage);
     }
 
     @Test
@@ -193,29 +193,12 @@ public class AuditHistoryResourceTest {
         List<AuditEventType> anyEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
         historyResource.getAllCorrelationIds(anyEventTypes);
 
+        then(mockAppender).should(atLeastOnce()).doAppend(logCaptor.capture());
+
         String expectedMessage = "Returning 3 correlation IDs for all correlation ID request";
-        then(mockAppender)
-                .should()
-                .doAppend(and(
-                        argThat(hasLogParameters(expectedMessage, PTTG_AUDIT_HISTORY_CORRELATION_IDS_RESPONSE_SUCCESS)),
-                        argThat(hasRequestDuration())
-                ));
-    }
-
-    public ArgumentMatcher<ILoggingEvent> hasLogParameters(String expectedMessage, LogEvent event) {
-        return argument -> {
-            LoggingEvent loggingEvent = (LoggingEvent) argument;
-            return loggingEvent.getFormattedMessage().equals(expectedMessage) &&
-                    loggingEvent.getArgumentArray()[1].equals(new ObjectAppendingMarker("event_id", event));
-        };
-    }
-
-    public ArgumentMatcher<ILoggingEvent> hasRequestDuration() {
-        return argument -> {
-            LoggingEvent loggingEvent = (LoggingEvent) argument;
-            return loggingEvent.getArgumentArray().length > 2 &&
-                    ((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName().equals("request_duration_ms");
-        };
+        LoggingEvent loggingEvent = logForEvent(PTTG_AUDIT_HISTORY_CORRELATION_IDS_RESPONSE_SUCCESS);
+        assertThat(loggingEvent.getFormattedMessage()).isEqualTo(expectedMessage);
+        assertThat(((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName()).isEqualTo("request_duration_ms");
     }
 
     @Test
@@ -247,14 +230,13 @@ public class AuditHistoryResourceTest {
 
         historyResource.getRecordsForCorrelationId(someCorrelationId, someEventTypes);
 
-        String expectedMessage = String.format("Requested audit records for correlationID %s and events [%s, %s]", someCorrelationId,
-                INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        then(mockAppender).should(atLeastOnce()).doAppend(logCaptor.capture());
 
-        verify(mockAppender).doAppend(argThat(argument -> {
-            LoggingEvent loggingEvent = (LoggingEvent) argument;
-            return loggingEvent.getFormattedMessage().equals(expectedMessage) &&
-                    loggingEvent.getArgumentArray()[2].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_HISTORY_BY_CORRELATION_ID_REQUEST_RECEIVED));
-        }));
+        String expectedMessage = String.format("Requested audit records for correlationID %s and events [%s, %s]", someCorrelationId,
+                                               INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+
+        LoggingEvent loggingEvent = logForEvent(PTTG_AUDIT_HISTORY_BY_CORRELATION_ID_REQUEST_RECEIVED);
+        assertThat(loggingEvent.getFormattedMessage()).isEqualTo(expectedMessage);
     }
 
     @Test
@@ -272,14 +254,18 @@ public class AuditHistoryResourceTest {
 
         historyResource.getRecordsForCorrelationId("some-correlation-ID", Collections.singletonList(anyEventType));
 
+        then(mockAppender).should(atLeastOnce()).doAppend(logCaptor.capture());
+
         String expectedMessage = "Returned 3 audit records for correlation ID some-correlation-ID";
-        then(mockAppender)
-                .should()
-                .doAppend(argThat(argument -> {
-                    LoggingEvent loggingEvent = (LoggingEvent) argument;
-                    return loggingEvent.getFormattedMessage().equals(expectedMessage) &&
-                            argument.getArgumentArray()[2].equals(new ObjectAppendingMarker("event_id", PTTG_AUDIT_HISTORY_BY_CORRELATION_ID_RESPONSE_SUCCESS)) &&
-                            ((ObjectAppendingMarker) argument.getArgumentArray()[3]).getFieldName().equals("request_duration_ms");
-                }));
+        LoggingEvent loggingEvent = logForEvent(PTTG_AUDIT_HISTORY_BY_CORRELATION_ID_RESPONSE_SUCCESS);
+        assertThat(loggingEvent.getFormattedMessage()).isEqualTo(expectedMessage);
+        assertThat(((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName()).isEqualTo("request_duration_ms");
+    }
+
+    private LoggingEvent logForEvent(LogEvent logEvent) {
+        return logCaptor.getAllValues().stream()
+                        .filter(loggingEvent -> ArrayUtils.contains(loggingEvent.getArgumentArray(), new ObjectAppendingMarker("event_id", logEvent)))
+                        .findFirst()
+                        .orElseThrow(AssertionError::new);
     }
 }
