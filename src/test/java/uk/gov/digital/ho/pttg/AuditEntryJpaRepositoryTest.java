@@ -13,6 +13,7 @@ import uk.gov.digital.ho.pttg.alert.CountByUser;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
 
@@ -327,6 +328,33 @@ public class AuditEntryJpaRepositoryTest {
     }
 
     @Test
+    public void getAllCorrelationIds_withToDate_returnNotAfterDate() {
+        LocalDateTime someDateTime = LocalDateTime.of(2019, Month.AUGUST, 14, 10, 55);
+        LocalDateTime beforeCutOff = someDateTime.minusSeconds(1);
+        LocalDateTime afterCutOff = someDateTime.plusSeconds(1);
+
+        repository.save(createAudit(someDateTime, "some expected correlation id", INCOME_PROVING_INCOME_CHECK_REQUEST));
+        repository.save(createAudit(beforeCutOff, "some other expected correlation id", INCOME_PROVING_INCOME_CHECK_REQUEST));
+        repository.save(createAudit(afterCutOff, "unexpected correlation id", INCOME_PROVING_INCOME_CHECK_REQUEST));
+
+        List<String> returnedCorrelationIds = repository.getAllCorrelationIds(singletonList(INCOME_PROVING_INCOME_CHECK_REQUEST), someDateTime);
+        assertThat(returnedCorrelationIds).containsExactlyInAnyOrder("some expected correlation id", "some other expected correlation id");
+    }
+
+    @Test
+    public void getAllCorrelationIds_withToDate_noDuplicates() {
+        LocalDateTime someDateTime = LocalDateTime.of(2019, Month.AUGUST, 14, 10, 55);
+        LocalDateTime beforeCutOff = someDateTime.minusSeconds(1);
+        LocalDateTime beforeCutOff2 = someDateTime.minusSeconds(2);
+
+        repository.save(createAudit(beforeCutOff, "some correlation id", INCOME_PROVING_INCOME_CHECK_REQUEST));
+        repository.save(createAudit(beforeCutOff2, "some correlation id", INCOME_PROVING_INCOME_CHECK_REQUEST));
+
+        assertThat(repository.getAllCorrelationIds(singletonList(INCOME_PROVING_INCOME_CHECK_REQUEST), someDateTime))
+                .containsExactly("some correlation id");
+    }
+
+    @Test
     public void findEntriesByCorrelationId_noEntriesForCorrelationId_emptyList() {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_INCOME_CHECK_REQUEST, INCOME_PROVING_INCOME_CHECK_RESPONSE);
         assertThat(repository.findEntriesByCorrelationId("does not exist in Database", eventTypes))
@@ -384,6 +412,20 @@ public class AuditEntryJpaRepositoryTest {
 
     private AuditEntry createAudit(LocalDateTime timestamp) {
         return createAudit(timestamp, USER_ID);
+    }
+
+    private AuditEntry createAudit(LocalDateTime someDateTime, String correlationId, AuditEventType eventType) {
+        return new AuditEntry(
+                randomUUID().toString(),
+                someDateTime,
+                SESSION_ID,
+                correlationId,
+                USER_ID,
+                DEPLOYMENT,
+                NAMESPACE,
+                eventType,
+                DETAIL
+        );
     }
 
     private AuditEntry createAudit(LocalDateTime timestamp, String userId) {
