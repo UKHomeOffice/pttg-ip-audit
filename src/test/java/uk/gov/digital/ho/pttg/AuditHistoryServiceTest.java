@@ -12,12 +12,15 @@ import uk.gov.digital.ho.pttg.api.AuditRecord;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_REQUEST;
@@ -84,6 +87,30 @@ public class AuditHistoryServiceTest {
                 Collections.singletonList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST));
 
         assertThat(returnedCorrelationIds).isEqualTo(someCorrelationIds);
+    }
+
+    @Test
+    public void getAllCorrelationIds_withDate_callsRepoWithEndOfDay() {
+        List<AuditEventType> someEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        LocalDate someDate = LocalDate.now();
+
+        auditHistoryService.getAllCorrelationIds(someEventTypes, someDate);
+
+        LocalDateTime expectedToDate = LocalDateTime.of(someDate, LocalTime.of(23, 59, 59, 999_999_999));
+
+        then(repository).should().getAllCorrelationIds(eq(someEventTypes), eq(expectedToDate));
+    }
+
+    @Test
+    public void getAllCorrelationIds_withDate_returnsFromRepo() {
+        List<String> expectedCorrelationIds = Arrays.asList("some correlation id", "some other correlation id");
+        given(repository.getAllCorrelationIds(anyList(), any(LocalDateTime.class))).willReturn(expectedCorrelationIds);
+
+        List<AuditEventType> anyEventTypes = Collections.singletonList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
+        LocalDate anyDate = LocalDate.now();
+        List<String> actualCorrelationIds = auditHistoryService.getAllCorrelationIds(anyEventTypes, anyDate);
+
+        assertThat(actualCorrelationIds).isEqualTo(expectedCorrelationIds);
     }
 
     @Test
