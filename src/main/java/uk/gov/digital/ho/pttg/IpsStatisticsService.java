@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import uk.gov.digital.ho.pttg.api.IpsStatistics;
 import uk.gov.digital.ho.pttg.application.IpsStatisticsException;
 
@@ -20,6 +21,7 @@ import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_IPS_STATS_E
 
 @AllArgsConstructor
 @Slf4j
+@Component
 public class IpsStatisticsService {
 
     public static final IpsStatistics NO_STATISTICS = new IpsStatistics(LocalDate.MIN, LocalDate.MIN, Integer.MIN_VALUE,
