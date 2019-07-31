@@ -123,7 +123,7 @@ public class AuditHistoryResourceTest {
 
         LoggingEvent loggingEvent = logForEvent(PTTG_AUDIT_HISTORY_RESPONSE_SUCCESS);
         assertThat(loggingEvent.getFormattedMessage()).isEqualTo("Returned 1 audit record(s) for history request");
-        assertThat(((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName()).isEqualTo("request_duration_ms");
+        assertRequestDurationLogged(loggingEvent);
     }
 
     @Test
@@ -198,7 +198,7 @@ public class AuditHistoryResourceTest {
         String expectedMessage = "Returning 3 correlation IDs for all correlation ID request";
         LoggingEvent loggingEvent = logForEvent(PTTG_AUDIT_HISTORY_CORRELATION_IDS_RESPONSE_SUCCESS);
         assertThat(loggingEvent.getFormattedMessage()).isEqualTo(expectedMessage);
-        assertThat(((ObjectAppendingMarker) loggingEvent.getArgumentArray()[2]).getFieldName()).isEqualTo("request_duration_ms");
+        assertRequestDurationLogged(loggingEvent);
     }
 
     @Test
@@ -259,7 +259,7 @@ public class AuditHistoryResourceTest {
         String expectedMessage = "Returned 3 audit records for correlation ID some-correlation-ID";
         LoggingEvent loggingEvent = logForEvent(PTTG_AUDIT_HISTORY_BY_CORRELATION_ID_RESPONSE_SUCCESS);
         assertThat(loggingEvent.getFormattedMessage()).isEqualTo(expectedMessage);
-        assertThat(((ObjectAppendingMarker) loggingEvent.getArgumentArray()[3]).getFieldName()).isEqualTo("request_duration_ms");
+        assertRequestDurationLogged(loggingEvent);
     }
 
     private LoggingEvent logForEvent(LogEvent logEvent) {
@@ -267,5 +267,15 @@ public class AuditHistoryResourceTest {
                         .filter(loggingEvent -> ArrayUtils.contains(loggingEvent.getArgumentArray(), new ObjectAppendingMarker("event_id", logEvent)))
                         .findFirst()
                         .orElseThrow(AssertionError::new);
+    }
+
+    private void assertRequestDurationLogged(LoggingEvent loggingEvent) {
+        boolean hasRequestDuration = Arrays.stream(loggingEvent.getArgumentArray()).anyMatch(AuditHistoryResourceTest::isRequestDuration);
+        assertThat(hasRequestDuration).isTrue();
+    }
+
+    private static boolean isRequestDuration(Object logArg) {
+        return logArg instanceof ObjectAppendingMarker &&
+                ((ObjectAppendingMarker) logArg).getFieldName().equals("request_duration_ms");
     }
 }
