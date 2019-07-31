@@ -6,6 +6,7 @@ import uk.gov.digital.ho.pttg.api.AuditRecord;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +29,11 @@ public class AuditHistoryService {
 
     public List<String> getAllCorrelationIds(List<AuditEventType> eventTypes){
         return repository.getAllCorrelationIds(eventTypes);
+    }
+
+    public List<String> getAllCorrelationIds(List<AuditEventType> eventTypes, LocalDate toDate) {
+        LocalDateTime endOfToDate = toDate.atTime(LocalTime.MAX);
+        return repository.getAllCorrelationIds(eventTypes, endOfToDate);
     }
 
     public List<AuditRecord> getRecordsForCorrelationId(String correlationId, List<AuditEventType> eventTypes) {
