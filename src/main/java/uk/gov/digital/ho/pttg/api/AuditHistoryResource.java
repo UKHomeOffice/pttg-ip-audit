@@ -55,27 +55,12 @@ public class AuditHistoryResource {
     }
 
     @GetMapping(value = "/correlationIds", produces = APPLICATION_JSON_VALUE)
-    public List<String> getAllCorrelationIds(@RequestParam List<AuditEventType> eventTypes) {
-        log.info("Requested all correlation ids for events {}", eventTypes, value(EVENT, PTTG_AUDIT_HISTORY_CORRELATION_IDS_REQUEST_RECEIVED));
+    public List<String> getAllCorrelationIds(@RequestParam List<AuditEventType> eventTypes,
+                                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
 
-        List<String> correlationIds = auditHistoryService.getAllCorrelationIds(eventTypes);
-
-        log.info("Returning {} correlation IDs for all correlation ID request", correlationIds.size(),
-                value(EVENT, PTTG_AUDIT_HISTORY_CORRELATION_IDS_RESPONSE_SUCCESS),
-                value(REQUEST_DURATION_MS, requestData.calculateRequestDuration()));
-
-        return correlationIds;
-    }
-
-    public List<String> getAllCorrelationIds(List<AuditEventType> eventTypes, LocalDate toDate) {
-        log.info("Requested all correlation ids for events {} up to {}", eventTypes, toDate, value(EVENT, PTTG_AUDIT_HISTORY_CORRELATION_IDS_REQUEST_RECEIVED));
-
-        List<String> correlationIds = auditHistoryService.getAllCorrelationIds(eventTypes, toDate);
-
-        log.info("Returning {} correlation IDs for all correlation ID request", correlationIds.size(),
-                 value(EVENT, PTTG_AUDIT_HISTORY_CORRELATION_IDS_RESPONSE_SUCCESS),
-                 value(REQUEST_DURATION_MS, requestData.calculateRequestDuration()));
-
+        logGetAllCorrelationIdEntry(eventTypes, toDate);
+        List<String> correlationIds = getCorrelationIdsFromService(eventTypes, toDate);
+        logCorrelationIdCount(correlationIds);
         return correlationIds;
     }
 
@@ -93,6 +78,27 @@ public class AuditHistoryResource {
                 value(REQUEST_DURATION_MS, requestData.calculateRequestDuration()));
 
         return records;
+    }
+
+    private void logGetAllCorrelationIdEntry(List<AuditEventType> eventTypes, LocalDate toDate) {
+        if (toDate == null) {
+            log.info("Requested all correlation ids for events {}", eventTypes, value(EVENT, PTTG_AUDIT_HISTORY_CORRELATION_IDS_REQUEST_RECEIVED));
+        } else {
+            log.info("Requested all correlation ids for events {} up to {}", eventTypes, toDate, value(EVENT, PTTG_AUDIT_HISTORY_CORRELATION_IDS_REQUEST_RECEIVED));
+        }
+    }
+
+    private List<String> getCorrelationIdsFromService(List<AuditEventType> eventTypes, LocalDate toDate) {
+        if (toDate == null) {
+            return auditHistoryService.getAllCorrelationIds(eventTypes);
+        }
+        return auditHistoryService.getAllCorrelationIds(eventTypes, toDate);
+    }
+
+    private void logCorrelationIdCount(List<String> correlationIds) {
+        log.info("Returning {} correlation IDs for all correlation ID request", correlationIds.size(),
+                 value(EVENT, PTTG_AUDIT_HISTORY_CORRELATION_IDS_RESPONSE_SUCCESS),
+                 value(REQUEST_DURATION_MS, requestData.calculateRequestDuration()));
     }
 
     private LocalDate useDefaultIfNull(LocalDate toDate) {

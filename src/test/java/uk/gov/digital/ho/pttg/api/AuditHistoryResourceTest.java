@@ -154,7 +154,7 @@ public class AuditHistoryResourceTest {
     public void getAllCorrelationIds_givenEventTypes_passToService() {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
 
-        historyResource.getAllCorrelationIds(eventTypes);
+        historyResource.getAllCorrelationIds(eventTypes, null);
 
         verify(mockHistoryService).getAllCorrelationIds(eq(eventTypes));
     }
@@ -165,7 +165,7 @@ public class AuditHistoryResourceTest {
         when(mockHistoryService.getAllCorrelationIds(any()))
                 .thenReturn(correlationIds);
 
-        List<String> returnedCorrelationIds = historyResource.getAllCorrelationIds(ANY_EVENT_TYPES);
+        List<String> returnedCorrelationIds = historyResource.getAllCorrelationIds(ANY_EVENT_TYPES, null);
 
         assertThat(returnedCorrelationIds).isEqualTo(correlationIds);
     }
@@ -174,7 +174,7 @@ public class AuditHistoryResourceTest {
     public void getAllCorrelationIds_givenEventTypes_logEntryParameters() {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
 
-        historyResource.getAllCorrelationIds(eventTypes);
+        historyResource.getAllCorrelationIds(eventTypes, null);
 
         String expectedLogMessage = String.format("Requested all correlation ids for events [%s, %s]",
                 INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
@@ -190,7 +190,7 @@ public class AuditHistoryResourceTest {
         List<String> correlationIds = Arrays.asList("some correlation id", "some other correlation id", "yet some other correlation id");
         given(mockHistoryService.getAllCorrelationIds(any())).willReturn(correlationIds);
 
-        historyResource.getAllCorrelationIds(ANY_EVENT_TYPES);
+        historyResource.getAllCorrelationIds(ANY_EVENT_TYPES, null);
 
         then(mockAppender).should(atLeastOnce()).doAppend(logCaptor.capture());
 
