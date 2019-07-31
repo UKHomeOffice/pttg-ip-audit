@@ -201,6 +201,60 @@ public class AuditHistoryResourceTest {
     }
 
     @Test
+    public void getAllCorrelationIds_withToDate_callService() {
+        List<AuditEventType> someEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        LocalDate someDate = LocalDate.now();
+
+        historyResource.getAllCorrelationIds(someEventTypes, someDate);
+
+        then(mockHistoryService).should().getAllCorrelationIds(someEventTypes, someDate);
+    }
+
+    @Test
+    public void getAllCorrelationIds_withToDate_returnCorrelationIdsFromService() {
+        List<String> expectedCorrelationIds = Arrays.asList("some correlation id", "some other correlation id");
+        given(mockHistoryService.getAllCorrelationIds(anyList(), any(LocalDate.class)))
+                .willReturn(expectedCorrelationIds);
+
+        List<AuditEventType> anyEventTypes = Collections.singletonList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST);
+        LocalDate anyDate = LocalDate.now();
+        List<String> actualCorrelationIds = historyResource.getAllCorrelationIds(anyEventTypes, anyDate);
+
+        assertThat(actualCorrelationIds).isEqualTo(expectedCorrelationIds);
+    }
+
+    @Test
+    public void getAllCorrelationIds_withToDate_logEntryParameters() {
+        List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
+        LocalDate toDate = LocalDate.parse("2019-07-30");
+
+        historyResource.getAllCorrelationIds(eventTypes, toDate);
+
+        then(mockAppender).should(atLeastOnce()).doAppend(logCaptor.capture());
+
+        String expectedLogMessage = String.format("Requested all correlation ids for events [%s, %s] up to %s",
+                                                  INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE, "2019-07-30");
+        LoggingEvent loggingEvent = logForEvent(PTTG_AUDIT_HISTORY_CORRELATION_IDS_REQUEST_RECEIVED);
+        assertThat(loggingEvent.getFormattedMessage()).isEqualTo(expectedLogMessage);
+    }
+
+    @Test
+    public void getAllCorrelationIds_withToDate_idsReturned_logCount() {
+        List<String> correlationIds = Arrays.asList("some correlation id", "some other correlation id");
+        given(mockHistoryService.getAllCorrelationIds(anyList(), any(LocalDate.class))).willReturn(correlationIds);
+
+        LocalDate anyDate = LocalDate.now();
+        historyResource.getAllCorrelationIds(ANY_EVENT_TYPES, anyDate);
+
+        then(mockAppender).should(atLeastOnce()).doAppend(logCaptor.capture());
+
+        String expectedMessage = "Returning 2 correlation IDs for all correlation ID request";
+        LoggingEvent loggingEvent = logForEvent(PTTG_AUDIT_HISTORY_CORRELATION_IDS_RESPONSE_SUCCESS);
+        assertThat(loggingEvent.getFormattedMessage()).isEqualTo(expectedMessage);
+        assertRequestDurationLogged(loggingEvent);
+    }
+
+    @Test
     public void getRecordsForCorrelationId_givenParameters_callAuditHistoryService() {
         String someCorrelationId = "some correlation ID";
         List<AuditEventType> someEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
