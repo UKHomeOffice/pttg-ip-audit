@@ -59,6 +59,7 @@ public class AuditHistoryResourceTest {
             "some nino"
     );
     private static final Pageable SOME_PAGEABLE = PageRequest.of(5, 8);
+    private static final List<AuditEventType> ANY_EVENT_TYPES = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
 
     @Before
     public void setUp() {
@@ -164,8 +165,7 @@ public class AuditHistoryResourceTest {
         when(mockHistoryService.getAllCorrelationIds(any()))
                 .thenReturn(correlationIds);
 
-        List<AuditEventType> anyEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
-        List<String> returnedCorrelationIds = historyResource.getAllCorrelationIds(anyEventTypes);
+        List<String> returnedCorrelationIds = historyResource.getAllCorrelationIds(ANY_EVENT_TYPES);
 
         assertThat(returnedCorrelationIds).isEqualTo(correlationIds);
     }
@@ -190,8 +190,7 @@ public class AuditHistoryResourceTest {
         List<String> correlationIds = Arrays.asList("some correlation id", "some other correlation id", "yet some other correlation id");
         given(mockHistoryService.getAllCorrelationIds(any())).willReturn(correlationIds);
 
-        List<AuditEventType> anyEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
-        historyResource.getAllCorrelationIds(anyEventTypes);
+        historyResource.getAllCorrelationIds(ANY_EVENT_TYPES);
 
         then(mockAppender).should(atLeastOnce()).doAppend(logCaptor.capture());
 
@@ -217,8 +216,7 @@ public class AuditHistoryResourceTest {
         when(mockHistoryService.getRecordsForCorrelationId(any(), any()))
                 .thenReturn(expectedRecords);
 
-        List<AuditEventType> anyEventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
-        List<AuditRecord> actualRecords = historyResource.getRecordsForCorrelationId("any correlation ID", anyEventTypes);
+        List<AuditRecord> actualRecords = historyResource.getRecordsForCorrelationId("any correlation ID", ANY_EVENT_TYPES);
 
         assertThat(actualRecords).isEqualTo(expectedRecords);
     }
