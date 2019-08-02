@@ -1,5 +1,6 @@
 package uk.gov.digital.ho.pttg;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +54,11 @@ public class AuditEntryJpaRepositoryTest {
         repository.save(createAudit(NOW_PLUS_60_MINS));
         repository.save(createAudit(TOMORROW));
         repository.save(createAudit(DAY_AFTER_TOMORROW));
+    }
+
+    @After
+    public void tearDown() {
+        repository.deleteAll();
     }
 
     @Test
