@@ -32,7 +32,7 @@ INSERT INTO audit
     VALUES (
       '3',
       'yet some other uuid',
-      '2017-09-12 14:45:48.014',
+      '2017-09-11 14:45:48.014',
       'some session id',
       'correlationID3',
       'some email',
