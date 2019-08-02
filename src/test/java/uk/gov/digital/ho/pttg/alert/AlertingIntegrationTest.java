@@ -15,6 +15,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.jdbc.SqlGroup;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.MultiValueMap;
@@ -77,7 +78,8 @@ public class AlertingIntegrationTest {
     @Test
     @SqlGroup({
             @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "/sql/AlertingIntegrationTest/before-below-threshold.sql"),
-            @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "/sql/AlertingIntegrationTest/after.sql")
+            @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "/sql/AlertingIntegrationTest/after.sql",
+                    config = @SqlConfig(transactionMode = SqlConfig.TransactionMode.ISOLATED))
     })
     public void shouldNotAlertWhenManyRequestsBelowThreshold() throws Exception {
         makeRequests();
@@ -93,7 +95,8 @@ public class AlertingIntegrationTest {
     @Test
     @SqlGroup({
             @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "/sql/AlertingIntegrationTest/before-at-threshold.sql"),
-            @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "/sql/AlertingIntegrationTest/after.sql")
+            @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "/sql/AlertingIntegrationTest/after.sql",
+                    config = @SqlConfig(transactionMode = SqlConfig.TransactionMode.ISOLATED))
     })
     public void shouldAlertWhenTooManyRequests() throws Exception {
         makeRequests();
