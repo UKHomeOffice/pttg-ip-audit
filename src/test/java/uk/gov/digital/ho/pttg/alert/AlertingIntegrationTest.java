@@ -13,6 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
@@ -34,6 +35,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.test.annotation.DirtiesContext.MethodMode.AFTER_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 import static uk.gov.digital.ho.pttg.AuditEventType.INCOME_PROVING_FINANCIAL_STATUS_RESPONSE;
@@ -80,7 +82,7 @@ public class AlertingIntegrationTest {
             @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "/sql/AlertingIntegrationTest/before-below-threshold.sql"),
             @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "/sql/AlertingIntegrationTest/after.sql")
     })
-    @Transactional
+    @DirtiesContext
     public void shouldNotAlertWhenManyRequestsBelowThreshold() throws Exception {
         makeRequests();
 
@@ -97,7 +99,7 @@ public class AlertingIntegrationTest {
             @Sql(executionPhase = BEFORE_TEST_METHOD, scripts = "/sql/AlertingIntegrationTest/before-at-threshold.sql"),
             @Sql(executionPhase = AFTER_TEST_METHOD, scripts = "/sql/AlertingIntegrationTest/after.sql")
     })
-    @Transactional
+    @DirtiesContext
     public void shouldAlertWhenTooManyRequests() throws Exception {
         makeRequests();
 
