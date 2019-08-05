@@ -18,7 +18,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
-@DirtiesContext
 public class IpsStatisticsResourceIntTest {
 
     @Autowired
