@@ -1,12 +1,14 @@
 package uk.gov.digital.ho.pttg.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.gov.digital.ho.pttg.AuditEntryJpaRepository;
 
 import java.time.LocalDate;
 
@@ -22,6 +24,14 @@ public class IpsStatisticsResourceIntTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private AuditEntryJpaRepository repository;
+
+    @After
+    public void tearDown() {
+        repository.deleteAll();
+    }
 
     @Test
     public void ipsStatisticsResource_savedStatistics_canRetrieve() {
