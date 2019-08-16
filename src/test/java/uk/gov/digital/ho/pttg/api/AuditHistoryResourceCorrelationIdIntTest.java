@@ -38,7 +38,17 @@ public class AuditHistoryResourceCorrelationIdIntTest {
         String url = "/correlationIds?eventTypes=INCOME_PROVING_FINANCIAL_STATUS_REQUEST,INCOME_PROVING_FINANCIAL_STATUS_RESPONSE";
         String response = restTemplate.getForObject(url, String.class);
 
-        List<String> list = objectMapper.readValue(response, List.class);
-        assertThat(list).containsExactlyInAnyOrder("correlationID1", "correlationID3");
+        List<String> correlationIds = objectMapper.readValue(response, List.class);
+        assertThat(correlationIds).containsExactlyInAnyOrder("correlationID1", "correlationID3");
+    }
+
+    @Test
+    public void shouldReturnCorrelationIdsForRequesteEventTypesBeforeDate() throws IOException {
+        String url = "/correlationIds?eventTypes=INCOME_PROVING_FINANCIAL_STATUS_REQUEST,INCOME_PROVING_FINANCIAL_STATUS_RESPONSE";
+        url += "&toDate=2017-09-11";
+        String response = restTemplate.getForObject(url, String.class);
+
+        List<String> correlationIds = objectMapper.readValue(response, List.class);
+        assertThat(correlationIds).containsExactly("correlationID1");
     }
 }
