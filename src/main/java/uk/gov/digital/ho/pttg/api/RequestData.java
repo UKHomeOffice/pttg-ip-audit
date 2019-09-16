@@ -20,6 +20,8 @@ public class RequestData implements HandlerInterceptor {
     static final String USER_HOST = "userHost";
     static final String REQUEST_START_TIMESTAMP = "request-timestamp";
     public static final String REQUEST_DURATION_MS = "request_duration_ms";
+    private static final String COMPONENT_TRACE_HEADER = "x-component-trace";
+    private static final String COMPONENT_NAME = "pttg-ip-audit";
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -31,7 +33,7 @@ public class RequestData implements HandlerInterceptor {
         MDC.put(USER_ID_HEADER, initialiseUserName(request));
         MDC.put(USER_HOST, initialiseRemoteHost(request));
         MDC.put(REQUEST_START_TIMESTAMP, initialiseRequestStart());
-        MDC.put("x-component-trace", initialiseComponentTraceHeader(request));
+        MDC.put(COMPONENT_TRACE_HEADER, initialiseComponentTraceHeader(request));
 
 
         response.setHeader(SESSION_ID_HEADER, sessionId());
@@ -72,11 +74,11 @@ public class RequestData implements HandlerInterceptor {
     }
 
     private String initialiseComponentTraceHeader(HttpServletRequest request) {
-        String componentTrace = request.getHeader("x-component-trace");
+        String componentTrace = request.getHeader(COMPONENT_TRACE_HEADER);
         if (componentTrace == null) {
-            return "pttg-ip-audit";
+            return COMPONENT_NAME;
         }
-        return componentTrace + "," + "pttg-ip-audit";
+        return componentTrace + "," + COMPONENT_NAME;
     }
 
     public String sessionId() {
@@ -97,6 +99,6 @@ public class RequestData implements HandlerInterceptor {
     }
 
     public String componentTrace() {
-        return MDC.get("x-component-trace");
+        return MDC.get(COMPONENT_TRACE_HEADER);
     }
 }
