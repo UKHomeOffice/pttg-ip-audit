@@ -31,6 +31,7 @@ public class RequestData implements HandlerInterceptor {
         MDC.put(USER_ID_HEADER, initialiseUserName(request));
         MDC.put(USER_HOST, initialiseRemoteHost(request));
         MDC.put(REQUEST_START_TIMESTAMP, initialiseRequestStart());
+        MDC.put("x-component-trace", initialiseComponentTraceHeader(request));
 
 
         response.setHeader(SESSION_ID_HEADER, sessionId());
@@ -70,6 +71,14 @@ public class RequestData implements HandlerInterceptor {
         return StringUtils.isNotBlank(userId) ? userId : "anonymous";
     }
 
+    private String initialiseComponentTraceHeader(HttpServletRequest request) {
+        String componentTrace = request.getHeader("x-component-trace");
+        if (componentTrace == null) {
+            return "pttg-ip-audit";
+        }
+        return componentTrace + "," + "pttg-ip-audit";
+    }
+
     public String sessionId() {
         return MDC.get(SESSION_ID_HEADER);
     }
@@ -85,5 +94,9 @@ public class RequestData implements HandlerInterceptor {
     public long calculateRequestDuration() {
         long timeStamp = Instant.now().toEpochMilli();
         return timeStamp - Long.parseLong(MDC.get(REQUEST_START_TIMESTAMP));
+    }
+
+    public String componentTrace() {
+        return MDC.get("x-component-trace");
     }
 }

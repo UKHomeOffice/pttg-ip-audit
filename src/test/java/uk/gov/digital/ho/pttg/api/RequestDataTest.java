@@ -2,6 +2,9 @@ package uk.gov.digital.ho.pttg.api;
 
 import org.jboss.logging.MDC;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,17 +16,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.digital.ho.pttg.api.RequestData.*;
 
+@RunWith(MockitoJUnitRunner.class)
 public class RequestDataTest {
 
     private RequestData requestData = new RequestData();
 
+    @Mock
+    private HttpServletRequest mockRequest;
+    @Mock
+    private HttpServletResponse mockResponse;
+    @Mock
+    private Object mockHandler;
 
     @Test
     public void shouldUseCollaborators() {
-        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-        HttpServletResponse mockResponse = mock(HttpServletResponse.class);
-        Object mockHandler = mock(Object.class);
-
         when(mockRequest.getHeader(CORRELATION_ID_HEADER)).thenReturn("some correlation id");
         when(mockRequest.getHeader(USER_ID_HEADER)).thenReturn("some user id");
 
@@ -40,10 +46,6 @@ public class RequestDataTest {
 
     @Test
     public void shouldSetupDefaultMdc() {
-        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-        HttpServletResponse mockResponse = mock(HttpServletResponse.class);
-        Object mockHandler = mock(Object.class);
-
         requestData.preHandle(mockRequest, mockResponse, mockHandler);
 
         assertThat(MDC.get(SESSION_ID_HEADER)).isEqualTo("unknown");
@@ -54,10 +56,6 @@ public class RequestDataTest {
 
     @Test
     public void shouldExposeDefaultMdc() {
-        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-        HttpServletResponse mockResponse = mock(HttpServletResponse.class);
-        Object mockHandler = mock(Object.class);
-
         requestData.preHandle(mockRequest, mockResponse, mockHandler);
 
         assertThat(requestData.sessionId()).isEqualTo("unknown");
@@ -71,13 +69,9 @@ public class RequestDataTest {
         HttpSession mockHttpSession = mock(HttpSession.class);
         when(mockHttpSession.getId()).thenReturn("a session id");
 
-        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
         when(mockRequest.getSession(false)).thenReturn(mockHttpSession);
         when(mockRequest.getHeader(CORRELATION_ID_HEADER)).thenReturn("a correlation id");
         when(mockRequest.getHeader(USER_ID_HEADER)).thenReturn("a user id");
-
-        HttpServletResponse mockResponse = mock(HttpServletResponse.class);
-        Object mockHandler = mock(Object.class);
 
         requestData.preHandle(mockRequest, mockResponse, mockHandler);
 
@@ -88,10 +82,6 @@ public class RequestDataTest {
 
     @Test
     public void shouldAddRequestTimestampToMDC() {
-        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-        HttpServletResponse mockResponse = mock(HttpServletResponse.class);
-        Object mockHandler = mock(Object.class);
-
         requestData.preHandle(mockRequest, mockResponse, mockHandler);
 
         assertThat(MDC.get("request-timestamp")).isNotNull();
@@ -99,13 +89,35 @@ public class RequestDataTest {
 
     @Test
     public void shouldReturnRequestDuration() {
-        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-        HttpServletResponse mockResponse = mock(HttpServletResponse.class);
-        Object mockHandler = mock(Object.class);
-
         requestData.preHandle(mockRequest, mockResponse, mockHandler);
 
         assertThat(requestData.calculateRequestDuration()).isNotNegative();
     }
 
+    @Test
+    public void preHandle_noComponentTraceHeader_create() {
+        when(mockRequest.getHeader("x-component-trace")).thenReturn(null);
+
+        requestData.preHandle(mockRequest, mockResponse, mockHandler);
+
+        assertThat(requestData.componentTrace()).isEqualTo("pttg-ip-audit");
+    }
+
+    @Test
+    public void preHandle_componentTraceHeader_append() {
+        when(mockRequest.getHeader("x-component-trace")).thenReturn("pttg-ip-api");
+
+        requestData.preHandle(mockRequest, mockResponse, mockHandler);
+
+        assertThat(requestData.componentTrace()).isEqualTo("pttg-ip-api,pttg-ip-audit");
+    }
+
+    @Test
+    public void preHandle_componentTraceHeaderMultipleComponents_append() {
+        when(mockRequest.getHeader("x-component-trace")).thenReturn("pttg-ip-api,pttg-ip-hmrc");
+
+        requestData.preHandle(mockRequest, mockResponse, mockHandler);
+
+        assertThat(requestData.componentTrace()).isEqualTo("pttg-ip-api,pttg-ip-hmrc,pttg-ip-audit");
+    }
 }
