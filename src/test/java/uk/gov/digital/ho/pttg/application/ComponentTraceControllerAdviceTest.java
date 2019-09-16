@@ -15,11 +15,12 @@ import uk.gov.digital.ho.pttg.api.RequestData;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ComponentTraceControllerAdviceTest {
 
-    private static final MethodParameter ANY_RETURN_TYPE = null;
+    private static final MethodParameter ANY_RETURN_TYPE = mock(MethodParameter.class);
     private static final Class ANY_CONVERTER_TYPE = ComponentTraceControllerAdvice.class;
     private static final MediaType ANY_MEDIA_TYPE = MediaType.APPLICATION_JSON;
 
