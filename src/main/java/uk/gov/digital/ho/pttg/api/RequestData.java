@@ -2,6 +2,7 @@ package uk.gov.digital.ho.pttg.api;
 
 import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 import org.slf4j.MDC;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.util.WebUtils;
@@ -20,6 +21,8 @@ public class RequestData implements HandlerInterceptor {
     static final String USER_HOST = "userHost";
     static final String REQUEST_START_TIMESTAMP = "request-timestamp";
     public static final String REQUEST_DURATION_MS = "request_duration_ms";
+    static final String COMPONENT_TRACE_HEADER = "x-component-trace";
+    private static final String COMPONENT_NAME = "pttg-ip-audit";
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -31,6 +34,7 @@ public class RequestData implements HandlerInterceptor {
         MDC.put(USER_ID_HEADER, initialiseUserName(request));
         MDC.put(USER_HOST, initialiseRemoteHost(request));
         MDC.put(REQUEST_START_TIMESTAMP, initialiseRequestStart());
+        MDC.put(COMPONENT_TRACE_HEADER, initialiseComponentTraceHeader(request));
 
 
         response.setHeader(SESSION_ID_HEADER, sessionId());
@@ -70,6 +74,14 @@ public class RequestData implements HandlerInterceptor {
         return StringUtils.isNotBlank(userId) ? userId : "anonymous";
     }
 
+    private String initialiseComponentTraceHeader(HttpServletRequest request) {
+        String componentTrace = request.getHeader(COMPONENT_TRACE_HEADER);
+        if (componentTrace == null) {
+            return COMPONENT_NAME;
+        }
+        return componentTrace + "," + COMPONENT_NAME;
+    }
+
     public String sessionId() {
         return MDC.get(SESSION_ID_HEADER);
     }
@@ -85,5 +97,13 @@ public class RequestData implements HandlerInterceptor {
     public long calculateRequestDuration() {
         long timeStamp = Instant.now().toEpochMilli();
         return timeStamp - Long.parseLong(MDC.get(REQUEST_START_TIMESTAMP));
+    }
+
+    public String componentTrace() {
+        return MDC.get(COMPONENT_TRACE_HEADER);
+    }
+
+    public void addComponentTraceHeader(HttpHeaders headers) {
+        headers.add(COMPONENT_TRACE_HEADER, componentTrace());
     }
 }
