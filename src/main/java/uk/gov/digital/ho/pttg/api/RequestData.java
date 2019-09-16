@@ -2,6 +2,7 @@ package uk.gov.digital.ho.pttg.api;
 
 import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 import org.slf4j.MDC;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.util.WebUtils;
@@ -20,7 +21,7 @@ public class RequestData implements HandlerInterceptor {
     static final String USER_HOST = "userHost";
     static final String REQUEST_START_TIMESTAMP = "request-timestamp";
     public static final String REQUEST_DURATION_MS = "request_duration_ms";
-    private static final String COMPONENT_TRACE_HEADER = "x-component-trace";
+    static final String COMPONENT_TRACE_HEADER = "x-component-trace";
     private static final String COMPONENT_NAME = "pttg-ip-audit";
 
     @Override
@@ -100,5 +101,9 @@ public class RequestData implements HandlerInterceptor {
 
     public String componentTrace() {
         return MDC.get(COMPONENT_TRACE_HEADER);
+    }
+
+    public void addComponentTraceHeader(HttpHeaders headers) {
+        headers.add(COMPONENT_TRACE_HEADER, componentTrace());
     }
 }

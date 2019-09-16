@@ -5,12 +5,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.http.HttpHeaders;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +29,8 @@ public class RequestDataTest {
     private HttpServletResponse mockResponse;
     @Mock
     private Object mockHandler;
+    @Mock
+    private HttpHeaders mockHeaders;
 
     @Test
     public void shouldUseCollaborators() {
@@ -119,5 +123,15 @@ public class RequestDataTest {
         requestData.preHandle(mockRequest, mockResponse, mockHandler);
 
         assertThat(requestData.componentTrace()).isEqualTo("pttg-ip-api,pttg-ip-hmrc,pttg-ip-audit");
+    }
+
+    @Test
+    public void addComponentTraceHeader_anyResponse_addsHeader() {
+        String expectedComponentTrace = "some-component,some-other-component";
+        org.slf4j.MDC.put(COMPONENT_TRACE_HEADER, expectedComponentTrace);
+
+        requestData.addComponentTraceHeader(mockHeaders);
+
+        then(mockHeaders).should().add(COMPONENT_TRACE_HEADER, expectedComponentTrace);
     }
 }
