@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlGroup;
@@ -19,10 +20,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.MultiValueMap;
 import uk.gov.digital.ho.pttg.AuditEntryJpaRepository;
 import uk.gov.digital.ho.pttg.AuditEventType;
-import uk.gov.digital.ho.pttg.ServiceRunner;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -87,8 +88,12 @@ public class AuditResourceIntTest {
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(OK);
         assertThat(afterCount).isEqualTo(beforeCount);
+    }
 
-
+    @Test
+    public void retrieveAllAuditData_anyRequest_componentTraceHeader() {
+        ResponseEntity<List> responseEntity = restTemplate.exchange("/audit", HttpMethod.GET, new HttpEntity<>(""), List.class);
+        assertThat(responseEntity.getHeaders().get("x-component-trace")).contains("pttg-ip-audit");
     }
 
     private HttpEntity<String> createRequestAuditEntity(String eventUuid) {
