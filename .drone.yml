@@ -16,7 +16,7 @@ pipeline:
       - ./gradlew release -Prelease.useAutomaticVersion=true -x runBuildTasks
       - git describe --abbrev=0 --tags > ./tagSemver
     when:
-      branch: [master, EE-6825-trace-header-on-add-to-audit]
+      branch: master
       event: [push]
 
   docker-build:
@@ -122,7 +122,7 @@ pipeline:
       - cd kube-pttg-ip-audit
       - ./deploy.sh
     when:
-      branch: [master, EE-6825-trace-header-on-add-to-audit]
+      branch: master
       event: [push, tag]
 
   deployment-to-non-prod:
