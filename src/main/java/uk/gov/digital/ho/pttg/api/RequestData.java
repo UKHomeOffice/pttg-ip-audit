@@ -5,6 +5,7 @@ import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.util.WebUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -47,6 +48,11 @@ public class RequestData implements HandlerInterceptor {
     private String initialiseRequestStart() {
         Long requestStart = Instant.now().toEpochMilli();
         return Long.toString(requestStart);
+    }
+
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        response.addHeader(COMPONENT_TRACE_HEADER, componentTrace());
     }
 
     @Override

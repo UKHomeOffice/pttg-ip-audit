@@ -23,7 +23,9 @@ import uk.gov.digital.ho.pttg.AuditEventType;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -94,6 +96,24 @@ public class AuditResourceIntTest {
     public void retrieveAllAuditData_anyRequest_componentTraceHeader() {
         ResponseEntity<List> responseEntity = restTemplate.exchange("/audit", HttpMethod.GET, new HttpEntity<>(""), List.class);
         assertThat(responseEntity.getHeaders().get("x-component-trace")).contains("pttg-ip-audit");
+    }
+
+    @Test
+    public void recordAuditEntry_requestWithoutTraceHeader_respondWithComponentTraceHeader() {
+        String anyUuid = UUID.randomUUID().toString();
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/audit", POST, createRequestAuditEntity(anyUuid), Void.class);
+        assertThat(responseEntity.getHeaders().get("x-component-trace")).containsOnly("pttg-ip-audit");
+    }
+
+    @Test
+    public void recordAuditEntry_requestWithTraceHeader_addToComponentTraceHeader() {
+        String anyUuid = UUID.randomUUID().toString();
+        headers.put("x-component-trace", Collections.singletonList("pttg-ip-api"));
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/audit", POST, createRequestAuditEntity(anyUuid), Void.class);
+
+        List<String> componentTraceHeaders = responseEntity.getHeaders().get("x-component-trace");
+        assertThat(componentTraceHeaders).isNotNull();
+        assertThat(componentTraceHeaders.get(0)).isEqualTo("pttg-ip-api,pttg-ip-audit");
     }
 
     private HttpEntity<String> createRequestAuditEntity(String eventUuid) {

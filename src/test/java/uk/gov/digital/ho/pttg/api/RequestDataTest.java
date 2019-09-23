@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpHeaders;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -133,5 +134,16 @@ public class RequestDataTest {
         requestData.addComponentTraceHeader(mockHeaders);
 
         then(mockHeaders).should().add(COMPONENT_TRACE_HEADER, expectedComponentTrace);
+    }
+
+    @Test
+    public void postHandle_someComponentTrace_addAsHeader() throws Exception {
+        String expectedComponentTrace = "pttg-ip-api,pttg-ip-audit";
+        MDC.put(COMPONENT_TRACE_HEADER, expectedComponentTrace);
+
+        ModelAndView mockModelAndView = mock(ModelAndView.class);
+        requestData.postHandle(mockRequest, mockResponse, mockHandler, mockModelAndView);
+
+        then(mockResponse).should().addHeader(COMPONENT_TRACE_HEADER, expectedComponentTrace);
     }
 }
