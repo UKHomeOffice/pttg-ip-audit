@@ -88,4 +88,3 @@ file for details.
 [Jenkins]:                          https://eue-pttg-jenkins-dtzo-kops1.service.ops.iptho.co.uk/job/build_eue_api_audit_service/             
 [build Jenkinsfile]:                https://bitbucket.ipttools.info/projects/EUE-API/repos/eue-api-shared-services-toolset/browse/Jenkinsfile.pttg_ip_audit
 [deploy Jenkinsfile]:               https://eue-pttg-jenkins-dtzo-kops1.service.ops.iptho.co.uk/job/deploy_np_dev_push_eue_api_project_tiller/
-
