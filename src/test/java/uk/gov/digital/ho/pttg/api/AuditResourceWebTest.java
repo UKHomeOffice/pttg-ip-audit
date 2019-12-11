@@ -8,15 +8,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import uk.gov.digital.ho.pttg.AuditService;
-import uk.gov.digital.ho.pttg.api.AuditResource;
-import uk.gov.digital.ho.pttg.api.AuditableData;
 
 import java.time.LocalDateTime;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -81,6 +82,22 @@ public class AuditResourceWebTest {
                 .contentType(APPLICATION_JSON));
 
         verify(auditService).add(any(AuditableData.class));
+    }
+
+    @Test
+    public void recordAuditEntry_invalidEvent_failsWithIndicativeMessage() throws Exception {
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(AUDIT_URL)
+                                                      .content(createInvalidAuditableData("INVALID_EVENT_TYPE"))
+                                                      .contentType(APPLICATION_JSON))
+                                      .andExpect(status().isBadRequest())
+                                      .andReturn();
+
+        MockHttpServletResponse response = mvcResult.getResponse();
+        assertThat(response.getContentAsString().contains("JSON parse error: Cannot deserialize value of type `uk.gov.digital.ho.pttg.AuditEventType` from String \"INVALID_EVENT_TYPE\"")).isTrue();
+    }
+
+    private String createInvalidAuditableData(String eventType) {
+        return "{\"eventId\":\"some uuid\",\"timestamp\":\"2017-09-11T14:45:48\",\"sessionId\":\"some session id\",\"correlationId\":\"3a22c723-ea0f-4962-b97b-f35dce3284b2\",\"userId\":\"bobby.bag@digital.homeoffice.gov.uk\",\"deploymentName\":\"some deployment\",\"deploymentNamespace\":\"some namespace\",\"eventType\":\"" + eventType + "\",\"data\":\"{}\"}";
     }
 
     private String createAuditableData() throws JsonProcessingException {
