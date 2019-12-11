@@ -10,7 +10,7 @@ public class AuditEventTypeTest {
 
     @Test
     public void shouldBeKnowItems() {
-        assertThat(AuditEventType.values().length).isEqualTo(13);
+        assertThat(AuditEventType.values().length).isEqualTo(15);
     }
 
     @Test
@@ -26,6 +26,8 @@ public class AuditEventTypeTest {
         assertThat(HMRC_INCOME_REQUEST.isAlertable()).isFalse();
         assertThat(HMRC_ACCESS_CODE_REQUEST.isAlertable()).isFalse();
         assertThat(DWP_BENEFIT_REQUEST.isAlertable()).isFalse();
+        assertThat(DWP_NINO_VALIDATE_REQUEST.isAlertable()).isFalse();
+        assertThat(DWP_NINO_TRACE_ALLOCATE_REQUEST.isAlertable()).isFalse();
         assertThat(RESIDENCE_PROVING_INCOME_REQUEST.isAlertable()).isFalse();
         assertThat(RESIDENCE_PROVING_INCOME_RESPONSE.isAlertable()).isFalse();
         assertThat(RESIDENCE_PROVING_BENEFITS_REQUEST.isAlertable()).isFalse();
