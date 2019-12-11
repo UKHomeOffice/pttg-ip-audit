@@ -85,7 +85,7 @@ public class AuditResourceWebTest {
     }
 
     @Test
-    public void recordAuditEntry_invalidEvent_blah() throws Exception {
+    public void recordAuditEntry_invalidEvent_failsWithIndicativeMessage() throws Exception {
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post(AUDIT_URL)
                                                       .content(createInvalidAuditableData("INVALID_EVENT_TYPE"))
                                                       .contentType(APPLICATION_JSON))
