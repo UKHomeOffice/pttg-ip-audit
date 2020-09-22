@@ -88,7 +88,8 @@ dependencies {
 
   compile group: 'org.json', name: 'json', version: '20170516'
 
-  compileOnly 'org.projectlombok:lombok:1.16.12'
+  compileOnly 'org.projectlombok:lombok:1.18.12'
+  annotationProcessor 'org.projectlombok:lombok:1.18.12'
 
   testCompile group: 'org.springframework.boot',  name: 'spring-boot-starter-test'
   testCompile group: 'org.mockito',               name: 'mockito-core',             version: '2.16.0'
