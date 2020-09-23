@@ -15,7 +15,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(value = AuditResource.class, secure = false)
+@WebMvcTest(value = AuditResource.class)
 public class RequestDataWebTest {
 
     @MockBean
