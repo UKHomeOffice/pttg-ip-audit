@@ -10,7 +10,7 @@ public class AuditEventTypeTest {
 
     @Test
     public void shouldBeKnowItems() {
-        assertThat(AuditEventType.values().length).isEqualTo(16);
+        assertThat(AuditEventType.values().length).isEqualTo(17);
     }
 
     @Test
@@ -31,6 +31,7 @@ public class AuditEventTypeTest {
         assertThat(DWP_BENEFIT_REQUEST.isAlertable()).isFalse();
 
         assertThat(DWP_NINO_VALIDATE_REQUEST.isAlertable()).isFalse();
+        assertThat(DWP_NINO_VALIDATE_DATA_MANIPULATION.isAlertable()).isFalse();
         assertThat(DWP_NINO_TRACE_ALLOCATE_REQUEST.isAlertable()).isFalse();
         assertThat(DWP_NINO_TRACE_ALLOCATE_DATA_MANIPULATION.isAlertable()).isFalse();
 
