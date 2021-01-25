@@ -4,3 +4,4 @@ pttg-ip-audit.iml
 out/
 build/
 .attach_pid*
+.DS_Store
