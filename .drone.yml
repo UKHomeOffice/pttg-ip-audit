@@ -8,16 +8,16 @@ platform:
   arch: amd64
 
 steps:
-- name: build-project
+
+- name: gradle-build
   pull: if-not-exists
-  image: quay.io/ukhomeofficedigital/openjdk8:v1.1.0
+  image: quay.io/ukhomeofficedigital/docker-openjdk8-git:v1.5.0
   commands:
   - ./gradlew build --max-workers 1
   when:
     event:
     - push
     - pull_request
-    - tag
 
 - name: update-semver
   pull: if-not-exists
@@ -34,7 +34,6 @@ steps:
     - master
     event:
     - push
-    - tag
 
 
 - name: build-docker-image
@@ -46,8 +45,7 @@ steps:
     - docker build -t pttg-ip-audit .
   when:
     event:
-      - push
-      - tag
+    - push
 
 - name: install-docker-image-with-githash-tag
   image: plugins/docker
@@ -97,28 +95,9 @@ steps:
       from_secret: docker_password
   when:
     branch:
-      - master
+    - master
     event:
-      - push
-
-- name: tag-docker-image-with-git-tag
-  pull: if-not-exists
-  image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind
-  commands:
-  - docker login -u="ukhomeofficedigital+pttg" -p=$${DOCKER_PASSWORD} quay.io
-  - docker tag pttg-ip-audit quay.io/ukhomeofficedigital/pttg-ip-audit:$${DRONE_TAG}
-  - docker push quay.io/ukhomeofficedigital/pttg-ip-audit:$${DRONE_TAG}
-  - docker tag pttg-ip-audit quay.io/ukhomeofficedigital/pttg-ip-audit:${DRONE_COMMIT_SHA:0:8}
-  - docker push quay.io/ukhomeofficedigital/pttg-ip-audit:${DRONE_COMMIT_SHA:0:8}
-  - docker tag pttg-ip-audit quay.io/ukhomeofficedigital/pttg-ip-audit:$(cat ./tagSemver)
-  - docker push quay.io/ukhomeofficedigital/pttg-ip-audit:$(cat ./tagSemver)
-  environment:
-    DOCKER_USERNAME: ukhomeofficedigital+pttg
-    DOCKER_PASSWORD:
-      from_secret: docker_password
-  when:
-    event:
-      - tag
+    - push
 
 #- name: trigger-e2e-tests
 #  pull: if-not-exists
@@ -145,7 +124,7 @@ steps:
     event:
     - push
     - tag
-    - deployment
+    - promote
 
 - name: deploy-to-dev-from-build-number
   pull: if-not-exists
@@ -165,7 +144,6 @@ steps:
     - master
     event:
     - push
-    - tag
 
 - name: deployment-to-non-prod
   pull: if-not-exists
