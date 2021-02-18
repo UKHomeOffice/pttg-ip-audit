@@ -1,5 +1,4 @@
-FROM quay.io/ukhomeofficedigital/openjdk8:v1.8.0.141
-
+FROM 113355358853.dkr.ecr.eu-west-1.amazonaws.com/pla/tools/amazoncorretto-fbis:latest
 
 ENV USER user_pttg_ip_audit
 ENV USER_ID 1000
