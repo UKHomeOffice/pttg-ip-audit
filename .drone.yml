@@ -11,7 +11,7 @@ steps:
 
 - name: gradle-build
   pull: if-not-exists
-  image: quay.io/ukhomeofficedigital/docker-openjdk8-git:v1.5.0
+  image: quay.io/ukhomeofficedigital/openjdk11:v11.0.5_10
   commands:
   - ./gradlew build --max-workers 1
   when:
@@ -21,7 +21,7 @@ steps:
 
 - name: update-semver
   pull: if-not-exists
-  image: quay.io/ukhomeofficedigital/docker-openjdk8-git:v1.5.0
+  image: quay.io/ukhomeofficedigital/openjdk11:v11.0.5_10
   commands:
   - sh /root/git-utilities/set-up-github-user.sh "$${GITHUB_SSH_KEY}"
   - ./gradlew release -Prelease.useAutomaticVersion=true -x runBuildTasks
@@ -42,7 +42,7 @@ steps:
   commands:
     # wait for docker service to be up before running docker build
     - n=0; while [ "$n" -lt 60 ] && [ ! docker stats --no-stream ]; do n=$(( n + 1 )); sleep 1; done
-    - docker build -t pttg-ip-audit .
+    - docker build -t pttg-ip-audit ./Dockerfile.acp
   when:
     event:
     - push

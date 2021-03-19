@@ -5,7 +5,6 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.logstash.logback.marker.ObjectAppendingMarker;
 import org.junit.Before;
 import org.junit.Test;
@@ -255,7 +254,6 @@ public class ArchiveServiceTest {
     }
 
     @Test
-    @SuppressFBWarnings(value="RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     public void getArchivedResults_givenFromDate_getFromStartOfDay() {
         LocalDate fromDate = LocalDate.now().minusDays(1);
         LocalDate someDate = LocalDate.now();
@@ -265,7 +263,6 @@ public class ArchiveServiceTest {
     }
 
     @Test
-    @SuppressFBWarnings(value="RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     public void getArchivedResults_givenToDate_getFromStartOfNextDay() {
         LocalDate toDate = LocalDate.now();
         LocalDate someDate = LocalDate.now().minusDays(1);

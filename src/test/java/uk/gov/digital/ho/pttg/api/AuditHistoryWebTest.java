@@ -1,6 +1,5 @@
 package uk.gov.digital.ho.pttg.api;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,7 +110,6 @@ public class AuditHistoryWebTest {
     }
 
     @Test
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     public void getCorrelationIds_callsService() throws Exception {
         mockMvc.perform(get(CORRELATION_ID_URL)
                                 .param("eventTypes", EVENT_TYPES_PARAM));

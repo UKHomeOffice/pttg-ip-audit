@@ -1,7 +1,6 @@
 package uk.gov.digital.ho.pttg.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +18,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_INFERRED")
 @RunWith(MockitoJUnitRunner.class)
 public class ServiceConfigurationTest {
 
