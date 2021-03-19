@@ -42,7 +42,7 @@ steps:
   commands:
     # wait for docker service to be up before running docker build
     - n=0; while [ "$n" -lt 60 ] && [ ! docker stats --no-stream ]; do n=$(( n + 1 )); sleep 1; done
-    - docker build -t pttg-ip-audit ./Dockerfile.acp
+    - docker build -t pttg-ip-audit -f ./Dockerfile.acp .
   when:
     event:
     - push
