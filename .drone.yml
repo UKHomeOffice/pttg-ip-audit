@@ -35,38 +35,36 @@ steps:
     event:
     - push
 
-
-- name: build-docker-image
-  pull: if-not-exists
-  image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind
-  commands:
-    # wait for docker service to be up before running docker build
-    - n=0; while [ "$n" -lt 60 ] && [ ! docker stats --no-stream ]; do n=$(( n + 1 )); sleep 1; done
-    - docker build -t pttg-ip-audit -f ./Dockerfile.acp .
-  when:
-    event:
-    - push
-
-- name: install-docker-image-with-githash-tag
+- name: docker-build-tag-and-push
   image: plugins/docker
   settings:
     registry: quay.io
     repo: quay.io/ukhomeofficedigital/pttg-ip-audit
-    tags: ${DRONE_COMMIT_SHA}
+    dockerfile: ./Dockerfile.acp
+    tags:
+      - latest
+      - ${DRONE_COMMIT_SHA}
+      - build-$${DRONE_BUILD_NUMBER}
+      - $(cat ./tagSemver)
   environment:
     DOCKER_USERNAME: ukhomeofficedigital+pttg
     DOCKER_PASSWORD:
       from_secret: docker_password
   when:
+    branch:
+      - master
     event:
       - push
 
-- name: install-docker-image-from-feature-branch-build
+- name: docker-build-tag-and-push_feature-branch
   image: plugins/docker
   settings:
     registry: quay.io
     repo: quay.io/ukhomeofficedigital/pttg-ip-audit
-    tags: ${DRONE_BRANCH}
+    dockerfile: ./Dockerfile.acp
+    tags:
+      - ${DRONE_COMMIT_SHA}
+      - ${DRONE_BRANCH}
   environment:
     DOCKER_USERNAME: ukhomeofficedigital+pttg
     DOCKER_PASSWORD:
@@ -78,26 +76,6 @@ steps:
     event:
       - push
 
-- name: install-docker-image-from-master-branch-build
-  pull: if-not-exists
-  image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind
-  commands:
-  - docker login -u="ukhomeofficedigital+pttg" -p=$${DOCKER_PASSWORD} quay.io
-  - docker tag pttg-ip-audit quay.io/ukhomeofficedigital/pttg-ip-audit:latest
-  - docker push quay.io/ukhomeofficedigital/pttg-ip-audit:latest
-  - docker tag pttg-ip-audit quay.io/ukhomeofficedigital/pttg-ip-audit:build-$${DRONE_BUILD_NUMBER}
-  - docker push quay.io/ukhomeofficedigital/pttg-ip-audit:build-$${DRONE_BUILD_NUMBER}
-  - docker tag pttg-ip-audit quay.io/ukhomeofficedigital/pttg-ip-audit:$(cat ./tagSemver)
-  - docker push quay.io/ukhomeofficedigital/pttg-ip-audit:$(cat ./tagSemver)
-  environment:
-    DOCKER_USERNAME: ukhomeofficedigital+pttg
-    DOCKER_PASSWORD:
-      from_secret: docker_password
-  when:
-    branch:
-    - master
-    event:
-    - push
 
 #- name: trigger-e2e-tests
 #  pull: if-not-exists
