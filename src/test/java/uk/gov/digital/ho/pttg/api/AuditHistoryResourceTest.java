@@ -6,7 +6,6 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.google.common.collect.ImmutableMap;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.logstash.logback.marker.ObjectAppendingMarker;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Before;
@@ -72,7 +71,6 @@ public class AuditHistoryResourceTest {
     }
 
     @Test
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     public void retrieveAuditHistory_callsAuditHistoryService() {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
 
@@ -150,7 +148,6 @@ public class AuditHistoryResourceTest {
     }
 
     @Test
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     public void getAllCorrelationIds_givenEventTypes_passToService() {
         List<AuditEventType> eventTypes = Arrays.asList(INCOME_PROVING_FINANCIAL_STATUS_REQUEST, INCOME_PROVING_FINANCIAL_STATUS_RESPONSE);
 

@@ -1,6 +1,5 @@
 package uk.gov.digital.ho.pttg.api;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,7 +110,6 @@ public class AuditHistoryWebTest {
     }
 
     @Test
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT")
     public void getCorrelationIds_callsService() throws Exception {
         mockMvc.perform(get(CORRELATION_ID_URL)
                                 .param("eventTypes", EVENT_TYPES_PARAM));
@@ -136,7 +134,7 @@ public class AuditHistoryWebTest {
     public void getCorrelationIds_contentTypeJson() throws Exception {
         mockMvc.perform(get(CORRELATION_ID_URL)
                                 .param("eventTypes", EVENT_TYPES_PARAM))
-               .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"));
+               .andExpect(header().string("Content-Type", "application/json"));
     }
 
     @Test
@@ -184,7 +182,7 @@ public class AuditHistoryWebTest {
         mockMvc.perform(get(CORRELATION_ID_URL)
                                 .param("eventTypes", EVENT_TYPES_PARAM)
                                 .param("toDate", TO_DATE_PARAM))
-               .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"));
+               .andExpect(header().string("Content-Type", "application/json"));
     }
 
     @Test
@@ -236,6 +234,6 @@ public class AuditHistoryWebTest {
                                 .param("correlationId", REQ_CORRELATION_ID_PARAM)
                                 .param("eventTypes", EVENT_TYPES_PARAM)
                        )
-               .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"));
+               .andExpect(header().string("Content-Type", "application/json"));
     }
 }

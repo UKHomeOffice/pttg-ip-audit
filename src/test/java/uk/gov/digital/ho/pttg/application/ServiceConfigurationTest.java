@@ -1,7 +1,7 @@
 package uk.gov.digital.ho.pttg.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,11 +13,11 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Clock;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_INFERRED")
 @RunWith(MockitoJUnitRunner.class)
 public class ServiceConfigurationTest {
 
@@ -29,8 +29,8 @@ public class ServiceConfigurationTest {
 
     @Before
     public void setUp() {
-        when(mockRestTemplateBuilder.setReadTimeout(anyInt())).thenReturn(mockRestTemplateBuilder);
-        when(mockRestTemplateBuilder.setConnectTimeout(anyInt())).thenReturn(mockRestTemplateBuilder);
+        when(mockRestTemplateBuilder.setReadTimeout(any(Duration.class))).thenReturn(mockRestTemplateBuilder);
+        when(mockRestTemplateBuilder.setConnectTimeout(any(Duration.class))).thenReturn(mockRestTemplateBuilder);
 
         when(mockRestTemplateBuilder.build()).thenReturn(mockRestTemplate);
     }
@@ -46,8 +46,8 @@ public class ServiceConfigurationTest {
         RestTemplate restTemplate = serviceConfiguration.restTemplate(mockRestTemplateBuilder);
 
         // then
-        verify(mockRestTemplateBuilder).setReadTimeout(readTimeout);
-        verify(mockRestTemplateBuilder).setConnectTimeout(connectTimeout);
+        verify(mockRestTemplateBuilder).setReadTimeout(Duration.ofMillis(readTimeout));
+        verify(mockRestTemplateBuilder).setConnectTimeout(Duration.ofMillis(connectTimeout));
 
         assertThat(restTemplate).isEqualTo(mockRestTemplate);
     }
