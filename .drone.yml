@@ -69,7 +69,7 @@ steps:
   commands:
     - docker login -u=$${DOCKER_USERNAME} -p=$${DOCKER_PASSWORD} quay.io
     - docker tag pttg-ip-audit quay.io/ukhomeofficedigital/pttg-ip-audit:$(cat ./tagSemver)
-    - docker push quay.io/ukhomeofficedigital/pttg-ip-audit:$(cat ./tagSemver)
+    - docker push quay.io/ukhomeofficedigital/pttg-ip-audit:$$(cat ./tagSemver)
   environment:
     DOCKER_USERNAME: ukhomeofficedigital+pttg
     DOCKER_PASSWORD:
