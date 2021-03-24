@@ -45,6 +45,7 @@ steps:
 
 - name: docker-build-tag-and-push
   image: plugins/docker
+  commands: export SEMVER=$(cat ./tagSemver)
   settings:
     registry: quay.io
     repo: quay.io/ukhomeofficedigital/pttg-ip-audit
