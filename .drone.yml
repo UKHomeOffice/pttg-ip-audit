@@ -25,7 +25,7 @@ steps:
   commands:
   - sh /root/git-utilities/set-up-github-user.sh "$${GITHUB_SSH_KEY}"
   - ./gradlew release -Prelease.useAutomaticVersion=true -x runBuildTasks
-  - export SEMVER=$(git describe --abbrev=0 --tags)
+  - git describe --abbrev=0 --tags > ./tagSemver
   environment:
     GITHUB_SSH_KEY:
       from_secret: github_ssh_key
@@ -53,7 +53,6 @@ steps:
       - latest
       - ${DRONE_COMMIT_SHA}
       - build-${DRONE_BUILD_NUMBER}
-      - ${SEMVER}
   environment:
     DOCKER_USERNAME: ukhomeofficedigital+pttg
     DOCKER_PASSWORD:
@@ -63,6 +62,24 @@ steps:
       - master
     event:
       - push
+
+- name: docker-semver-tag
+  pull: if-not-exists
+  image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind
+  commands:
+    - docker login -u=$${DOCKER_USERNAME} -p=$${DOCKER_PASSWORD} quay.io
+    - docker tag pttg-ip-audit quay.io/ukhomeofficedigital/pttg-ip-audit:$(cat ./tagSemver)
+    - docker push quay.io/ukhomeofficedigital/pttg-ip-audit:$(cat ./tagSemver)
+  environment:
+    DOCKER_USERNAME: ukhomeofficedigital+pttg
+    DOCKER_PASSWORD:
+      from_secret: docker_password
+  when:
+    branch:
+      - master
+    event:
+      - push
+
 
 - name: docker-build-tag-and-push_feature-branch
   image: plugins/docker
