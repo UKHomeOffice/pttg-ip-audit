@@ -25,7 +25,7 @@ steps:
   commands:
   - sh /root/git-utilities/set-up-github-user.sh "$${GITHUB_SSH_KEY}"
   - ./gradlew release -Prelease.useAutomaticVersion=true -x runBuildTasks
-  - git describe --abbrev=0 --tags > ./tagSemver
+  - export SEMVER=$(git describe --abbrev=0 --tags)
   environment:
     GITHUB_SSH_KEY:
       from_secret: github_ssh_key
@@ -53,6 +53,7 @@ steps:
       - latest
       - ${DRONE_COMMIT_SHA}
       - build-${DRONE_BUILD_NUMBER}
+      - ${SEMVER}
   environment:
     DOCKER_USERNAME: ukhomeofficedigital+pttg
     DOCKER_PASSWORD:
