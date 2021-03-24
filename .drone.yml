@@ -53,7 +53,6 @@ steps:
       - latest
       - ${DRONE_COMMIT_SHA}
       - build-${DRONE_BUILD_NUMBER}
-      - $(cat ./tagSemver)
   environment:
     DOCKER_USERNAME: ukhomeofficedigital+pttg
     DOCKER_PASSWORD:
