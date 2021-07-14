@@ -10,7 +10,7 @@ public class AuditEventTypeTest {
 
     @Test
     public void shouldBeKnowItems() {
-        assertThat(AuditEventType.values().length).isEqualTo(17);
+        assertThat(AuditEventType.values().length).isEqualTo(18);
     }
 
     @Test
@@ -39,6 +39,8 @@ public class AuditEventTypeTest {
         assertThat(RESIDENCE_PROVING_INCOME_RESPONSE.isAlertable()).isFalse();
         assertThat(RESIDENCE_PROVING_BENEFITS_REQUEST.isAlertable()).isFalse();
         assertThat(RESIDENCE_PROVING_BENEFITS_RESPONSE.isAlertable()).isFalse();
+
+        assertThat(SEC_UI_RESULT_DOWNLOAD_REQUEST.isAlertable()).isFalse();
 
         assertThat(ARCHIVED_RESULTS.isAlertable()).isFalse();
 
