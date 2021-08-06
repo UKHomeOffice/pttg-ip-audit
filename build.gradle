@@ -30,14 +30,7 @@ apply plugin: 'checkstyle'
 apply plugin: 'net.researchgate.release'
 
 jar {
-  baseName = 'pttg-ip-audit'
-  if (System.getenv('GIT_COMMIT')) {
-    version = version + '.' + System.getenv('GIT_COMMIT')
-  }
-  manifest {
-    attributes 'Implementation-Title': baseName,
-               'Implementation-Version': version
-  }
+  enabled = false
 }
 
 checkstyleTest.enabled = false
