@@ -1,4 +1,4 @@
-FROM 113355358853.dkr.ecr.eu-west-1.amazonaws.com/pla/tools/amazoncorretto-fbis:latest
+FROM 113355358853.dkr.ecr.eu-west-1.amazonaws.com/pla/tools/amazoncorretto-fbis:2.0.0
 
 ENV USER user_pttg_ip_audit
 ENV USER_ID 1000
