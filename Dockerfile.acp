@@ -6,10 +6,6 @@ ENV GROUP group_pttg_ip_audit
 ENV NAME pttg-ip-audit
 ENV JAR_PATH build/libs
 
-RUN yum update -y glibc && \
-    yum update -y nss && \
-    yum update -y bind-license
-
 WORKDIR /app
 
 RUN groupadd -r ${GROUP} && \
