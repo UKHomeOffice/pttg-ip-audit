@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class LocalDateTimeAttributeConverterTest {
 
-    private LocalDateTimeAttributeConverter converter = new LocalDateTimeAttributeConverter();
+    private final LocalDateTimeAttributeConverter converter = new LocalDateTimeAttributeConverter();
 
     @Test
     public void shouldConvertNullLocalDateTime() {

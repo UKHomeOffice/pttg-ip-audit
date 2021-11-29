@@ -1,5 +1,16 @@
 package uk.gov.digital.ho.pttg;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_FAILURE;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -16,17 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import uk.gov.digital.ho.pttg.api.RequestData;
-import uk.gov.digital.ho.pttg.application.IpsStatisticsException;
 import uk.gov.digital.ho.pttg.application.ResourceExceptionHandler;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.*;
-import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_FAILURE;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ResourceExceptionHandlerTest {
@@ -118,18 +119,6 @@ public class ResourceExceptionHandlerTest {
         assertThat(responseEntity.getHeaders().get(CONTENT_TYPE).size()).isEqualTo(1);
         assertThat(responseEntity.getHeaders().get(CONTENT_TYPE).get(0)).isEqualTo(APPLICATION_JSON_VALUE);
         assertThat(responseEntity.getBody()).isEqualTo("conversion error message");
-    }
-
-    @Test
-    public void shouldHandleIpsStatisticsException() {
-        IpsStatisticsException ipsStatisticsException = new IpsStatisticsException("Stats error");
-        ResponseEntity responseEntity = resourceExceptionHandler.handle(ipsStatisticsException);
-
-        assertThat(responseEntity.getStatusCode()).isEqualTo(INTERNAL_SERVER_ERROR);
-        assertThat(responseEntity.getHeaders()).containsKeys(CONTENT_TYPE);
-        assertThat(responseEntity.getHeaders().get(CONTENT_TYPE)).hasSize(1);
-        assertThat(responseEntity.getHeaders().get(CONTENT_TYPE).get(0)).isEqualTo(APPLICATION_JSON_VALUE);
-        assertThat(responseEntity.getBody()).isEqualTo("Stats error");
     }
 
     @Test

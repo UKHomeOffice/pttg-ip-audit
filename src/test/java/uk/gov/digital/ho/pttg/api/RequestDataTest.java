@@ -22,7 +22,7 @@ import static uk.gov.digital.ho.pttg.api.RequestData.*;
 @RunWith(MockitoJUnitRunner.class)
 public class RequestDataTest {
 
-    private RequestData requestData = new RequestData();
+    private final RequestData requestData = new RequestData();
 
     @Mock
     private HttpServletRequest mockRequest;
