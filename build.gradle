@@ -55,7 +55,7 @@ dependencies {
 
   implementation group: 'com.fasterxml.jackson.datatype',    name: 'jackson-datatype-jsr310',    version: '2.13.0'
 
-  implementation group: 'org.flywaydb',                      name: 'flyway-core',                version: '5.2.4'
+  implementation group: 'org.flywaydb',                      name: 'flyway-core',                version: '8.1.0'
 
   implementation group: 'net.logstash.logback',              name: 'logstash-logback-encoder',   version: '5.0'
 
