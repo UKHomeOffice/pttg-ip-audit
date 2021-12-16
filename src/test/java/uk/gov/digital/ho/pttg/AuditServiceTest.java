@@ -92,7 +92,7 @@ public class AuditServiceTest {
                 "{}"
                 );
 
-        AuditRecord auditRecord = auditService.transformToAuditRecord(auditEntryWithoutNino);
+        AuditRecord auditRecord = AuditService.transformToAuditRecord(auditEntryWithoutNino);
 
         assertThat(auditRecord.getId()).isEqualTo("some correlation id");
         assertThat(auditRecord.getDate()).isEqualTo(now);
@@ -117,7 +117,7 @@ public class AuditServiceTest {
                 "{\"nino\": \"some NINO\"}"
         );
 
-        AuditRecord auditRecord = auditService.transformToAuditRecord(auditEntryWithNino);
+        AuditRecord auditRecord = AuditService.transformToAuditRecord(auditEntryWithNino);
 
         assertThat(auditRecord.getId()).isEqualTo("some correlation id");
         assertThat(auditRecord.getDate()).isEqualTo(now);

@@ -1,5 +1,14 @@
 package uk.gov.digital.ho.pttg.application;
 
+import static net.logstash.logback.argument.StructuredArguments.value;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static uk.gov.digital.ho.pttg.api.RequestData.REQUEST_DURATION_MS;
+import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
+import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_FAILURE;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -12,20 +21,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import uk.gov.digital.ho.pttg.api.RequestData;
 
-import static net.logstash.logback.argument.StructuredArguments.value;
-import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static uk.gov.digital.ho.pttg.api.RequestData.REQUEST_DURATION_MS;
-import static uk.gov.digital.ho.pttg.application.LogEvent.EVENT;
-import static uk.gov.digital.ho.pttg.application.LogEvent.PTTG_AUDIT_FAILURE;
-
 @ControllerAdvice
 @Slf4j
 public class ResourceExceptionHandler {
 
-    private RequestData requestData;
+    private final RequestData requestData;
 
     public ResourceExceptionHandler(RequestData requestData) {
         this.requestData = requestData;
@@ -33,11 +33,6 @@ public class ResourceExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity handle(Exception e) {
-        return processError(e.getMessage(), INTERNAL_SERVER_ERROR);
-    }
-
-    @ExceptionHandler
-    public ResponseEntity handle(ArchiveException e) {
         return processError(e.getMessage(), INTERNAL_SERVER_ERROR);
     }
 

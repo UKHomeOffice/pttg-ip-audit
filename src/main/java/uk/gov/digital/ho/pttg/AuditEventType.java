@@ -28,7 +28,7 @@ public enum AuditEventType {
 
     IPS_STATISTICS;
 
-    private boolean alertable;
+    private final boolean alertable;
 
     AuditEventType(boolean alertable) {
         this.alertable = alertable;
