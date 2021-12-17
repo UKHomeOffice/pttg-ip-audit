@@ -58,6 +58,9 @@ dependencies {
   implementation group: 'org.flywaydb',                      name: 'flyway-core',                version: '8.1.0'
 
   implementation group: 'net.logstash.logback',              name: 'logstash-logback-encoder',   version: '5.0'
+  configurations.implementation {
+    exclude group: 'org.apache.logging.log4j'
+  }
 
   implementation 'org.hsqldb:hsqldb'
   implementation 'org.postgresql:postgresql:42.2.5'
